@@ -13,57 +13,190 @@ const initializeDemoUsers = () => {
 
   const demoUsers = [
     {
-      id: 'user_a',
+      id: 'user_001',
       name: 'Priya Rajesh',
       phone: '+919000000001',
-      email: 'user_a@paysafe.com',
-      password: 'demo123', // Will be hashed
-      bankMask: 'DemoBank-1111',
+      email: 'priya@paysafe.com',
+      password: 'demo123',
+      bankMask: 'HDFC-1111',
       kycStatus: 'VERIFIED',
       kycData: {
         pan: 'ABCDE1234F',
         aadhaar: '123456789012',
         bankAccount: '12345678901111',
-        ifsc: 'DEMO0001111',
-        selfieUrl: '/uploads/selfie_user_a.jpg',
+        ifsc: 'HDFC0001111',
+        selfieUrl: '/uploads/selfie_priya.jpg',
         verifiedAt: new Date()
       },
       createdAt: new Date(),
       lastLoginAt: null
     },
     {
-      id: 'user_b',
+      id: 'user_002',
       name: 'Arjun Kumar',
       phone: '+919000000002',
-      email: 'user_b@paysafe.com',
+      email: 'arjun@paysafe.com',
       password: 'demo123',
-      bankMask: 'DemoBank-2222',
+      bankMask: 'ICICI-2222',
       kycStatus: 'VERIFIED',
       kycData: {
         pan: 'FGHIJ5678K',
         aadhaar: '987654321098',
         bankAccount: '98765432102222',
-        ifsc: 'DEMO0002222',
-        selfieUrl: '/uploads/selfie_user_b.jpg',
+        ifsc: 'ICIC0002222',
+        selfieUrl: '/uploads/selfie_arjun.jpg',
         verifiedAt: new Date()
       },
       createdAt: new Date(),
       lastLoginAt: null
     },
     {
-      id: 'admin',
+      id: 'user_003',
       name: 'Suresh Venkatesh',
-      phone: '+919000000000',
-      email: 'admin@paysafe.com',
-      password: 'admin123',
-      bankMask: 'DemoBank-0000',
+      phone: '+919000000003',
+      email: 'suresh@paysafe.com',
+      password: 'demo123',
+      bankMask: 'SBI-3333',
       kycStatus: 'VERIFIED',
       kycData: {
-        pan: 'ADMIN1234A',
-        aadhaar: '000000000000',
-        bankAccount: '00000000000000',
-        ifsc: 'ADMIN0000000',
-        selfieUrl: '/uploads/selfie_admin.jpg',
+        pan: 'KLMNO9012P',
+        aadhaar: '111111111111',
+        bankAccount: '11111111113333',
+        ifsc: 'SBIN0003333',
+        selfieUrl: '/uploads/selfie_suresh.jpg',
+        verifiedAt: new Date()
+      },
+      createdAt: new Date(),
+      lastLoginAt: null
+    },
+    {
+      id: 'user_004',
+      name: 'Meera Patel',
+      phone: '+919000000004',
+      email: 'meera@paysafe.com',
+      password: 'demo123',
+      bankMask: 'AXIS-4444',
+      kycStatus: 'VERIFIED',
+      kycData: {
+        pan: 'PQRST3456U',
+        aadhaar: '222222222222',
+        bankAccount: '22222222224444',
+        ifsc: 'AXIS0004444',
+        selfieUrl: '/uploads/selfie_meera.jpg',
+        verifiedAt: new Date()
+      },
+      createdAt: new Date(),
+      lastLoginAt: null
+    },
+    {
+      id: 'user_005',
+      name: 'Rajesh Gupta',
+      phone: '+919000000005',
+      email: 'rajesh@paysafe.com',
+      password: 'demo123',
+      bankMask: 'KOTAK-5555',
+      kycStatus: 'VERIFIED',
+      kycData: {
+        pan: 'UVWXY7890Z',
+        aadhaar: '333333333333',
+        bankAccount: '33333333335555',
+        ifsc: 'KKBK0005555',
+        selfieUrl: '/uploads/selfie_rajesh.jpg',
+        verifiedAt: new Date()
+      },
+      createdAt: new Date(),
+      lastLoginAt: null
+    },
+    {
+      id: 'user_006',
+      name: 'Anita Sharma',
+      phone: '+919000000006',
+      email: 'anita@paysafe.com',
+      password: 'demo123',
+      bankMask: 'PNB-6666',
+      kycStatus: 'VERIFIED',
+      kycData: {
+        pan: 'ZABCD1234E',
+        aadhaar: '444444444444',
+        bankAccount: '44444444446666',
+        ifsc: 'PUNB0006666',
+        selfieUrl: '/uploads/selfie_anita.jpg',
+        verifiedAt: new Date()
+      },
+      createdAt: new Date(),
+      lastLoginAt: null
+    },
+    {
+      id: 'user_007',
+      name: 'Vikram Singh',
+      phone: '+919000000007',
+      email: 'vikram@paysafe.com',
+      password: 'demo123',
+      bankMask: 'BOI-7777',
+      kycStatus: 'VERIFIED',
+      kycData: {
+        pan: 'EFGHI5678J',
+        aadhaar: '555555555555',
+        bankAccount: '55555555557777',
+        ifsc: 'BKID0007777',
+        selfieUrl: '/uploads/selfie_vikram.jpg',
+        verifiedAt: new Date()
+      },
+      createdAt: new Date(),
+      lastLoginAt: null
+    },
+    {
+      id: 'user_008',
+      name: 'Deepika Reddy',
+      phone: '+919000000008',
+      email: 'deepika@paysafe.com',
+      password: 'demo123',
+      bankMask: 'CANARA-8888',
+      kycStatus: 'VERIFIED',
+      kycData: {
+        pan: 'JKLMN9012O',
+        aadhaar: '666666666666',
+        bankAccount: '66666666668888',
+        ifsc: 'CNRB0008888',
+        selfieUrl: '/uploads/selfie_deepika.jpg',
+        verifiedAt: new Date()
+      },
+      createdAt: new Date(),
+      lastLoginAt: null
+    },
+    {
+      id: 'user_009',
+      name: 'Rohit Agarwal',
+      phone: '+919000000009',
+      email: 'rohit@paysafe.com',
+      password: 'demo123',
+      bankMask: 'UNION-9999',
+      kycStatus: 'VERIFIED',
+      kycData: {
+        pan: 'OPQRS3456T',
+        aadhaar: '777777777777',
+        bankAccount: '77777777779999',
+        ifsc: 'UBIN0009999',
+        selfieUrl: '/uploads/selfie_rohit.jpg',
+        verifiedAt: new Date()
+      },
+      createdAt: new Date(),
+      lastLoginAt: null
+    },
+    {
+      id: 'user_010',
+      name: 'Kavya Nair',
+      phone: '+919000000010',
+      email: 'kavya@paysafe.com',
+      password: 'demo123',
+      bankMask: 'FEDERAL-0000',
+      kycStatus: 'VERIFIED',
+      kycData: {
+        pan: 'TUVWX7890Y',
+        aadhaar: '888888888888',
+        bankAccount: '88888888880000',
+        ifsc: 'FDRL0000000',
+        selfieUrl: '/uploads/selfie_kavya.jpg',
         verifiedAt: new Date()
       },
       createdAt: new Date(),

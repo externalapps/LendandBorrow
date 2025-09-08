@@ -397,7 +397,7 @@ class LoanService {
   }
 
   // Create a loan request
-  static async createLoanRequest(borrowerId, principal, purpose, repaymentPlan, req) {
+  static async createLoanRequest(borrowerId, principal, purpose, repaymentPlan, lenderId, kycData, req) {
     try {
       // Validate inputs
       if (!borrowerId || !principal || principal <= 0) {
@@ -408,13 +408,24 @@ class LoanService {
         throw new Error('Purpose and repayment plan are required');
       }
 
+      if (!lenderId) {
+        throw new Error('Lender ID is required');
+      }
+
+      if (!kycData) {
+        throw new Error('KYC verification is required');
+      }
+
       // Create loan request
       const loanRequest = new Loan({
         id: uuidv4(),
         borrowerId,
+        lenderId,
         principal,
         purpose,
         repaymentPlan,
+        kycVerified: true,
+        kycData,
         status: 'LOAN_REQUEST',
         escrowStatus: 'PENDING'
       });

@@ -15,22 +15,22 @@ const ContactSelector = ({ onSelectContact, selectedContact, onClear }) => {
   // const [loading, setLoading] = useState(false); // For future use
 
   useEffect(() => {
-    // Mock contacts data - in real app, this would come from device contacts
-    const mockContacts = [
-      { id: '1', name: 'Arjun Kumar', phone: '+919000000002', avatar: null, isRegistered: true },
-      { id: '2', name: 'Priya Rajesh', phone: '+919000000001', avatar: null, isRegistered: true },
-      { id: '3', name: 'Rahul Sharma', phone: '+919000000003', avatar: null, isRegistered: false },
-      { id: '4', name: 'Sneha Patel', phone: '+919000000004', avatar: null, isRegistered: true },
-      { id: '5', name: 'Vikram Singh', phone: '+919000000005', avatar: null, isRegistered: false },
-      { id: '6', name: 'Anita Gupta', phone: '+919000000006', avatar: null, isRegistered: true },
-      { id: '7', name: 'Rajesh Kumar', phone: '+919000000007', avatar: null, isRegistered: false },
-      { id: '8', name: 'Meera Joshi', phone: '+919000000008', avatar: null, isRegistered: true },
-      { id: '9', name: 'Suresh Venkatesh', phone: '+919000000000', avatar: null, isRegistered: true },
-      { id: '10', name: 'Deepak Agarwal', phone: '+919000000009', avatar: null, isRegistered: false },
+    // All 10 demo users available for lending/borrowing
+    const demoContacts = [
+      { id: 'user_001', name: 'Priya Rajesh', phone: '+919000000001', avatar: null, isRegistered: true },
+      { id: 'user_002', name: 'Arjun Kumar', phone: '+919000000002', avatar: null, isRegistered: true },
+      { id: 'user_003', name: 'Suresh Venkatesh', phone: '+919000000003', avatar: null, isRegistered: true },
+      { id: 'user_004', name: 'Meera Patel', phone: '+919000000004', avatar: null, isRegistered: true },
+      { id: 'user_005', name: 'Rajesh Gupta', phone: '+919000000005', avatar: null, isRegistered: true },
+      { id: 'user_006', name: 'Anita Sharma', phone: '+919000000006', avatar: null, isRegistered: true },
+      { id: 'user_007', name: 'Vikram Singh', phone: '+919000000007', avatar: null, isRegistered: true },
+      { id: 'user_008', name: 'Deepika Reddy', phone: '+919000000008', avatar: null, isRegistered: true },
+      { id: 'user_009', name: 'Rohit Agarwal', phone: '+919000000009', avatar: null, isRegistered: true },
+      { id: 'user_010', name: 'Kavya Nair', phone: '+919000000010', avatar: null, isRegistered: true },
     ];
     
-    setContacts(mockContacts);
-    setFilteredContacts(mockContacts);
+    setContacts(demoContacts);
+    setFilteredContacts(demoContacts);
   }, []);
 
   useEffect(() => {

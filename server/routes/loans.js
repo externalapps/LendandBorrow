@@ -290,7 +290,7 @@ router.get('/:loanId/blocks', auth, async (req, res) => {
 // Create a loan request
 router.post('/request', auth, async (req, res) => {
   try {
-    const { principal, purpose, repaymentPlan } = req.body;
+    const { principal, purpose, repaymentPlan, lenderId, kycData } = req.body;
     const borrowerId = req.user.id;
 
     if (!principal || principal <= 0) {
@@ -301,8 +301,16 @@ router.post('/request', auth, async (req, res) => {
       return res.status(400).json({ error: { message: 'Purpose and repayment plan are required' } });
     }
 
+    if (!lenderId) {
+      return res.status(400).json({ error: { message: 'Lender ID is required' } });
+    }
+
+    if (!kycData) {
+      return res.status(400).json({ error: { message: 'KYC verification is required' } });
+    }
+
     // Create a loan request in pending state
-    const loanRequest = await LoanService.createLoanRequest(borrowerId, principal, purpose, repaymentPlan, req);
+    const loanRequest = await LoanService.createLoanRequest(borrowerId, principal, purpose, repaymentPlan, lenderId, kycData, req);
     
     res.status(201).json({
       message: 'Loan request created successfully',

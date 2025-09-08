@@ -109,31 +109,87 @@ const Login = () => {
 
         {/* Demo Accounts */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h3 className="text-sm font-medium text-blue-900 mb-3">Demo Accounts</h3>
-          <div className="space-y-2">
+          <h3 className="text-sm font-medium text-blue-900 mb-3">Demo Accounts (All users can lend & borrow)</h3>
+          <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto">
             <button
-              onClick={() => handleDemoLogin('user_a@paysafe.com', 'demo123')}
+              onClick={() => handleDemoLogin('priya@paysafe.com', 'demo123')}
               disabled={loading}
               className="w-full text-left p-2 bg-white rounded border hover:bg-blue-50 transition-colors text-sm"
             >
-              <div className="font-medium">Priya Rajesh (Lender)</div>
-              <div className="text-gray-500">user_a@paysafe.com</div>
+              <div className="font-medium">Priya Rajesh</div>
+              <div className="text-gray-500">priya@paysafe.com</div>
             </button>
             <button
-              onClick={() => handleDemoLogin('user_b@paysafe.com', 'demo123')}
+              onClick={() => handleDemoLogin('arjun@paysafe.com', 'demo123')}
               disabled={loading}
               className="w-full text-left p-2 bg-white rounded border hover:bg-blue-50 transition-colors text-sm"
             >
-              <div className="font-medium">Arjun Kumar (Borrower)</div>
-              <div className="text-gray-500">user_b@paysafe.com</div>
+              <div className="font-medium">Arjun Kumar</div>
+              <div className="text-gray-500">arjun@paysafe.com</div>
             </button>
             <button
-              onClick={() => handleDemoLogin('admin@paysafe.com', 'admin123')}
+              onClick={() => handleDemoLogin('suresh@paysafe.com', 'demo123')}
               disabled={loading}
               className="w-full text-left p-2 bg-white rounded border hover:bg-blue-50 transition-colors text-sm"
             >
-              <div className="font-medium">Suresh Venkatesh (Admin)</div>
-              <div className="text-gray-500">admin@paysafe.com</div>
+              <div className="font-medium">Suresh Venkatesh</div>
+              <div className="text-gray-500">suresh@paysafe.com</div>
+            </button>
+            <button
+              onClick={() => handleDemoLogin('meera@paysafe.com', 'demo123')}
+              disabled={loading}
+              className="w-full text-left p-2 bg-white rounded border hover:bg-blue-50 transition-colors text-sm"
+            >
+              <div className="font-medium">Meera Patel</div>
+              <div className="text-gray-500">meera@paysafe.com</div>
+            </button>
+            <button
+              onClick={() => handleDemoLogin('rajesh@paysafe.com', 'demo123')}
+              disabled={loading}
+              className="w-full text-left p-2 bg-white rounded border hover:bg-blue-50 transition-colors text-sm"
+            >
+              <div className="font-medium">Rajesh Gupta</div>
+              <div className="text-gray-500">rajesh@paysafe.com</div>
+            </button>
+            <button
+              onClick={() => handleDemoLogin('anita@paysafe.com', 'demo123')}
+              disabled={loading}
+              className="w-full text-left p-2 bg-white rounded border hover:bg-blue-50 transition-colors text-sm"
+            >
+              <div className="font-medium">Anita Sharma</div>
+              <div className="text-gray-500">anita@paysafe.com</div>
+            </button>
+            <button
+              onClick={() => handleDemoLogin('vikram@paysafe.com', 'demo123')}
+              disabled={loading}
+              className="w-full text-left p-2 bg-white rounded border hover:bg-blue-50 transition-colors text-sm"
+            >
+              <div className="font-medium">Vikram Singh</div>
+              <div className="text-gray-500">vikram@paysafe.com</div>
+            </button>
+            <button
+              onClick={() => handleDemoLogin('deepika@paysafe.com', 'demo123')}
+              disabled={loading}
+              className="w-full text-left p-2 bg-white rounded border hover:bg-blue-50 transition-colors text-sm"
+            >
+              <div className="font-medium">Deepika Reddy</div>
+              <div className="text-gray-500">deepika@paysafe.com</div>
+            </button>
+            <button
+              onClick={() => handleDemoLogin('rohit@paysafe.com', 'demo123')}
+              disabled={loading}
+              className="w-full text-left p-2 bg-white rounded border hover:bg-blue-50 transition-colors text-sm"
+            >
+              <div className="font-medium">Rohit Agarwal</div>
+              <div className="text-gray-500">rohit@paysafe.com</div>
+            </button>
+            <button
+              onClick={() => handleDemoLogin('kavya@paysafe.com', 'demo123')}
+              disabled={loading}
+              className="w-full text-left p-2 bg-white rounded border hover:bg-blue-50 transition-colors text-sm"
+            >
+              <div className="font-medium">Kavya Nair</div>
+              <div className="text-gray-500">kavya@paysafe.com</div>
             </button>
           </div>
         </div>

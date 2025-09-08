@@ -1,26 +1,34 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useLoan } from '../contexts/LoanContext';
 import { 
   CurrencyDollarIcon, 
   DocumentTextIcon,
-  ArrowRightIcon
+  ArrowRightIcon,
+  CheckCircleIcon
 } from '@heroicons/react/24/outline';
 import LoadingSpinner from './LoadingSpinner';
+import ContactSelector from './ContactSelector';
+import VideoKYC from './VideoKYC';
 import toast from 'react-hot-toast';
 
 const LoanRequestForm = ({ onRequestSubmitted }) => {
   const [amount, setAmount] = useState('');
   const [purpose, setPurpose] = useState('');
   const [repaymentPlan, setRepaymentPlan] = useState('');
+  const [selectedLender, setSelectedLender] = useState(null);
+  const [kycCompleted, setKycCompleted] = useState(false);
+  const [kycData, setKycData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
   const { requestLoan } = useLoan();
-  const navigate = useNavigate();
 
   const validateForm = () => {
     const newErrors = {};
+
+    if (!selectedLender) {
+      newErrors.lender = 'Please select a friend to request money from';
+    }
 
     if (!amount || amount <= 0) {
       newErrors.amount = 'Please enter a valid amount';
@@ -38,6 +46,10 @@ const LoanRequestForm = ({ onRequestSubmitted }) => {
       newErrors.repaymentPlan = 'Please describe your repayment plan';
     }
 
+    if (!kycCompleted) {
+      newErrors.kyc = 'Please complete video KYC verification';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -53,17 +65,21 @@ const LoanRequestForm = ({ onRequestSubmitted }) => {
     try {
       const principal = parseFloat(amount);
       
-      // This is a mock function that will be implemented in LoanContext
       await requestLoan({
         principal,
         purpose,
-        repaymentPlan
+        repaymentPlan,
+        lenderId: selectedLender.id,
+        kycData
       });
       
-      toast.success('Loan request submitted successfully!');
+      toast.success(`Loan request submitted to ${selectedLender.name} successfully!`);
       setAmount('');
       setPurpose('');
       setRepaymentPlan('');
+      setSelectedLender(null);
+      setKycCompleted(false);
+      setKycData(null);
       
       if (onRequestSubmitted) {
         onRequestSubmitted();
@@ -85,6 +101,63 @@ const LoanRequestForm = ({ onRequestSubmitted }) => {
       </div>
       <div className="card-body">
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Select Friend to Borrow From */}
+          <div>
+            <label className="form-label">
+              Choose Friend to Borrow From
+            </label>
+            <ContactSelector
+              onSelectContact={setSelectedLender}
+              selectedContact={selectedLender}
+              onClear={() => setSelectedLender(null)}
+            />
+            {errors.lender && (
+              <p className="form-error">{errors.lender}</p>
+            )}
+            {selectedLender && (
+              <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center space-x-2">
+                  <CheckCircleIcon className="w-5 h-5 text-green-600" />
+                  <span className="text-sm text-green-800">
+                    Selected: {selectedLender.name} ({selectedLender.phone})
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Video KYC Verification */}
+          <div>
+            <label className="form-label">
+              Video KYC Verification (Required)
+            </label>
+            <VideoKYC
+              onKYCComplete={(data) => {
+                setKycCompleted(true);
+                setKycData(data);
+                toast.success('KYC verification completed!');
+              }}
+              onKYCError={(error) => {
+                setKycCompleted(false);
+                setKycData(null);
+                toast.error('KYC verification failed');
+              }}
+            />
+            {errors.kyc && (
+              <p className="form-error">{errors.kyc}</p>
+            )}
+            {kycCompleted && (
+              <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center space-x-2">
+                  <CheckCircleIcon className="w-5 h-5 text-green-600" />
+                  <span className="text-sm text-green-800">
+                    KYC verification completed successfully
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Loan Amount */}
           <div>
             <label htmlFor="amount" className="form-label">
@@ -180,18 +253,62 @@ const LoanRequestForm = ({ onRequestSubmitted }) => {
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={loading}
-            className="btn-primary w-full flex items-center justify-center"
+            disabled={loading || !selectedLender || !kycCompleted}
+            className={`w-full flex items-center justify-center ${
+              loading || !selectedLender || !kycCompleted
+                ? 'btn-disabled'
+                : 'btn-primary'
+            }`}
           >
             {loading ? (
               <LoadingSpinner size="sm" />
             ) : (
               <>
-                Submit Loan Request
+                {!selectedLender || !kycCompleted
+                  ? 'Complete Requirements to Submit'
+                  : `Submit Request to ${selectedLender.name}`
+                }
                 <ArrowRightIcon className="w-5 h-5 ml-2" />
               </>
             )}
           </button>
+
+          {/* Requirements Status */}
+          <div className="bg-gray-50 rounded-lg p-4">
+            <h4 className="text-sm font-medium text-gray-900 mb-2">Requirements Status:</h4>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center space-x-2">
+                {selectedLender ? (
+                  <CheckCircleIcon className="w-4 h-4 text-green-600" />
+                ) : (
+                  <div className="w-4 h-4 border-2 border-gray-300 rounded-full"></div>
+                )}
+                <span className={selectedLender ? 'text-green-700' : 'text-gray-600'}>
+                  Select a friend to borrow from
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                {kycCompleted ? (
+                  <CheckCircleIcon className="w-4 h-4 text-green-600" />
+                ) : (
+                  <div className="w-4 h-4 border-2 border-gray-300 rounded-full"></div>
+                )}
+                <span className={kycCompleted ? 'text-green-700' : 'text-gray-600'}>
+                  Complete video KYC verification
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                {amount && purpose && repaymentPlan ? (
+                  <CheckCircleIcon className="w-4 h-4 text-green-600" />
+                ) : (
+                  <div className="w-4 h-4 border-2 border-gray-300 rounded-full"></div>
+                )}
+                <span className={amount && purpose && repaymentPlan ? 'text-green-700' : 'text-gray-600'}>
+                  Fill loan details
+                </span>
+              </div>
+            </div>
+          </div>
         </form>
       </div>
     </div>
