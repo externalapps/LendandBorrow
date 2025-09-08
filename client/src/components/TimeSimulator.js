@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { adminAPI } from '../services/api';
-import { ClockIcon, PlayIcon, PauseIcon } from '@heroicons/react/24/outline';
+import { ClockIcon, PlayIcon } from '@heroicons/react/24/outline';
 import LoadingSpinner from './LoadingSpinner';
 import toast from 'react-hot-toast';
 
@@ -11,7 +11,7 @@ const TimeSimulator = () => {
   const handleTimeAdvance = async (advanceDays) => {
     setLoading(true);
     try {
-      const response = await adminAPI.simulateTime({ 
+      await adminAPI.simulateTime({ 
         days: advanceDays, 
         action: 'advance' 
       });
