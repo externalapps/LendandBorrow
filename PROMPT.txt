@@ -1,0 +1,299 @@
+generate a polished end-to-end demo of PaySafe: a friend-to-friend P2P lending demo (A ↔ B), with KYC onboarding (dummy for demo), escrow (Razorpay sandbox), full repayment + 4×10-day grace blocks, rolling 1% block fees, 20% minimum per block, simulated VoIP & SMS collection, and simulated CIBIL reporting. The repo must be runnable, deployable (Vercel + MongoDB Atlas), and include demo scripts and README.
+
+Project brief (one sentence)
+
+Build a beautiful, professional, investor-ready demo app called PaySafe that shows two friends lending to each other, the full loan lifecycle (KYC → escrow → disbursement → repayments → grace blocks → block fees → simulated CIBIL reporting), plus admin controls and a time simulator. All KYC/actions are dummy for demo purposes (Razorpay sandbox optional). Provide a runnable repo with README and demo scripts.
+
+Required tech stack
+
+Frontend: React + TailwindCSS + Headless UI (or similar). Interactivity & responsive layout.
+
+Backend: Node.js + Express (or serverless functions) with a clear API.
+
+Database: MongoDB (Atlas) — if not available, an in-memory fallback should work for demo.
+
+Payments/Escrow (demo): Razorpay sandbox (use your keys if available; otherwise mock).
+
+Mock integrations: MockCIBIL, MockVoIP, MockSMS (local modules).
+
+Repo: GitHub (push-ready). Deployment: Vercel instructions.
+
+Run command: npm install && npm run dev (both frontend & backend with single README).
+
+High-level UX / Visual brief
+
+Palette: Deep navy #0b1540, accent teal #0fb5a6, warm gold #f1c40f, neutral grays.
+
+Typography: Inter or similar, clear hierarchy.
+
+Microinteractions: smooth transitions, toasts, timeline animations.
+
+Key feature: Simulate Time control (fast-forward +10d, +30d, jump to checkpoint) to trigger scheduler logic.
+
+Exportable PDF for loan ledger (downloadable from Loan Detail).
+
+Accessible, responsive, mobile-first friendly.
+
+Demo seed data (create on first run)
+
+Users:
+
+user_a — A (Lender) — phone: +919000000001 — bankMask: DemoBank-1111 — kycStatus: VERIFIED
+
+user_b — B (Borrower) — phone: +919000000002 — bankMask: DemoBank-2222 — kycStatus: VERIFIED
+
+Loan (seeded but in PENDING_BORROWER_ACCEPT status):
+
+loan_1: { loanId: 'loan_1', lenderId: 'user_a', borrowerId: 'user_b', principal: 1000.00, createdAt: day0, termDays: 30, initialPlatformFeeRate: 0.01, blockFeeRate: 0.01, blockMinPercent: 0.20, mainGraceDays: 10, blockLengthDays: 10, blockCount: 4, status: 'PENDING_BORROWER_ACCEPT', escrowStatus: 'FUNDED' }
+
+Pages to build (complete list)
+
+Landing Page — Branding, CTA: Signup / Login.
+
+Signup / Login — Phone/email + mock OTP. On signup set kycStatus = PENDING then redirect to KYC Page.
+
+KYC Page — Dummy inputs: PAN, Aadhaar, Bank Account + IFSC, Selfie upload. Integrate Razorpay sandbox or mock verification. On success set kycStatus = VERIFIED and proceed to Dashboard. (All KYC steps are dummy for demo — see README).
+
+Dashboard — Overview cards: Wallet (demo), Loans Given, Loans Taken, Overdue, Upcoming Checkpoints, CIBIL snapshot. “Simulate Time” control placed prominently.
+
+Lend Money Page / Create Loan Modal — Select friend, amount, show initial 1% fee, Fund in Escrow button (Razorpay sandbox/Mock). Once funded, escrow status FUNDED. Lender cannot cancel once escrow funded.
+
+Borrow Money Page / Pending Offers — Borrower sees loans pending acceptance. Shows full T&C modal (must accept to release funds). Acceptance logs timestamp and flips escrow → RELEASED and loan ACTIVE.
+
+Loan Detail Page — Left summary tile (principal, paid, outstanding, fees paid, status). Middle: interactive timeline with D30, D40, D50, D60, D70, D80 checkpoints. Right: Actions (Make Payment, Simulate Payment for admin), ledger entries, communications log, CIBIL log entry. Payment UI enforces minimums.
+
+Repayment Page — Focused payment UI for borrower: shows required min for current block (minPayment + blockFee) and allows paying >min.
+
+Collection Page — Shows scheduled reminders, call transcripts (MockVoIP), SMS logs (MockSMS). Buttons to play TTS call (or show transcript).
+
+CIBIL Log Page — Shows every mock CIBIL report with loanId, borrower, amountReported, reportedOn, blockNumber.
+
+Admin Panel — Toggle SimulatedCIBIL, AutoReport, Force-run scheduler, advance time controls (+10d, +30d, set absolute day), run manual CIBIL report, view all loans & KYC statuses.
+
+README / Demo Script Page — Embedded short guide with Scenario 1/2/3 scripts for presenter.
+
+Core business rules (exact, server-side)
+
+Constants
+
+INITIAL_PLATFORM_FEE_RATE = 0.01
+BLOCK_FEE_RATE = 0.01
+BLOCK_MIN_PERCENT = 0.20
+TERM_DAYS = 30
+MAIN_GRACE_DAYS = 10
+BLOCK_LENGTH_DAYS = 10
+BLOCK_COUNT = 4
+
+
+Disbursement
+
+On loan creation (Fund in Escrow): charge initial platform fee = round(principal * INITIAL_PLATFORM_FEE_RATE, 2). Record as platform payment. Escrow status = FUNDED. Lender cannot cancel once escrow funded.
+
+Borrower must accept T&C (timestamped). On accept: escrow → release funds → loan status ACTIVE → disbursedAt = now → dueAt = disbursedAt + TERM_DAYS.
+
+Outstanding
+
+outstanding = principal - sum(principalPaymentsMade)
+
+
+Block schedule
+
+DUE = disbursedAt + TERM_DAYS (Day 30)
+
+MAIN_GRACE_END = DUE + MAIN_GRACE_DAYS (Day 40) — first checkpoint at Day 40
+
+Subsequent checkpoints: Day 50, 60, 70, 80 (BLOCK_COUNT = 4 additional blocks after main grace; treat main grace end as first checkpoint)
+
+At start of each block (evaluation point at block end)
+
+fee = round(outstanding * BLOCK_FEE_RATE, 2) — fee applied on outstanding at start of block
+
+minPayment = round(outstanding * BLOCK_MIN_PERCENT, 2)
+
+requiredTotal = minPayment + fee
+
+Payments made during that block count toward satisfying it. If paidDuringBlock >= requiredTotal → block satisfied and ledger records principal & fee accordingly. Else → BLOCK DEFAULT → report outstanding (principal only) to MockCIBIL and set loan.status = DEFAULT_REPORTED.
+
+Payments
+
+Payments can be any amount. To mark block satisfied, must meet requiredTotal. Payment allocation: first apply to fees then to principal. If overpayment, reduce outstanding accordingly. Always persist ledger entries with type = principal or fee.
+
+CIBIL reporting
+
+On block default, call MockCIBIL API:
+
+POST /mock-cibil/report body: { loanId, borrowerId, amountReported = outstanding, reportedAt, blockNumber }
+
+Store returned entry in cibilReports collection and display on UI.
+
+Non-cancelable clause
+
+Backend must reject any cancel/waive operation if escrowStatus === 'RELEASED' or loan.status !== 'PENDING_BORROWER_ACCEPT' for cancels when FUNDED. Lender cannot cancel after funds are released either.
+
+Scheduler
+
+Runs daily (demo: triggered by Simulate Time). On scheduler run:
+
+For each ACTIVE loan, check if any block end dates reached since last run, apply fees (create fee ledger entries) and evaluate block; if default, trigger MockCIBIL and communications.
+
+Mock services (must be included)
+
+MockCIBIL
+
+Endpoint: POST /api/mock-cibil/report (stores report in DB).
+
+Admin UI to toggle Simulated vs Real (Real shows placeholders for real CIC integration steps).
+
+MockVoIP
+
+On scheduled reminder or on block end, create call transcript:
+
+Template: "Hello {borrower.name}, this is PaySafe reminder. Outstanding: ₹{outstanding}. Minimum due this block: ₹{minPayment}. If unpaid by {blockEndDate}, your remaining outstanding may be reported to CIBIL."
+
+Provide a “Play Call” button that displays transcript and a faux audio player (optional TTS file).
+
+MockSMS
+
+Store SMS logs per loan. Show in communications area.
+
+Razorpay Sandbox Integration (optional)
+
+Use Razorpay sandbox for demo payments if keys provided. Otherwise mock the flow: fundEscrow returns success and marks escrow FUNDED. disburse marks escrow RELEASED.
+
+Data model (MongoDB collections)
+
+users { _id, id, name, phone, email, bankMask, kycStatus, kycData (masked), createdAt }
+
+loans { _id, id, lenderId, borrowerId, principal, createdAt, disbursedAt, dueAt, status, escrowStatus, initialPlatformFee, feesAccrued:[], payments:[], ledger:[], blockHistory:[] }
+
+payments { id, loanId, payerId, amount, date, type: 'platform'|'fee'|'principal', txRef }
+
+cibilReports { id, loanId, borrowerId, amountReported, reportedAt, blockNumber }
+
+communications { id, loanId, type: 'sms'|'call', template, transcript, sentAt, status }
+
+settings { initialFeeRate, blockFeeRate, blockMinPercent, termDays, mainGraceDays, blockLengthDays, blockCount }
+
+auditLog { id, userId, action, timestamp, details }
+
+UI/UX components (explicit)
+
+Landing / Auth
+
+KYC form modal & status badge
+
+Dashboard (cards + timeline)
+
+Create Loan modal (amount, friend selector, fee breakdown, Fund in Escrow CTA)
+
+Pending Offers (Borrower view)
+
+Terms & Conditions modal (mandatory acceptance, timestamped)
+
+Loan Detail (summary, timeline, ledger, make payment)
+
+Payment modal (Razorpay sandbox or mock)
+
+Communications panel (SMS/call transcripts)
+
+Admin Panel (simulate time, run scheduler, toggle cibil, view logs)
+
+CIBIL Log (table with export)
+
+PDF Export (one-page Loan Summary)
+
+Demo scenarios & scripts (to include in README)
+
+Scenario A — Happy path
+
+A signs up + KYC (demo), B signs up + KYC.
+
+A creates loan ₹1000 to B — funds escrow via Razorpay sandbox or mock. Initial platform fee ₹10 recorded.
+
+B accepts T&C → funds released.
+
+Advance time to Day 25 (via Simulate Time) → B pays full ₹1000 → loan closed. No CIBIL entries.
+
+Scenario B — Partial payments then default
+
+Same initial steps.
+
+Advance to Day 40 — block 1 end. If B hasn't paid, apply 1% fee on outstanding (₹10). Required: ₹200 + ₹10. B pays required → outstanding 800.
+
+Advance to Day 50 — block 2 end. If B misses payment, scheduler triggers MockCIBIL with reportedAmount = 800. CIBIL Log shows entry.
+
+Scenario C — Multiple partials and last block default
+
+Demonstrate defaults at different blocks and show reported outstanding at each block.
+
+Include exact numbers and ledger verification steps (as in earlier examples).
+
+Acceptance criteria (what Cursor must output)
+
+Full runnable repository with frontend & backend and README.md containing setup, env vars, demo scripts, and deployment steps (Vercel + MongoDB Atlas + optional Razorpay sandbox keys).
+
+KYC flow displayed and toggles for dummy verification (Razorpay sandbox or mock). KYC for both users in seed data should be VERIFIED unless intentionally set otherwise.
+
+All business logic implemented server-side (not only client validation). Unit-test-like demo checks where possible.
+
+Scheduler with manual admin triggers and Simulate Time controls.
+
+MockCIBIL, MockVoIP, MockSMS implemented and visible in UI logs.
+
+Lender cannot cancel loan once escrow funded and cannot waive repayment after release (attempts return errors).
+
+Payment allocation logic correct (fees then principal), fees logged separately. Money math uses two decimals.
+
+Exportable Loan Summary PDF generator (one-click).
+
+Lightweight, modern UI following visual brief.
+
+README + Demo Script page with exact presenter steps.
+
+Environment variables (README must instruct)
+
+MONGODB_URI (Atlas or local)
+
+RAZORPAY_KEY_ID & RAZORPAY_KEY_SECRET (optional; demo will fallback to mock)
+
+JWT_SECRET (for auth)
+
+NODE_ENV
+
+VERCEL instructions for frontend & serverless if deploying
+
+Developer notes / implementation tips
+
+All monetary calculations should use integers (paisa) or decimal with two decimals to avoid floating point errors. Always round to 2 decimal places for display.
+
+Keep a clear ledger for each transaction (separate entries for principal payments and fees).
+
+Do not compound block fees into principal — record them as separate fee ledger entries.
+
+Provide robust logging for scheduler and admin actions.
+
+Mock external calls with clear placeholders/comments showing where real integrations go.
+
+Make the T&C acceptance immutable, store IP/user agent and timestamp.
+
+Deliverables
+
+Full repo (frontend + backend) with npm scripts: dev, build, start.
+
+README with setup, demo script, and deployment instructions.
+
+Example exports: Loan Summary PDF, CIBIL Log CSV.
+
+Minimal unit/integration checks for block evaluation logic (optional but recommended).
+
+Tone for UI copy
+
+Friendly, firm, clear. Use simple language for users; slightly formal for legal messages (T&C). Example:
+
+CTA: Fund in Escrow / Accept & Receive / Make Payment
+
+Alert: Important: Failure to meet the minimum payment by the last day of a 10-day block may result in reporting of the remaining outstanding principal to credit bureaus.
+
+Final note to developer
+
+This is a demo-first project. Everything that would require real banking/identity integrations should be mocked and clearly labeled as Demo/Mock. However, the demo must convincingly simulate the full compliance workflow (KYC → escrow → T&C acceptance → scheduled fees → reporting). Include clear comments and a migration path in README on how to swap mocks for real integrations (Razorpay, CIC APIs, eKYC providers).

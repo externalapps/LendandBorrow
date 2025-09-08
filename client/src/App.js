@@ -1,0 +1,231 @@
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { LoanProvider } from './contexts/LoanContext';
+
+// Components
+import Navbar from './components/Navbar';
+import LoadingSpinner from './components/LoadingSpinner';
+
+// Pages
+import Landing from './pages/Landing';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Dashboard from './pages/Dashboard';
+import KYC from './pages/KYC';
+import LendMoney from './pages/LendMoney';
+import BorrowMoney from './pages/BorrowMoney';
+import LoanDetail from './pages/LoanDetail';
+import Repayment from './pages/Repayment';
+import Collection from './pages/Collection';
+import CibilLog from './pages/CibilLog';
+import AdminPanel from './pages/AdminPanel';
+import Profile from './pages/Profile';
+import NotFound from './pages/NotFound';
+
+// Protected Route Component
+const ProtectedRoute = ({ children, adminOnly = false }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (adminOnly && !['admin@paysafe.com', 'demo@paysafe.com'].includes(user.email)) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return children;
+};
+
+// Public Route Component (redirect if authenticated)
+const PublicRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
+  if (user) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return children;
+};
+
+function AppContent() {
+  const { user } = useAuth();
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {user && <Navbar />}
+      
+      <main className={user ? 'pt-16' : ''}>
+        <Routes>
+          {/* Public Routes */}
+          <Route 
+            path="/" 
+            element={
+              <PublicRoute>
+                <Landing />
+              </PublicRoute>
+            } 
+          />
+          <Route 
+            path="/login" 
+            element={
+              <PublicRoute>
+                <Login />
+              </PublicRoute>
+            } 
+          />
+          <Route 
+            path="/register" 
+            element={
+              <PublicRoute>
+                <Register />
+              </PublicRoute>
+            } 
+          />
+
+          {/* Protected Routes */}
+          <Route 
+            path="/dashboard" 
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/kyc" 
+            element={
+              <ProtectedRoute>
+                <KYC />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/lend" 
+            element={
+              <ProtectedRoute>
+                <LendMoney />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/borrow" 
+            element={
+              <ProtectedRoute>
+                <BorrowMoney />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/loan/:loanId" 
+            element={
+              <ProtectedRoute>
+                <LoanDetail />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/repayment/:loanId" 
+            element={
+              <ProtectedRoute>
+                <Repayment />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/collection/:loanId" 
+            element={
+              <ProtectedRoute>
+                <Collection />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/cibil" 
+            element={
+              <ProtectedRoute>
+                <CibilLog />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/profile" 
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            } 
+          />
+
+          {/* Admin Routes */}
+          <Route 
+            path="/admin" 
+            element={
+              <ProtectedRoute adminOnly={true}>
+                <AdminPanel />
+              </ProtectedRoute>
+            } 
+          />
+
+          {/* 404 Route */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </main>
+
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            duration: 3000,
+            iconTheme: {
+              primary: '#10b981',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            duration: 5000,
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <LoanProvider>
+        <Router
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true
+          }}
+        >
+          <AppContent />
+        </Router>
+      </LoanProvider>
+    </AuthProvider>
+  );
+}
+
+export default App;
+
