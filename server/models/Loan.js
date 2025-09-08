@@ -42,7 +42,6 @@ const loanSchema = new mongoose.Schema({
   },
   lenderId: {
     type: String,
-    required: true,
     ref: 'User'
   },
   borrowerId: {
@@ -64,6 +63,7 @@ const loanSchema = new mongoose.Schema({
   status: {
     type: String,
     enum: [
+      'LOAN_REQUEST',
       'PENDING_BORROWER_ACCEPT',
       'ACTIVE',
       'COMPLETED',
@@ -94,7 +94,13 @@ const loanSchema = new mongoose.Schema({
   termsAcceptedAt: Date,
   termsAcceptedBy: String,
   termsAcceptedIP: String,
-  termsAcceptedUserAgent: String
+  termsAcceptedUserAgent: String,
+  purpose: String,
+  repaymentPlan: String,
+  kycVerified: {
+    type: Boolean,
+    default: false
+  }
 });
 
 // Virtual for outstanding amount

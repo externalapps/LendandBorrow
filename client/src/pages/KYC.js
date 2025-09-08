@@ -400,3 +400,4 @@ const KYC = () => {
 export default KYC;
 
 
+

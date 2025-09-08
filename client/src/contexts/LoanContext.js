@@ -176,6 +176,44 @@ export const LoanProvider = ({ children }) => {
     }
   };
 
+  const requestLoan = async (loanRequest) => {
+    try {
+      const response = await api.post('/loans/request', loanRequest);
+      toast.success('Loan request submitted successfully!');
+      await fetchLoans();
+      await fetchDashboardData();
+      return response.data.loanRequest;
+    } catch (error) {
+      const message = error.response?.data?.error?.message || 'Failed to submit loan request';
+      toast.error(message);
+      throw error;
+    }
+  };
+  
+  const getLoanRequests = async () => {
+    try {
+      const response = await api.get('/loans/requests');
+      return response.data.loanRequests;
+    } catch (error) {
+      console.error('Fetch loan requests error:', error);
+      return [];
+    }
+  };
+  
+  const acceptLoanRequest = async (requestId) => {
+    try {
+      const response = await api.post(`/loans/requests/${requestId}/accept`);
+      toast.success('Loan request accepted successfully!');
+      await fetchLoans();
+      await fetchDashboardData();
+      return response.data.loan;
+    } catch (error) {
+      const message = error.response?.data?.error?.message || 'Failed to accept loan request';
+      toast.error(message);
+      throw error;
+    }
+  };
+
   const value = {
     loans,
     dashboardData,
@@ -191,7 +229,10 @@ export const LoanProvider = ({ children }) => {
     getPendingOffers,
     getPaymentRequirements,
     getLoanLedger,
-    getLoanBlocks
+    getLoanBlocks,
+    requestLoan,
+    getLoanRequests,
+    acceptLoanRequest
   };
 
   return (
@@ -200,5 +241,6 @@ export const LoanProvider = ({ children }) => {
     </LoanContext.Provider>
   );
 };
+
 
 

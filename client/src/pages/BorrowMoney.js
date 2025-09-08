@@ -4,12 +4,13 @@ import { useAuth } from '../contexts/AuthContext';
 import { useLoan } from '../contexts/LoanContext';
 import { 
   CurrencyDollarIcon, 
-  ClockIcon, 
   ExclamationTriangleIcon,
   CheckCircleIcon,
-  XMarkIcon
+  XMarkIcon,
+  DocumentTextIcon
 } from '@heroicons/react/24/outline';
 import LoadingSpinner from '../components/LoadingSpinner';
+import LoanRequestForm from '../components/LoanRequestForm';
 import toast from 'react-hot-toast';
 
 const BorrowMoney = () => {
@@ -109,6 +110,26 @@ const BorrowMoney = () => {
             Borrow Money
           </h1>
           <p className="text-gray-600">
+            Request loans or review pending offers from friends
+          </p>
+        </div>
+
+        {/* Loan Request Form */}
+        <div className="mb-12">
+          <LoanRequestForm 
+            onRequestSubmitted={() => {
+              toast.success('Your loan request has been submitted!');
+              fetchPendingOffers();
+            }}
+          />
+        </div>
+
+        {/* Pending Offers Section */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            Pending Loan Offers
+          </h2>
+          <p className="text-gray-600 mb-6">
             Review and accept loan offers from your friends
           </p>
         </div>

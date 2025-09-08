@@ -62,3 +62,4 @@ const settingsSchema = new mongoose.Schema({
 module.exports = mongoose.model('Settings', settingsSchema);
 
 
+

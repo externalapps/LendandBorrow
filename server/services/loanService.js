@@ -396,6 +396,100 @@ class LoanService {
     }
   }
 
+  // Create a loan request
+  static async createLoanRequest(borrowerId, principal, purpose, repaymentPlan, req) {
+    try {
+      // Validate inputs
+      if (!borrowerId || !principal || principal <= 0) {
+        throw new Error('Invalid loan request parameters');
+      }
+
+      if (!purpose || !repaymentPlan) {
+        throw new Error('Purpose and repayment plan are required');
+      }
+
+      // Create loan request
+      const loanRequest = new Loan({
+        id: uuidv4(),
+        borrowerId,
+        principal,
+        purpose,
+        repaymentPlan,
+        status: 'LOAN_REQUEST',
+        escrowStatus: 'PENDING'
+      });
+
+      // Calculate initial platform fee
+      const initialPlatformFee = Math.round(principal * INITIAL_PLATFORM_FEE_RATE * 100) / 100;
+      loanRequest.initialPlatformFee = initialPlatformFee;
+
+      await loanRequest.save();
+
+      // Log audit
+      await this.logAudit(borrowerId, 'LOAN_REQUEST_CREATED', { 
+        loanId: loanRequest.id, 
+        principal, 
+        purpose: purpose.substring(0, 50) // Truncate for audit log
+      }, req);
+
+      return loanRequest;
+    } catch (error) {
+      console.error('Create loan request error:', error);
+      throw error;
+    }
+  }
+
+  // Get pending loan requests
+  static async getPendingLoanRequests() {
+    try {
+      const loanRequests = await Loan.find({
+        status: 'LOAN_REQUEST',
+        escrowStatus: 'PENDING'
+      }).sort({ createdAt: -1 });
+      
+      return loanRequests;
+    } catch (error) {
+      console.error('Get pending loan requests error:', error);
+      throw error;
+    }
+  }
+
+  // Accept loan request (by lender)
+  static async acceptLoanRequest(loanRequestId, lenderId, req) {
+    try {
+      const loanRequest = await Loan.findOne({ 
+        id: loanRequestId, 
+        status: 'LOAN_REQUEST' 
+      });
+      
+      if (!loanRequest) {
+        throw new Error('Loan request not found');
+      }
+
+      if (lenderId === loanRequest.borrowerId) {
+        throw new Error('Cannot lend to yourself');
+      }
+
+      // Update loan request to a loan
+      loanRequest.lenderId = lenderId;
+      loanRequest.status = 'PENDING_BORROWER_ACCEPT';
+      
+      await loanRequest.save();
+
+      // Log audit
+      await this.logAudit(lenderId, 'LOAN_REQUEST_ACCEPTED', { 
+        loanId: loanRequest.id, 
+        borrowerId: loanRequest.borrowerId,
+        principal: loanRequest.principal
+      }, req);
+
+      return loanRequest;
+    } catch (error) {
+      console.error('Accept loan request error:', error);
+      throw error;
+    }
+  }
+
   // Cancel loan (only if not funded)
   static async cancelLoan(loanId, userId, req) {
     try {
@@ -450,5 +544,6 @@ class LoanService {
 }
 
 module.exports = LoanService;
+
 
 

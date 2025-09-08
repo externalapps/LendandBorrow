@@ -2,6 +2,7 @@ const express = require('express');
 const LoanService = require('../services/loanService');
 const Loan = require('../models/Loan');
 const { auth } = require('../middleware/auth');
+const User = require('../models/User');
 
 const router = express.Router();
 
@@ -283,6 +284,86 @@ router.get('/:loanId/blocks', auth, async (req, res) => {
   } catch (error) {
     console.error('Get blocks error:', error);
     res.status(500).json({ error: { message: 'Failed to fetch blocks' } });
+  }
+});
+
+// Create a loan request
+router.post('/request', auth, async (req, res) => {
+  try {
+    const { principal, purpose, repaymentPlan } = req.body;
+    const borrowerId = req.user.id;
+
+    if (!principal || principal <= 0) {
+      return res.status(400).json({ error: { message: 'Invalid loan amount' } });
+    }
+
+    if (!purpose || !repaymentPlan) {
+      return res.status(400).json({ error: { message: 'Purpose and repayment plan are required' } });
+    }
+
+    // Create a loan request in pending state
+    const loanRequest = await LoanService.createLoanRequest(borrowerId, principal, purpose, repaymentPlan, req);
+    
+    res.status(201).json({
+      message: 'Loan request created successfully',
+      loanRequest
+    });
+  } catch (error) {
+    console.error('Create loan request error:', error);
+    res.status(500).json({ error: { message: error.message || 'Failed to create loan request' } });
+  }
+});
+
+// Accept a loan request (by lender)
+router.post('/requests/:requestId/accept', auth, async (req, res) => {
+  try {
+    const lenderId = req.user.id;
+    const requestId = req.params.requestId;
+    
+    const loan = await LoanService.acceptLoanRequest(requestId, lenderId, req);
+    
+    res.json({
+      message: 'Loan request accepted successfully',
+      loan
+    });
+  } catch (error) {
+    console.error('Accept loan request error:', error);
+    res.status(500).json({ error: { message: error.message || 'Failed to accept loan request' } });
+  }
+});
+
+// Get loan requests available for lenders
+router.get('/requests', auth, async (req, res) => {
+  try {
+    // Get all pending loan requests
+    const loanRequests = await LoanService.getPendingLoanRequests();
+    
+    // Manually populate user data
+    const borrowerIds = [...new Set(loanRequests.map(request => request.borrowerId))];
+    const borrowers = await User.find({ id: { $in: borrowerIds } });
+    
+    const borrowerMap = {};
+    borrowers.forEach(user => {
+      borrowerMap[user.id] = {
+        id: user.id,
+        name: user.name,
+        phone: user.phone,
+        email: user.email,
+        kycVerified: user.kycVerified || false
+      };
+    });
+    
+    // Attach borrower data to requests
+    const populatedRequests = loanRequests.map(request => {
+      const requestObj = request.toObject ? request.toObject() : request;
+      requestObj.borrower = borrowerMap[request.borrowerId] || { id: request.borrowerId };
+      return requestObj;
+    });
+
+    res.json({ loanRequests: populatedRequests });
+  } catch (error) {
+    console.error('Get loan requests error:', error);
+    res.status(500).json({ error: { message: 'Failed to fetch loan requests' } });
   }
 });
 

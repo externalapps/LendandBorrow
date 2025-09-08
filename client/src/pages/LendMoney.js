@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLoan } from '../contexts/LoanContext';
 import { 
@@ -6,10 +6,12 @@ import {
   CalculatorIcon,
   ShieldCheckIcon,
   ArrowRightIcon,
-  PhoneIcon
+  PhoneIcon,
+  DocumentTextIcon
 } from '@heroicons/react/24/outline';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ContactSelector from '../components/ContactSelector';
+import LoanRequestsList from '../components/LoanRequestsList';
 import toast from 'react-hot-toast';
 
 const LendMoney = () => {
@@ -19,9 +21,30 @@ const LendMoney = () => {
   const [errors, setErrors] = useState({});
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [loanDetails, setLoanDetails] = useState(null);
+  const [activeTab, setActiveTab] = useState('direct'); // 'direct' or 'requests'
+  const [loanRequests, setLoanRequests] = useState([]);
+  const [loadingRequests, setLoadingRequests] = useState(false);
 
-  const { createLoan, fundEscrow } = useLoan();
+  const { createLoan, fundEscrow, getLoanRequests } = useLoan();
   const navigate = useNavigate();
+  
+  useEffect(() => {
+    if (activeTab === 'requests') {
+      fetchLoanRequests();
+    }
+  }, [activeTab]);
+  
+  const fetchLoanRequests = async () => {
+    setLoadingRequests(true);
+    try {
+      const requests = await getLoanRequests();
+      setLoanRequests(requests);
+    } catch (error) {
+      console.error('Error fetching loan requests:', error);
+    } finally {
+      setLoadingRequests(false);
+    }
+  };
 
   const calculateFees = (principal) => {
     const platformFee = Math.round(principal * 0.01 * 100) / 100; // 1% platform fee
@@ -106,21 +129,50 @@ const LendMoney = () => {
             Lend Money
           </h1>
           <p className="text-gray-600">
-            Create a loan for a friend and fund it in escrow
+            Create a loan for a friend or respond to loan requests
           </p>
         </div>
+        
+        {/* Tabs */}
+        <div className="mb-8">
+          <div className="border-b border-gray-200">
+            <nav className="flex -mb-px">
+              <button
+                onClick={() => setActiveTab('direct')}
+                className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
+                  activeTab === 'direct'
+                    ? 'border-teal-500 text-teal-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Direct Lending
+              </button>
+              <button
+                onClick={() => setActiveTab('requests')}
+                className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
+                  activeTab === 'requests'
+                    ? 'border-teal-500 text-teal-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Loan Requests
+              </button>
+            </nav>
+          </div>
+        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Loan Form */}
-          <div className="lg:col-span-2">
-            <div className="card">
-              <div className="card-header">
-                <h2 className="text-xl font-semibold text-gray-900">
-                  Create New Loan
-                </h2>
-              </div>
-              <div className="card-body">
-                <form onSubmit={handleSubmit} className="space-y-6">
+        {activeTab === 'direct' ? (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Loan Form */}
+            <div className="lg:col-span-2">
+              <div className="card">
+                <div className="card-header">
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    Create New Loan
+                  </h2>
+                </div>
+                <div className="card-body">
+                  <form onSubmit={handleSubmit} className="space-y-6">
                   {/* Select Friend */}
                   <div>
                     <label className="form-label">
@@ -284,6 +336,29 @@ const LendMoney = () => {
             </div>
           </div>
         </div>
+        ) : (
+          <div>
+            <div className="card">
+              <div className="card-header">
+                <h2 className="text-xl font-semibold text-gray-900">
+                  Pending Loan Requests
+                </h2>
+                <p className="text-sm text-gray-600 mt-1">
+                  Review and accept loan requests from borrowers
+                </p>
+              </div>
+              <div className="card-body">
+                <LoanRequestsList 
+                  loanRequests={loanRequests}
+                  loading={loadingRequests}
+                  onRequestAccepted={() => {
+                    fetchLoanRequests();
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Confirmation Modal */}
         {showConfirmModal && (
