@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useLoan } from '../contexts/LoanContext';
 import { 
-  CurrencyDollarIcon, 
+  BanknotesIcon, 
   DocumentTextIcon,
   ArrowRightIcon,
   CheckCircleIcon
@@ -34,8 +34,8 @@ const LoanRequestForm = ({ onRequestSubmitted }) => {
       newErrors.amount = 'Please enter a valid amount';
     } else if (amount < 100) {
       newErrors.amount = 'Minimum loan amount is ₹100';
-    } else if (amount > 100000) {
-      newErrors.amount = 'Maximum loan amount is ₹1,00,000';
+    } else if (amount > 50000) {
+      newErrors.amount = 'Maximum loan amount is ₹50,000';
     }
 
     if (!purpose.trim()) {
@@ -163,25 +163,22 @@ const LoanRequestForm = ({ onRequestSubmitted }) => {
             <label htmlFor="amount" className="form-label">
               Loan Amount (₹)
             </label>
-            <div className="relative">
-              <CurrencyDollarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                id="amount"
-                type="number"
-                min="100"
-                max="100000"
-                step="1"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className={`form-input pl-10 ${errors.amount ? 'border-red-500' : ''}`}
-                placeholder="Enter loan amount"
-              />
-            </div>
+            <input
+              id="amount"
+              type="number"
+              min="100"
+              max="50000"
+              step="1"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className={`form-input ${errors.amount ? 'border-red-500' : ''}`}
+              placeholder="Enter loan amount"
+            />
             {errors.amount && (
               <p className="form-error">{errors.amount}</p>
             )}
             <p className="text-sm text-gray-500 mt-1">
-              Minimum: ₹100 | Maximum: ₹1,00,000
+              Minimum: ₹100 | Maximum: ₹50,000
             </p>
           </div>
 
@@ -190,17 +187,14 @@ const LoanRequestForm = ({ onRequestSubmitted }) => {
             <label htmlFor="purpose" className="form-label">
               Loan Purpose
             </label>
-            <div className="relative">
-              <DocumentTextIcon className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-              <textarea
-                id="purpose"
-                value={purpose}
-                onChange={(e) => setPurpose(e.target.value)}
-                className={`form-input pl-10 ${errors.purpose ? 'border-red-500' : ''}`}
-                placeholder="Explain why you need this loan"
-                rows={3}
-              />
-            </div>
+            <textarea
+              id="purpose"
+              value={purpose}
+              onChange={(e) => setPurpose(e.target.value)}
+              className={`form-input ${errors.purpose ? 'border-red-500' : ''}`}
+              placeholder="Explain why you need this loan"
+              rows={3}
+            />
             {errors.purpose && (
               <p className="form-error">{errors.purpose}</p>
             )}
@@ -211,17 +205,14 @@ const LoanRequestForm = ({ onRequestSubmitted }) => {
             <label htmlFor="repaymentPlan" className="form-label">
               Repayment Plan
             </label>
-            <div className="relative">
-              <DocumentTextIcon className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-              <textarea
-                id="repaymentPlan"
-                value={repaymentPlan}
-                onChange={(e) => setRepaymentPlan(e.target.value)}
-                className={`form-input pl-10 ${errors.repaymentPlan ? 'border-red-500' : ''}`}
-                placeholder="Describe how you plan to repay this loan"
-                rows={3}
-              />
-            </div>
+            <textarea
+              id="repaymentPlan"
+              value={repaymentPlan}
+              onChange={(e) => setRepaymentPlan(e.target.value)}
+              className={`form-input ${errors.repaymentPlan ? 'border-red-500' : ''}`}
+              placeholder="Describe how you plan to repay this loan"
+              rows={3}
+            />
             {errors.repaymentPlan && (
               <p className="form-error">{errors.repaymentPlan}</p>
             )}

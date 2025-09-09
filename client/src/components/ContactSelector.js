@@ -72,16 +72,13 @@ const ContactSelector = ({ onSelectContact, selectedContact, onClear }) => {
     <div className="relative">
       {/* Input Field */}
       <div className="relative">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
-        </div>
         <input
           type="text"
           value={selectedContact ? selectedContact.name : searchTerm}
           onChange={handleInputChange}
           onFocus={handleInputFocus}
           placeholder="Search contacts or enter phone number"
-          className="form-input pl-10 pr-10"
+          className="form-input pr-10"
         />
         {selectedContact && (
           <button

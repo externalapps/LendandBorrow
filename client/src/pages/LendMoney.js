@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLoan } from '../contexts/LoanContext';
 import { 
-  CurrencyDollarIcon, 
+  BanknotesIcon, 
   CalculatorIcon,
   ShieldCheckIcon,
   ArrowRightIcon,
@@ -63,8 +63,8 @@ const LendMoney = () => {
       newErrors.amount = 'Please enter a valid amount';
     } else if (amount < 100) {
       newErrors.amount = 'Minimum loan amount is ₹100';
-    } else if (amount > 100000) {
-      newErrors.amount = 'Maximum loan amount is ₹1,00,000';
+    } else if (amount > 50000) {
+      newErrors.amount = 'Maximum loan amount is ₹50,000';
     }
 
     setErrors(newErrors);
@@ -196,25 +196,22 @@ const LendMoney = () => {
                     <label htmlFor="amount" className="form-label">
                       Loan Amount (₹)
                     </label>
-                    <div className="relative">
-                      <CurrencyDollarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <input
-                        id="amount"
-                        type="number"
-                        min="100"
-                        max="100000"
-                        step="1"
-                        value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
-                        className={`form-input pl-10 ${errors.amount ? 'border-red-500' : ''}`}
-                        placeholder="Enter loan amount"
-                      />
-                    </div>
+                    <input
+                      id="amount"
+                      type="number"
+                      min="100"
+                        max="50000"
+                      step="1"
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                      className={`form-input ${errors.amount ? 'border-red-500' : ''}`}
+                      placeholder="Enter amount"
+                    />
                     {errors.amount && (
                       <p className="form-error">{errors.amount}</p>
                     )}
                     <p className="text-sm text-gray-500 mt-1">
-                      Minimum: ₹100 | Maximum: ₹1,00,000
+                      Minimum: ₹100 | Maximum: ₹50,000
                     </p>
                   </div>
 
@@ -296,18 +293,20 @@ const LendMoney = () => {
                     </div>
 
                     <div className="border-t pt-4">
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Principal Amount:</span>
-                          <span className="font-medium">₹{parseFloat(amount).toLocaleString()}</span>
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-600">Principal Amount</span>
+                          <span className="font-semibold text-gray-900">₹{parseFloat(amount).toLocaleString()}</span>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Platform Fee (1%):</span>
-                          <span className="font-medium">₹{calculateFees(parseFloat(amount)).platformFee.toLocaleString()}</span>
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-600">Platform Fee (1%)</span>
+                          <span className="font-semibold text-gray-900">₹{calculateFees(parseFloat(amount)).platformFee.toLocaleString()}</span>
                         </div>
-                        <div className="flex justify-between border-t pt-2">
-                          <span className="font-medium text-gray-900">Total to Fund:</span>
-                          <span className="font-bold text-lg">₹{calculateFees(parseFloat(amount)).totalAmount.toLocaleString()}</span>
+                        <div className="border-t border-gray-200 pt-3">
+                          <div className="flex justify-between items-center">
+                            <span className="font-semibold text-gray-900">Total to Fund</span>
+                            <span className="font-bold text-xl text-teal-600">₹{calculateFees(parseFloat(amount)).totalAmount.toLocaleString()}</span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -383,17 +382,19 @@ const LendMoney = () => {
                     </div>
                   </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Principal:</span>
-                  <span className="font-medium">₹{loanDetails.principal.toLocaleString()}</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Principal Amount</span>
+                  <span className="font-semibold text-gray-900">₹{loanDetails.principal.toLocaleString()}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Platform Fee:</span>
-                  <span className="font-medium">₹{loanDetails.platformFee.toLocaleString()}</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Platform Fee (1%)</span>
+                  <span className="font-semibold text-gray-900">₹{loanDetails.platformFee.toLocaleString()}</span>
                 </div>
-                <div className="flex justify-between border-t pt-2">
-                  <span className="font-medium">Total to Fund:</span>
-                  <span className="font-bold text-lg">₹{loanDetails.totalAmount.toLocaleString()}</span>
+                <div className="border-t border-gray-200 pt-3">
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold text-gray-900">Total to Fund</span>
+                    <span className="font-bold text-xl text-teal-600">₹{loanDetails.totalAmount.toLocaleString()}</span>
+                  </div>
                 </div>
               </div>
 

@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useLoan } from '../contexts/LoanContext';
 import { 
-  CurrencyDollarIcon, 
+  BanknotesIcon, 
   CalculatorIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
@@ -247,20 +247,17 @@ const Repayment = () => {
                     <label htmlFor="amount" className="form-label">
                       Payment Amount (₹)
                     </label>
-                    <div className="relative">
-                      <CurrencyDollarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <input
-                        id="amount"
-                        type="number"
-                        min={paymentRequirements.minPayment}
-                        max={paymentRequirements.outstanding + paymentRequirements.blockFee}
-                        step="0.01"
-                        value={amount}
-                        onChange={handleAmountChange}
-                        className={`form-input pl-10 ${errors.amount ? 'border-red-500' : ''}`}
-                        placeholder="Enter payment amount"
-                      />
-                    </div>
+                    <input
+                      id="amount"
+                      type="number"
+                      min={paymentRequirements.minPayment}
+                      max={paymentRequirements.outstanding + paymentRequirements.blockFee}
+                      step="0.01"
+                      value={amount}
+                      onChange={handleAmountChange}
+                      className={`form-input ${errors.amount ? 'border-red-500' : ''}`}
+                      placeholder="Enter amount"
+                    />
                     {errors.amount && (
                       <p className="form-error">{errors.amount}</p>
                     )}
@@ -414,6 +411,9 @@ const Repayment = () => {
 };
 
 export default Repayment;
+
+
+
 
 
 

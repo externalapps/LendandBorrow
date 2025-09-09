@@ -37,10 +37,13 @@ router.get('/', auth, async (req, res) => {
       $or: [{ lenderId: userId }, { borrowerId: userId }]
     };
 
+    // Exclude LOAN_REQUEST status from main loans list - these should only show in loan requests
+    query.status = { $ne: 'LOAN_REQUEST' };
+
     if (type === 'lent') {
-      query = { lenderId: userId };
+      query = { lenderId: userId, status: { $ne: 'LOAN_REQUEST' } };
     } else if (type === 'borrowed') {
-      query = { borrowerId: userId };
+      query = { borrowerId: userId, status: { $ne: 'LOAN_REQUEST' } };
     }
 
     if (status) {
@@ -79,6 +82,44 @@ router.get('/', auth, async (req, res) => {
   } catch (error) {
     console.error('Get loans error:', error);
     res.status(500).json({ error: { message: 'Failed to fetch loans' } });
+  }
+});
+
+// Get loan requests available for lenders
+router.get('/requests', auth, async (req, res) => {
+  try {
+    // Get pending loan requests directed to the current user (lender)
+    const loanRequests = await LoanService.getPendingLoanRequests(req.user.id);
+    
+    // Manually populate user data
+    const borrowerIds = [...new Set(loanRequests.map(request => request.borrowerId))];
+    console.log('🔍 Looking for borrowers with IDs:', borrowerIds);
+    
+    const borrowers = await User.find({ id: { $in: borrowerIds } });
+    console.log('👥 Found borrowers:', borrowers.map(b => ({ id: b.id, name: b.name })));
+    
+    const borrowerMap = {};
+    borrowers.forEach(user => {
+      borrowerMap[user.id] = {
+        id: user.id,
+        name: user.name,
+        phone: user.phone,
+        email: user.email,
+        kycVerified: user.kycStatus === 'VERIFIED'
+      };
+    });
+    
+    // Attach borrower data to requests
+    const populatedRequests = loanRequests.map(request => {
+      const requestObj = request.toObject ? request.toObject() : request;
+      requestObj.borrower = borrowerMap[request.borrowerId] || { id: request.borrowerId };
+      return requestObj;
+    });
+
+    res.json({ loanRequests: populatedRequests });
+  } catch (error) {
+    console.error('Get loan requests error:', error);
+    res.status(500).json({ error: { message: 'Failed to fetch loan requests' } });
   }
 });
 
@@ -309,7 +350,7 @@ router.post('/request', auth, async (req, res) => {
       return res.status(400).json({ error: { message: 'KYC verification is required' } });
     }
 
-    // Create a loan request in pending state
+    // Create a loan request in pending state for the specific lender
     const loanRequest = await LoanService.createLoanRequest(borrowerId, principal, purpose, repaymentPlan, lenderId, kycData, req);
     
     res.status(201).json({
@@ -322,7 +363,7 @@ router.post('/request', auth, async (req, res) => {
   }
 });
 
-// Accept a loan request (by lender)
+// Accept a loan request (by lender) - moves to PENDING_PAYMENT status
 router.post('/requests/:requestId/accept', auth, async (req, res) => {
   try {
     const lenderId = req.user.id;
@@ -331,7 +372,7 @@ router.post('/requests/:requestId/accept', auth, async (req, res) => {
     const loan = await LoanService.acceptLoanRequest(requestId, lenderId, req);
     
     res.json({
-      message: 'Loan request accepted successfully',
+      message: 'Loan request accepted successfully. Please complete payment to fund the loan.',
       loan
     });
   } catch (error) {
@@ -340,38 +381,22 @@ router.post('/requests/:requestId/accept', auth, async (req, res) => {
   }
 });
 
-// Get loan requests available for lenders
-router.get('/requests', auth, async (req, res) => {
+// Complete payment for accepted loan request
+router.post('/requests/:requestId/pay', auth, async (req, res) => {
   try {
-    // Get all pending loan requests
-    const loanRequests = await LoanService.getPendingLoanRequests();
+    const lenderId = req.user.id;
+    const requestId = req.params.requestId;
+    const { paymentId, paymentMethod } = req.body;
     
-    // Manually populate user data
-    const borrowerIds = [...new Set(loanRequests.map(request => request.borrowerId))];
-    const borrowers = await User.find({ id: { $in: borrowerIds } });
+    const loan = await LoanService.completeLoanPayment(requestId, lenderId, paymentId, paymentMethod, req);
     
-    const borrowerMap = {};
-    borrowers.forEach(user => {
-      borrowerMap[user.id] = {
-        id: user.id,
-        name: user.name,
-        phone: user.phone,
-        email: user.email,
-        kycVerified: user.kycVerified || false
-      };
+    res.json({
+      message: 'Payment completed successfully. Loan is now active.',
+      loan
     });
-    
-    // Attach borrower data to requests
-    const populatedRequests = loanRequests.map(request => {
-      const requestObj = request.toObject ? request.toObject() : request;
-      requestObj.borrower = borrowerMap[request.borrowerId] || { id: request.borrowerId };
-      return requestObj;
-    });
-
-    res.json({ loanRequests: populatedRequests });
   } catch (error) {
-    console.error('Get loan requests error:', error);
-    res.status(500).json({ error: { message: 'Failed to fetch loan requests' } });
+    console.error('Complete payment error:', error);
+    res.status(500).json({ error: { message: error.message || 'Failed to complete payment' } });
   }
 });
 

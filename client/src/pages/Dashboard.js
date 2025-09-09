@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useLoan } from '../contexts/LoanContext';
 import { 
-  CurrencyDollarIcon, 
+  BanknotesIcon, 
   ClockIcon, 
   ExclamationTriangleIcon,
   ChartBarIcon,
@@ -113,7 +113,7 @@ const Dashboard = () => {
               <div className="card-body">
                 <div className="flex items-center">
                   <div className="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center">
-                    <CurrencyDollarIcon className="w-6 h-6 text-teal-600" />
+                    <BanknotesIcon className="w-6 h-6 text-teal-600" />
                   </div>
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">Wallet Balance</p>
@@ -198,7 +198,7 @@ const Dashboard = () => {
                   className="flex items-center justify-between p-3 bg-teal-50 rounded-lg hover:bg-teal-100 transition-colors"
                 >
                   <div className="flex items-center">
-                    <CurrencyDollarIcon className="w-5 h-5 text-teal-600 mr-3" />
+                    <BanknotesIcon className="w-5 h-5 text-teal-600 mr-3" />
                     <span className="font-medium text-gray-900">Lend Money</span>
                   </div>
                   <PlusIcon className="w-5 h-5 text-teal-600" />
@@ -330,7 +330,7 @@ const Dashboard = () => {
               </div>
             ) : (
               <div className="text-center py-8">
-                <CurrencyDollarIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <BanknotesIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-500 mb-4">No loans yet</p>
                 <div className="space-x-4">
                   <Link to="/lend" className="btn-primary">

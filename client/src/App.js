@@ -22,6 +22,7 @@ import Collection from './pages/Collection';
 import CibilLog from './pages/CibilLog';
 import AdminPanel from './pages/AdminPanel';
 import Profile from './pages/Profile';
+import Team from './pages/Team';
 import NotFound from './pages/NotFound';
 
 // Protected Route Component
@@ -165,6 +166,10 @@ function AppContent() {
                 <Profile />
               </ProtectedRoute>
             } 
+          />
+          <Route 
+            path="/team" 
+            element={<Team />} 
           />
 
           {/* Admin Routes */}

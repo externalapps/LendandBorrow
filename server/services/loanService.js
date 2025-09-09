@@ -424,10 +424,11 @@ class LoanService {
         principal,
         purpose,
         repaymentPlan,
-        kycVerified: true,
+        kycVerified: kycData ? true : false,
         kycData,
         status: 'LOAN_REQUEST',
-        escrowStatus: 'PENDING'
+        escrowStatus: 'PENDING',
+        ledger: [] // Initialize empty ledger
       });
 
       // Calculate initial platform fee
@@ -435,6 +436,8 @@ class LoanService {
       loanRequest.initialPlatformFee = initialPlatformFee;
 
       await loanRequest.save();
+
+      console.log(`📝 Created loan request: ${loanRequest.id} from ${borrowerId} to ${lenderId} for ₹${principal}`);
 
       // Log audit
       await this.logAudit(borrowerId, 'LOAN_REQUEST_CREATED', { 
@@ -451,12 +454,36 @@ class LoanService {
   }
 
   // Get pending loan requests
-  static async getPendingLoanRequests() {
+  static async getPendingLoanRequests(lenderId) {
     try {
-      const loanRequests = await Loan.find({
-        status: 'LOAN_REQUEST',
+      const query = {
+        status: { $in: ['LOAN_REQUEST', 'PENDING_PAYMENT'] },
         escrowStatus: 'PENDING'
-      }).sort({ createdAt: -1 });
+      };
+      
+      // Filter by specific lender - loan requests are only visible to the intended lender
+      if (lenderId) {
+        query.lenderId = lenderId;
+      }
+      
+      const loanRequests = await Loan.find(query).sort({ createdAt: -1 });
+      
+      console.log(`📋 Found ${loanRequests.length} pending loan requests for lender ${lenderId || 'all'}`);
+      console.log(`🔍 Query used:`, JSON.stringify(query, null, 2));
+      
+      // Debug: Check all loans for this lender
+      const allLoans = await Loan.find({ lenderId }).sort({ createdAt: -1 });
+      console.log(`🔍 All loans for lender ${lenderId}:`, allLoans.map(loan => ({
+        id: loan.id,
+        status: loan.status,
+        escrowStatus: loan.escrowStatus,
+        borrowerId: loan.borrowerId,
+        lenderId: loan.lenderId
+      })));
+      
+      loanRequests.forEach(req => {
+        console.log(`  - Request ${req.id}: ${req.principal} from ${req.borrowerId} to ${req.lenderId}`);
+      });
       
       return loanRequests;
     } catch (error) {
@@ -481,9 +508,9 @@ class LoanService {
         throw new Error('Cannot lend to yourself');
       }
 
-      // Update loan request to a loan
+      // Update loan request to pending payment status
       loanRequest.lenderId = lenderId;
-      loanRequest.status = 'PENDING_BORROWER_ACCEPT';
+      loanRequest.status = 'PENDING_PAYMENT';
       
       await loanRequest.save();
 
@@ -497,6 +524,51 @@ class LoanService {
       return loanRequest;
     } catch (error) {
       console.error('Accept loan request error:', error);
+      throw error;
+    }
+  }
+
+  // Complete payment for accepted loan request
+  static async completeLoanPayment(loanRequestId, lenderId, paymentId, paymentMethod, req) {
+    try {
+      const loanRequest = await Loan.findOne({ 
+        id: loanRequestId, 
+        status: 'PENDING_PAYMENT',
+        lenderId: lenderId
+      });
+      
+      if (!loanRequest) {
+        throw new Error('Loan request not found or not in pending payment status');
+      }
+
+      // Update loan to active status and fund escrow
+      loanRequest.status = 'PENDING_BORROWER_ACCEPT';
+      loanRequest.escrowStatus = 'FUNDED';
+      loanRequest.disbursedAt = new Date();
+      
+      // Add payment record to ledger
+      loanRequest.ledger.push({
+        id: uuidv4(),
+        date: new Date(),
+        type: 'principal',
+        amount: loanRequest.principal,
+        description: `Loan funded via ${paymentMethod}`,
+        paymentId: paymentId
+      });
+
+      await loanRequest.save();
+
+      // Log audit
+      await this.logAudit(lenderId, 'LOAN_PAYMENT_COMPLETED', { 
+        loanId: loanRequestId, 
+        amount: loanRequest.principal,
+        paymentId: paymentId,
+        paymentMethod: paymentMethod
+      }, req);
+
+      return loanRequest;
+    } catch (error) {
+      console.error('Complete loan payment error:', error);
       throw error;
     }
   }

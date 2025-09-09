@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useLoan } from '../contexts/LoanContext';
 import { downloadLoanPDF } from '../utils/pdfExport';
 import { 
-  CurrencyDollarIcon, 
+  BanknotesIcon, 
   ClockIcon, 
   ChartBarIcon,
   DocumentTextIcon,
@@ -196,11 +196,11 @@ const LoanDetail = () => {
                     <div className="space-y-2 text-sm">
                       <div>
                         <span className="text-gray-600">Lender:</span>
-                        <span className="font-medium ml-2">{loan.lenderId?.name}</span>
+                        <span className="font-medium ml-2">{loan.lender?.name || loan.lenderId || '—'}</span>
                       </div>
                       <div>
                         <span className="text-gray-600">Borrower:</span>
-                        <span className="font-medium ml-2">{loan.borrowerId?.name}</span>
+                        <span className="font-medium ml-2">{loan.borrower?.name || loan.borrowerId || '—'}</span>
                       </div>
                       <div>
                         <span className="text-gray-600">Created:</span>

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useLoan } from '../contexts/LoanContext';
 import { 
-  CurrencyDollarIcon, 
+  BanknotesIcon, 
   ExclamationTriangleIcon,
   CheckCircleIcon,
   XMarkIcon,
@@ -143,7 +143,7 @@ const BorrowMoney = () => {
                     <div className="flex-1">
                       <div className="flex items-center space-x-4 mb-4">
                         <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center">
-                          <CurrencyDollarIcon className="w-6 h-6 text-teal-600" />
+                          <BanknotesIcon className="w-6 h-6 text-teal-600" />
                         </div>
                         <div>
                           <h3 className="text-lg font-semibold text-gray-900">
@@ -155,24 +155,26 @@ const BorrowMoney = () => {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                        <div>
-                          <p className="text-sm text-gray-600">Principal Amount</p>
-                          <p className="text-2xl font-bold text-gray-900">
-                            {formatCurrency(loan.principal)}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600">Platform Fee (1%)</p>
-                          <p className="text-xl font-semibold text-gray-900">
-                            {formatCurrency(loan.initialPlatformFee)}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600">Total Amount</p>
-                          <p className="text-2xl font-bold text-teal-600">
-                            {formatCurrency(calculateTotalAmount(loan.principal, loan.initialPlatformFee))}
-                          </p>
+                      <div className="bg-gray-50 rounded-lg p-6 mb-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                          <div className="text-center">
+                            <p className="text-sm text-gray-600 mb-2">Principal Amount</p>
+                            <p className="text-2xl font-bold text-gray-900">
+                              {formatCurrency(loan.principal)}
+                            </p>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-sm text-gray-600 mb-2">Platform Fee (1%)</p>
+                            <p className="text-xl font-semibold text-gray-900">
+                              {formatCurrency(loan.initialPlatformFee)}
+                            </p>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-sm text-gray-600 mb-2">Total Amount</p>
+                            <p className="text-2xl font-bold text-teal-600">
+                              {formatCurrency(calculateTotalAmount(loan.principal, loan.initialPlatformFee))}
+                            </p>
+                          </div>
                         </div>
                       </div>
 
@@ -261,7 +263,7 @@ const BorrowMoney = () => {
           </div>
         ) : (
           <div className="text-center py-12">
-            <CurrencyDollarIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <BanknotesIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
               No Pending Loan Offers
             </h3>
@@ -297,22 +299,22 @@ const BorrowMoney = () => {
                 <div className="space-y-4 mb-6">
                   <div className="bg-gray-50 rounded-lg p-4">
                     <h4 className="font-medium text-gray-900 mb-2">Loan Details</h4>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <span className="text-gray-600">Principal:</span>
-                        <span className="font-medium ml-2">{formatCurrency(selectedLoan.principal)}</span>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Principal Amount</span>
+                        <span className="font-semibold text-gray-900">{formatCurrency(selectedLoan.principal)}</span>
                       </div>
-                      <div>
-                        <span className="text-gray-600">Platform Fee:</span>
-                        <span className="font-medium ml-2">{formatCurrency(selectedLoan.initialPlatformFee)}</span>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Platform Fee (1%)</span>
+                        <span className="font-semibold text-gray-900">{formatCurrency(selectedLoan.initialPlatformFee)}</span>
                       </div>
-                      <div>
-                        <span className="text-gray-600">Total Amount:</span>
-                        <span className="font-medium ml-2">{formatCurrency(calculateTotalAmount(selectedLoan.principal, selectedLoan.initialPlatformFee))}</span>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Total Amount</span>
+                        <span className="font-bold text-teal-600">{formatCurrency(calculateTotalAmount(selectedLoan.principal, selectedLoan.initialPlatformFee))}</span>
                       </div>
-                      <div>
-                        <span className="text-gray-600">Lender:</span>
-                        <span className="font-medium ml-2">{selectedLoan.lenderId?.name}</span>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Lender</span>
+                        <span className="font-semibold text-gray-900">{selectedLoan.lenderId?.name}</span>
                       </div>
                     </div>
                   </div>

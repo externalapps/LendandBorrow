@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { 
-  CurrencyDollarIcon, 
+  BanknotesIcon, 
   UserIcon,
   PhoneIcon,
   DocumentTextIcon,
@@ -14,19 +14,37 @@ import toast from 'react-hot-toast';
 
 const LoanRequestsList = ({ loanRequests, onRequestAccepted, loading }) => {
   const [processingId, setProcessingId] = useState(null);
-  const { acceptLoanRequest } = useLoan();
+  const { acceptLoanRequest, completeLoanPayment } = useLoan();
 
   const handleAcceptRequest = async (requestId) => {
     setProcessingId(requestId);
     try {
       await acceptLoanRequest(requestId);
-      toast.success('Loan request accepted successfully!');
+      toast.success('Loan request accepted! Please complete payment to fund the loan.');
       if (onRequestAccepted) {
         onRequestAccepted(requestId);
       }
     } catch (error) {
       console.error('Error accepting loan request:', error);
       toast.error('Failed to accept loan request');
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const handlePayNow = async (requestId) => {
+    setProcessingId(requestId);
+    try {
+      // For demo purposes, simulate payment
+      const mockPaymentId = `pay_${Date.now()}`;
+      await completeLoanPayment(requestId, mockPaymentId, 'Razorpay');
+      toast.success('Payment completed! Loan is now active.');
+      if (onRequestAccepted) {
+        onRequestAccepted(requestId);
+      }
+    } catch (error) {
+      console.error('Error completing payment:', error);
+      toast.error('Failed to complete payment');
     } finally {
       setProcessingId(null);
     }
@@ -141,20 +159,37 @@ const LoanRequestsList = ({ loanRequests, onRequestAccepted, loading }) => {
               </div>
 
               <div className="flex flex-col space-y-3 ml-6">
-                <button
-                  onClick={() => handleAcceptRequest(request.id)}
-                  disabled={processingId === request.id}
-                  className="btn-primary flex items-center justify-center"
-                >
-                  {processingId === request.id ? (
-                    <LoadingSpinner size="sm" />
-                  ) : (
-                    <>
-                      <CheckCircleIcon className="w-5 h-5 mr-2" />
-                      Accept Request
-                    </>
-                  )}
-                </button>
+                {request.status === 'LOAN_REQUEST' ? (
+                  <button
+                    onClick={() => handleAcceptRequest(request.id)}
+                    disabled={processingId === request.id}
+                    className="btn-primary flex items-center justify-center"
+                  >
+                    {processingId === request.id ? (
+                      <LoadingSpinner size="sm" />
+                    ) : (
+                      <>
+                        <CheckCircleIcon className="w-5 h-5 mr-2" />
+                        Accept Request
+                      </>
+                    )}
+                  </button>
+                ) : request.status === 'PENDING_PAYMENT' ? (
+                  <button
+                    onClick={() => handlePayNow(request.id)}
+                    disabled={processingId === request.id}
+                    className="btn-success flex items-center justify-center"
+                  >
+                    {processingId === request.id ? (
+                      <LoadingSpinner size="sm" />
+                    ) : (
+                      <>
+                        <BanknotesIcon className="w-5 h-5 mr-2" />
+                        Pay Now
+                      </>
+                    )}
+                  </button>
+                ) : null}
                 <p className="text-xs text-center text-gray-500">
                   {request.borrower?.kycVerified 
                     ? 'KYC verified' 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  CurrencyDollarIcon, 
+  BanknotesIcon, 
   ShieldCheckIcon, 
   ClockIcon, 
   ChartBarIcon,
@@ -27,7 +27,7 @@ const Landing = () => {
       description: 'Transparent credit reporting to help build your credit history'
     },
     {
-      icon: CurrencyDollarIcon,
+      icon: BanknotesIcon,
       title: 'Low Fees',
       description: 'Only 1% initial platform fee, no hidden charges'
     }
@@ -193,7 +193,7 @@ const Landing = () => {
             <div className="bg-gradient-to-br from-teal-50 to-blue-50 p-8 rounded-2xl">
               <div className="text-center">
                 <div className="w-24 h-24 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <CurrencyDollarIcon className="w-12 h-12 text-teal-600" />
+                  <BanknotesIcon className="w-12 h-12 text-teal-600" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-4">
                   Ready to Get Started?

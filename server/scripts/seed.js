@@ -43,6 +43,10 @@ async function seedDatabase() {
     const loan = await createDemoLoan(users);
     console.log('💰 Created demo loan');
 
+    // Create demo loan request
+    const loanRequest = await createDemoLoanRequest(users);
+    console.log('📝 Created demo loan request');
+
     // Create default settings
     await createDefaultSettings();
     console.log('⚙️ Created default settings');
@@ -55,6 +59,7 @@ async function seedDatabase() {
     console.log('\n📋 Demo Data Summary:');
     console.log(`👤 Users: ${users.length}`);
     console.log(`💰 Loans: 1`);
+    console.log(`📝 Loan Requests: 1`);
     console.log(`⚙️ Settings: 1`);
     console.log(`📝 Audit Logs: 3`);
     
@@ -196,6 +201,29 @@ async function createDemoLoan(users) {
 
   await loan.save();
   return loan;
+}
+
+async function createDemoLoanRequest(users) {
+  const userA = users.find(u => u.id === 'user_a'); // Priya Rajesh (lender)
+  const userB = users.find(u => u.id === 'user_b'); // Arjun Kumar (borrower)
+
+  const loanRequest = new Loan({
+    id: 'loan_request_1',
+    lenderId: userA.id, // Specific lender - Priya Rajesh
+    borrowerId: userB.id,
+    principal: 1000.00,
+    purpose: 'bills',
+    repaymentPlan: 'chit',
+    kycVerified: userB.kycStatus === 'VERIFIED',
+    kycData: userB.kycData,
+    status: 'LOAN_REQUEST',
+    escrowStatus: 'PENDING',
+    initialPlatformFee: 10.00,
+    ledger: [] // Empty ledger for loan requests
+  });
+
+  await loanRequest.save();
+  return loanRequest;
 }
 
 async function createDefaultSettings() {

@@ -147,13 +147,19 @@ router.get('/dashboard/summary', auth, async (req, res) => {
 
     const userId = req.user.id;
 
-    // Get loans where user is lender
-    const loansGiven = await Loan.find({ lenderId: userId });
+    // Get loans where user is lender (exclude LOAN_REQUEST status)
+    const loansGiven = await Loan.find({ 
+      lenderId: userId, 
+      status: { $ne: 'LOAN_REQUEST' } 
+    });
     const totalLent = loansGiven.reduce((sum, loan) => sum + loan.principal, 0);
     const activeLoansGiven = loansGiven.filter(loan => loan.status === 'ACTIVE').length;
 
-    // Get loans where user is borrower
-    const loansTaken = await Loan.find({ borrowerId: userId });
+    // Get loans where user is borrower (exclude LOAN_REQUEST status)
+    const loansTaken = await Loan.find({ 
+      borrowerId: userId, 
+      status: { $ne: 'LOAN_REQUEST' } 
+    });
     const totalBorrowed = loansTaken.reduce((sum, loan) => sum + loan.principal, 0);
     const activeLoansTaken = loansTaken.filter(loan => loan.status === 'ACTIVE').length;
 
@@ -224,6 +230,7 @@ router.get('/dashboard/summary', auth, async (req, res) => {
 });
 
 module.exports = router;
+
 
 
 

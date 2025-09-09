@@ -4,7 +4,7 @@ import { adminAPI } from '../services/api';
 import { 
   CogIcon, 
   UsersIcon, 
-  CurrencyDollarIcon,
+  BanknotesIcon,
   ChartBarIcon,
   ClockIcon,
   PlayIcon,
@@ -79,7 +79,7 @@ const AdminPanel = () => {
   const tabs = [
     { id: 'overview', name: 'Overview', icon: ChartBarIcon },
     { id: 'users', name: 'Users', icon: UsersIcon },
-    { id: 'loans', name: 'Loans', icon: CurrencyDollarIcon },
+    { id: 'loans', name: 'Loans', icon: BanknotesIcon },
     { id: 'system', name: 'System', icon: CogIcon }
   ];
 
@@ -211,7 +211,7 @@ const AdminPanel = () => {
 
                   <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                     <div className="flex items-center">
-                      <CurrencyDollarIcon className="w-8 h-8 text-green-600" />
+                      <BanknotesIcon className="w-8 h-8 text-green-600" />
                       <div className="ml-3">
                         <p className="text-sm font-medium text-green-600">Total Loans</p>
                         <p className="text-2xl font-bold text-green-900">
@@ -453,6 +453,9 @@ const AdminPanel = () => {
 };
 
 export default AdminPanel;
+
+
+
 
 
 

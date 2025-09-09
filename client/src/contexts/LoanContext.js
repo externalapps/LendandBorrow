@@ -214,6 +214,23 @@ export const LoanProvider = ({ children }) => {
     }
   };
 
+  const completeLoanPayment = async (requestId, paymentId, paymentMethod) => {
+    try {
+      const response = await api.post(`/loans/requests/${requestId}/pay`, {
+        paymentId,
+        paymentMethod
+      });
+      toast.success('Payment completed successfully!');
+      await fetchLoans();
+      await fetchDashboardData();
+      return response.data.loan;
+    } catch (error) {
+      const message = error.response?.data?.error?.message || 'Failed to complete payment';
+      toast.error(message);
+      throw error;
+    }
+  };
+
   const value = {
     loans,
     dashboardData,
@@ -232,7 +249,8 @@ export const LoanProvider = ({ children }) => {
     getLoanBlocks,
     requestLoan,
     getLoanRequests,
-    acceptLoanRequest
+    acceptLoanRequest,
+    completeLoanPayment
   };
 
   return (

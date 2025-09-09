@@ -3,13 +3,14 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { 
   HomeIcon, 
-  CurrencyDollarIcon, 
+  BanknotesIcon, 
   DocumentTextIcon, 
   UserIcon,
   CogIcon,
   ArrowLeftOnRectangleIcon,
   Bars3Icon,
-  XMarkIcon
+  XMarkIcon,
+  UserGroupIcon
 } from '@heroicons/react/24/outline';
 
 const Navbar = () => {
@@ -29,9 +30,10 @@ const Navbar = () => {
 
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: HomeIcon },
-    { name: 'Lend Money', path: '/lend', icon: CurrencyDollarIcon },
+    { name: 'Lend Money', path: '/lend', icon: BanknotesIcon },
     { name: 'Borrow Money', path: '/borrow', icon: DocumentTextIcon },
     { name: 'CIBIL Log', path: '/cibil', icon: DocumentTextIcon },
+    { name: 'Team', path: '/team', icon: UserGroupIcon },
   ];
 
   if (isAdmin) {
