@@ -132,12 +132,17 @@ app.use('*', (req, res) => {
   res.status(404).json({ error: { message: 'Route not found' } });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`🚀 PaySafe server running on port ${PORT}`);
-  console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
-});
+// Start server (only in development)
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`🚀 PaySafe server running on port ${PORT}`);
+    console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
+  });
+}
+
+// Export for Vercel
+module.exports = app;
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
