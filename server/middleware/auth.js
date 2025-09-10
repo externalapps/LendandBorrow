@@ -9,7 +9,7 @@ const auth = async (req, res, next) => {
       return res.status(401).json({ error: { message: 'No token provided' } });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'demo-secret');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'paysafe-jwt-secret-2024-very-secure-key');
     const user = inMemoryAuth.findUserById(decoded.userId);
     
     if (!user) {

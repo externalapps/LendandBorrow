@@ -218,7 +218,7 @@ const initializeDemoUsers = () => {
 
 // Generate JWT token
 const generateToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET || 'demo-secret', { expiresIn: '7d' });
+  return jwt.sign({ userId }, process.env.JWT_SECRET || 'paysafe-jwt-secret-2024-very-secure-key', { expiresIn: '7d' });
 };
 
 // Find user by email
