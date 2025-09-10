@@ -135,7 +135,7 @@ const KYC = () => {
             Complete KYC Verification
           </h1>
           <p className="text-gray-600">
-            Verify your identity to start lending and borrowing on PaySafe
+            Verify your identity to start lending and borrowing on the platform
           </p>
         </div>
 

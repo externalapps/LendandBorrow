@@ -187,7 +187,7 @@ const LendMoney = () => {
                       <p className="form-error">{errors.contact}</p>
                     )}
                     <p className="text-sm text-gray-500 mt-2">
-                      Search your contacts or enter a phone number. Only friends registered on PaySafe can receive loans.
+                      Search your contacts or enter a phone number. Only friends registered on the platform can receive loans.
                     </p>
                   </div>
 

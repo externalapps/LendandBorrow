@@ -98,10 +98,18 @@ const Register = () => {
         {/* Header */}
         <div className="text-center">
           <Link to="/" className="flex items-center justify-center space-x-2 mb-6">
-            <div className="w-12 h-12 bg-gradient-to-r from-navy to-teal rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold text-lg">PS</span>
+            <img 
+              src="/logo.png" 
+              alt="Logo" 
+              className="w-12 h-12"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'flex';
+              }}
+            />
+            <div className="w-12 h-12 bg-gradient-to-r from-navy to-teal rounded-xl flex items-center justify-center hidden">
+              <span className="text-white font-bold text-lg">P2P</span>
             </div>
-            <span className="text-3xl font-bold gradient-text">PaySafe</span>
           </Link>
           <h2 className="text-3xl font-bold text-gray-900">
             Create your account

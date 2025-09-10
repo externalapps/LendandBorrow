@@ -137,7 +137,7 @@ const ContactSelector = ({ onSelectContact, selectedContact, onClear }) => {
                   {!contact.isRegistered && (
                     <div className="flex-shrink-0">
                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                        Not on PaySafe
+                        Not on platform
                       </span>
                     </div>
                   )}

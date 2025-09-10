@@ -6,7 +6,7 @@ export const generateLoanPDF = (loan) => {
   // Header
   doc.setFontSize(20);
   doc.setTextColor(11, 21, 64); // Navy color
-  doc.text('PaySafe', 20, 30);
+  doc.text('P2P Lending Platform', 20, 30);
   
   doc.setFontSize(16);
   doc.setTextColor(15, 181, 166); // Teal color

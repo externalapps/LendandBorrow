@@ -71,7 +71,7 @@ const Dashboard = () => {
             Welcome back, {user?.name}!
           </h1>
           <p className="text-gray-600 mt-2">
-            Here's an overview of your PaySafe activity
+            Here's an overview of your P2P lending activity
           </p>
         </div>
 

@@ -221,7 +221,7 @@ const Landing = () => {
           <div className="text-center">
             <div className="flex items-center justify-center space-x-2 mb-4">
               <div className="w-8 h-8 bg-gradient-to-r from-navy to-teal rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">PS</span>
+                <span className="text-white font-bold text-sm">P2P</span>
               </div>
               <span className="text-xl font-bold">P2P Lending</span>
             </div>
