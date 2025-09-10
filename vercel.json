@@ -10,20 +10,22 @@
     },
     {
       "src": "server/index.js",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": ["server/models/**", "server/services/**", "server/middleware/**", "server/routes/**", "server/scripts/**"]
-      }
+      "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "server/index.js"
+      "dest": "/server/index.js"
     },
     {
       "src": "/(.*)",
-      "dest": "client/build/$1"
+      "dest": "/client/build/$1"
     }
-  ]
+  ],
+  "functions": {
+    "server/index.js": {
+      "maxDuration": 30
+    }
+  }
 }
