@@ -24,11 +24,18 @@ module.exports = async (req, res) => {
       });
     }
 
-    // Mock authentication for testing
+    // Mock authentication for testing - using existing PaySafe demo users
     const mockUsers = [
-      { id: 'user_001', email: 'aditya@example.com', password: 'password123', name: 'Aditya' },
-      { id: 'user_002', email: 'sandeep@example.com', password: 'password123', name: 'Sandeep' },
-      { id: 'user_003', email: 'test@example.com', password: 'password123', name: 'Test User' }
+      { id: 'user_001', email: 'priya@paysafe.com', password: 'demo123', name: 'Priya Sharma' },
+      { id: 'user_002', email: 'arjun@paysafe.com', password: 'demo123', name: 'Arjun Kumar' },
+      { id: 'user_003', email: 'suresh@paysafe.com', password: 'demo123', name: 'Suresh Patel' },
+      { id: 'user_004', email: 'meera@paysafe.com', password: 'demo123', name: 'Meera Patel' },
+      { id: 'user_005', email: 'rajesh@paysafe.com', password: 'demo123', name: 'Rajesh Singh' },
+      { id: 'user_006', email: 'anita@paysafe.com', password: 'demo123', name: 'Anita Reddy' },
+      { id: 'user_007', email: 'vikram@paysafe.com', password: 'demo123', name: 'Vikram Joshi' },
+      { id: 'user_008', email: 'deepika@paysafe.com', password: 'demo123', name: 'Deepika Agarwal' },
+      { id: 'user_009', email: 'rohit@paysafe.com', password: 'demo123', name: 'Rohit Verma' },
+      { id: 'user_010', email: 'kavya@paysafe.com', password: 'demo123', name: 'Kavya Nair' }
     ];
 
     const user = mockUsers.find(u => u.email === email && u.password === password);
