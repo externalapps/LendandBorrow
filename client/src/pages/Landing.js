@@ -220,13 +220,21 @@ const Landing = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="flex items-center justify-center space-x-2 mb-4">
-              <div className="w-8 h-8 bg-gradient-to-r from-navy to-teal rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">P2P</span>
+              <img 
+                src="/logo.png" 
+                alt="Logo" 
+                className="w-8 h-8"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.nextSibling.style.display = 'flex';
+                }}
+              />
+              <div className="w-8 h-8 bg-gradient-to-r from-navy to-teal rounded-lg flex items-center justify-center hidden">
+                <span className="text-white font-bold text-sm">LB</span>
               </div>
-              <span className="text-xl font-bold">P2P Lending</span>
             </div>
             <p className="text-gray-400 mb-4">
-              Secure P2P Lending Platform
+              Secure Lending Platform
             </p>
             <p className="text-sm text-gray-500">
               © 2025 Beyondx Informatics Analytics Pvt. Ltd.

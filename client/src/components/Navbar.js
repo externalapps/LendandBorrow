@@ -45,19 +45,20 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/dashboard" className="flex items-center space-x-2">
+          <Link to="/dashboard" className="flex items-center space-x-3">
             <img 
               src="/logo.png" 
               alt="Logo" 
-              className="w-8 h-8"
+              className="w-10 h-10"
               onError={(e) => {
                 e.target.style.display = 'none';
                 e.target.nextSibling.style.display = 'flex';
               }}
             />
-            <div className="w-8 h-8 bg-gradient-to-r from-navy to-teal rounded-lg flex items-center justify-center hidden">
-              <span className="text-white font-bold text-sm">P2P</span>
+            <div className="w-10 h-10 bg-gradient-to-r from-navy to-teal rounded-lg flex items-center justify-center hidden">
+              <span className="text-white font-bold text-sm">LB</span>
             </div>
+            <span className="text-xl font-bold text-gray-900">Lend & Borrow</span>
           </Link>
 
           {/* Desktop Navigation */}
