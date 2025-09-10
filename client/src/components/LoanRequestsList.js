@@ -9,60 +9,97 @@ import {
   CheckCircleIcon
 } from '@heroicons/react/24/outline';
 import { useLoan } from '../contexts/LoanContext';
+import { useModal } from '../contexts/ModalContext';
 import LoadingSpinner from './LoadingSpinner';
-import toast from 'react-hot-toast';
 
 const LoanRequestsList = ({ loanRequests, onRequestAccepted, loading }) => {
   const [processingId, setProcessingId] = useState(null);
   const { acceptLoanRequest, completeLoanPayment } = useLoan();
+  const { showSuccess, showError, showPayment } = useModal();
 
   const handleAcceptRequest = async (requestId) => {
     setProcessingId(requestId);
     try {
       await acceptLoanRequest(requestId);
-      toast.success('Loan request accepted! Please complete payment to fund the loan.');
+      showSuccess('Loan Accepted', 'Loan request accepted! Please complete payment to fund the loan.');
       if (onRequestAccepted) {
         onRequestAccepted(requestId);
       }
     } catch (error) {
       console.error('Error accepting loan request:', error);
-      toast.error('Failed to accept loan request');
+      showError('Error', 'Failed to accept loan request');
     } finally {
       setProcessingId(null);
     }
   };
 
-  const handlePayNow = async (requestId) => {
-    setProcessingId(requestId);
-    try {
-      // Show Razorpay simulation
-      const request = requests.find(r => r.id === requestId);
-      if (!request) return;
+  const handlePayNow = (requestId) => {
+    const request = loanRequests.find(r => r.id === requestId);
+    if (!request) return;
 
-      // Simulate Razorpay payment flow
-      toast.loading('Opening Razorpay payment gateway...', { duration: 2000 });
-      
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      toast.loading('Processing payment...', { duration: 1500 });
-      
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Simulate successful payment
-      const mockPaymentId = `pay_${Date.now()}`;
-      await completeLoanPayment(requestId, mockPaymentId, 'Razorpay');
-      
-      toast.success(`Payment of ₹${request.amount} completed successfully! Loan is now active.`);
-      
-      if (onRequestAccepted) {
-        onRequestAccepted(requestId);
+    showPayment(request.amount, async () => {
+      setProcessingId(requestId);
+      try {
+        await processRazorpayPayment(requestId, request.amount);
+        showSuccess('Payment Successful', `Payment of ₹${request.amount} completed successfully! Loan is now active.`);
+        if (onRequestAccepted) {
+          onRequestAccepted(requestId);
+        }
+      } catch (error) {
+        console.error('Error completing payment:', error);
+        showError('Payment Failed', 'Payment failed. Please try again.');
+      } finally {
+        setProcessingId(null);
       }
-    } catch (error) {
-      console.error('Error completing payment:', error);
-      toast.error('Payment failed. Please try again.');
-    } finally {
-      setProcessingId(null);
-    }
+    });
+  };
+
+  const processRazorpayPayment = async (requestId, amount) => {
+    // Load Razorpay script
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    document.body.appendChild(script);
+
+    return new Promise((resolve, reject) => {
+      script.onload = () => {
+        const options = {
+          key: 'rzp_test_1DP5mmOlF5G5ag', // Test key - replace with your actual key
+          amount: amount * 100, // Amount in paisa
+          currency: 'INR',
+          name: 'Lend & Borrow',
+          description: 'Loan Funding Payment',
+          image: '/logo.png',
+          handler: async function (response) {
+            try {
+              const mockPaymentId = response.razorpay_payment_id;
+              await completeLoanPayment(requestId, mockPaymentId, 'Razorpay');
+              resolve();
+            } catch (error) {
+              reject(error);
+            }
+          },
+          prefill: {
+            name: 'Test User',
+            email: 'test@example.com',
+            contact: '9999999999'
+          },
+          theme: {
+            color: '#0b1540'
+          }
+        };
+
+        const rzp = new window.Razorpay(options);
+        rzp.on('payment.failed', function (response) {
+          reject(new Error('Payment failed'));
+        });
+        rzp.open();
+      };
+
+      script.onerror = () => {
+        reject(new Error('Failed to load Razorpay'));
+      };
+    });
   };
 
   const formatCurrency = (amount) => {
