@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { api } from '../services/api';
-import toast from 'react-hot-toast';
 
 const AuthContext = createContext();
 
@@ -52,11 +51,11 @@ export const AuthProvider = ({ children }) => {
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setUser(user);
 
-      toast.success('Login successful!');
+      console.log('Login successful!');
       return { success: true };
     } catch (error) {
       const message = error.response?.data?.error?.message || 'Login failed';
-      toast.error(message);
+      console.error('Login failed:', message);
       return { success: false, error: message };
     }
   };
@@ -70,11 +69,11 @@ export const AuthProvider = ({ children }) => {
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setUser(user);
 
-      toast.success('Registration successful!');
+      console.log('Registration successful!');
       return { success: true };
     } catch (error) {
       const message = error.response?.data?.error?.message || 'Registration failed';
-      toast.error(message);
+      console.error('Registration failed:', message);
       return { success: false, error: message };
     }
   };
@@ -83,7 +82,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
     delete api.defaults.headers.common['Authorization'];
     setUser(null);
-    toast.success('Logged out successfully');
+    console.log('Logged out successfully');
   };
 
   const updateUser = (updatedUser) => {
@@ -93,11 +92,11 @@ export const AuthProvider = ({ children }) => {
   const sendOTP = async (phone) => {
     try {
       const response = await api.post('/auth/send-otp', { phone });
-      toast.success('OTP sent successfully!');
+      console.log('OTP sent successfully!');
       return { success: true, otp: response.data.otp }; // Demo only
     } catch (error) {
       const message = error.response?.data?.error?.message || 'Failed to send OTP';
-      toast.error(message);
+      console.error('Failed to send OTP:', message);
       return { success: false, error: message };
     }
   };
@@ -105,11 +104,11 @@ export const AuthProvider = ({ children }) => {
   const verifyOTP = async (phone, otp) => {
     try {
       const response = await api.post('/auth/verify-otp', { phone, otp });
-      toast.success('OTP verified successfully!');
+      console.log('OTP verified successfully!');
       return { success: true };
     } catch (error) {
       const message = error.response?.data?.error?.message || 'OTP verification failed';
-      toast.error(message);
+      console.error('OTP verification failed:', message);
       return { success: false, error: message };
     }
   };

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useModal } from '../contexts/ModalContext';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import LoadingSpinner from '../components/LoadingSpinner';
 
@@ -14,6 +15,7 @@ const Login = () => {
   const [errors, setErrors] = useState({});
 
   const { login } = useAuth();
+  const { showSuccess, showError } = useModal();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -59,10 +61,15 @@ const Login = () => {
     try {
       const result = await login(formData.email, formData.password);
       if (result.success) {
-        navigate('/dashboard');
+        showSuccess('Login Successful', 'Welcome back! Redirecting to dashboard...', () => {
+          navigate('/dashboard');
+        });
+      } else {
+        showError('Login Failed', result.error || 'Invalid email or password');
       }
     } catch (error) {
       console.error('Login error:', error);
+      showError('Login Failed', 'An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
     }

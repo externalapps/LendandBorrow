@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useModal } from '../contexts/ModalContext';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import LoadingSpinner from '../components/LoadingSpinner';
 
@@ -18,6 +19,7 @@ const Register = () => {
   const [errors, setErrors] = useState({});
 
   const { register } = useAuth();
+  const { showSuccess, showError } = useModal();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -83,10 +85,15 @@ const Register = () => {
     try {
       const result = await register(formData);
       if (result.success) {
-        navigate('/kyc');
+        showSuccess('Registration Successful', 'Account created successfully! Redirecting to KYC...', () => {
+          navigate('/kyc');
+        });
+      } else {
+        showError('Registration Failed', result.error || 'Failed to create account');
       }
     } catch (error) {
       console.error('Registration error:', error);
+      showError('Registration Failed', 'An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
     }

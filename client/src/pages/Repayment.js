@@ -10,13 +10,14 @@ import {
   ArrowLeftIcon
 } from '@heroicons/react/24/outline';
 import LoadingSpinner from '../components/LoadingSpinner';
-import toast from 'react-hot-toast';
+import { useModal } from '../contexts/ModalContext';
 
 const Repayment = () => {
   const { loanId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { fetchLoanById, getPaymentRequirements, makePayment } = useLoan();
+  const { showSuccess, showError, showPayment } = useModal();
   
   const [loan, setLoan] = useState(null);
   const [paymentRequirements, setPaymentRequirements] = useState(null);
@@ -52,7 +53,7 @@ const Repayment = () => {
       }
     } catch (error) {
       console.error('Error fetching loan data:', error);
-      toast.error('Failed to fetch loan details');
+      showError('Error', 'Failed to fetch loan details');
     } finally {
       setLoading(false);
     }
@@ -114,16 +115,67 @@ const Repayment = () => {
       return;
     }
 
-    setProcessing(true);
-    try {
-      await makePayment(loanId, parseFloat(amount));
-      toast.success('Payment made successfully!');
-      navigate(`/loan/${loanId}`);
-    } catch (error) {
-      console.error('Error making payment:', error);
-    } finally {
-      setProcessing(false);
-    }
+    // Show payment modal with Razorpay integration
+    showPayment(parseFloat(amount), async () => {
+      setProcessing(true);
+      try {
+        await processRazorpayRepayment(loanId, parseFloat(amount));
+        showSuccess('Payment Successful', 'Payment made successfully!');
+        navigate(`/loan/${loanId}`);
+      } catch (error) {
+        console.error('Error making payment:', error);
+        showError('Payment Failed', 'Payment failed. Please try again.');
+      } finally {
+        setProcessing(false);
+      }
+    });
+  };
+
+  const processRazorpayRepayment = async (loanId, amount) => {
+    // Load Razorpay script
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    document.body.appendChild(script);
+
+    return new Promise((resolve, reject) => {
+      script.onload = () => {
+        const options = {
+          key: 'rzp_test_1DP5mmOlF5G5ag', // Test key - replace with your actual key
+          amount: amount * 100, // Amount in paisa
+          currency: 'INR',
+          name: 'Lend & Borrow',
+          description: 'Loan Repayment',
+          image: '/logo.png',
+          handler: async function (response) {
+            try {
+              await makePayment(loanId, amount);
+              resolve();
+            } catch (error) {
+              reject(error);
+            }
+          },
+          prefill: {
+            name: user?.name || 'Test User',
+            email: user?.email || 'test@example.com',
+            contact: user?.phone || '9999999999'
+          },
+          theme: {
+            color: '#0b1540'
+          }
+        };
+
+        const rzp = new window.Razorpay(options);
+        rzp.on('payment.failed', function (response) {
+          reject(new Error('Payment failed'));
+        });
+        rzp.open();
+      };
+
+      script.onerror = () => {
+        reject(new Error('Failed to load Razorpay'));
+      };
+    });
   };
 
   if (loading) {

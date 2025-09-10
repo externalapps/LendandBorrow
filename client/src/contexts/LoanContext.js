@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { useAuth } from './AuthContext';
-import toast from 'react-hot-toast';
+// Toast notifications replaced with modals
 
 const LoanContext = createContext();
 
@@ -37,7 +37,7 @@ export const LoanProvider = ({ children }) => {
       return response.data.loans;
     } catch (error) {
       console.error('Fetch loans error:', error);
-      toast.error('Failed to fetch loans');
+      console.error('Failed to fetch loans');
       return [];
     } finally {
       setLoading(false);
@@ -50,7 +50,7 @@ export const LoanProvider = ({ children }) => {
       return response.data.loan;
     } catch (error) {
       console.error('Fetch loan error:', error);
-      toast.error('Failed to fetch loan details');
+      console.error('Failed to fetch loan details');
       return null;
     }
   };
@@ -69,13 +69,13 @@ export const LoanProvider = ({ children }) => {
   const createLoan = async (borrowerId, principal) => {
     try {
       const response = await api.post('/loans', { borrowerId, principal });
-      toast.success('Loan created successfully!');
+      console.log('Loan created successfully!');
       await fetchLoans();
       await fetchDashboardData();
       return response.data.loan;
     } catch (error) {
       const message = error.response?.data?.error?.message || 'Failed to create loan';
-      toast.error(message);
+      console.error(message);
       throw error;
     }
   };
@@ -83,13 +83,13 @@ export const LoanProvider = ({ children }) => {
   const fundEscrow = async (loanId) => {
     try {
       const response = await api.post(`/loans/${loanId}/fund-escrow`);
-      toast.success('Escrow funded successfully!');
+      console.log('Escrow funded successfully!');
       await fetchLoans();
       await fetchDashboardData();
       return response.data.loan;
     } catch (error) {
       const message = error.response?.data?.error?.message || 'Failed to fund escrow';
-      toast.error(message);
+      console.error(message);
       throw error;
     }
   };
@@ -97,13 +97,13 @@ export const LoanProvider = ({ children }) => {
   const acceptLoanTerms = async (loanId) => {
     try {
       const response = await api.post(`/loans/${loanId}/accept`);
-      toast.success('Loan terms accepted successfully!');
+      console.log('Loan terms accepted successfully!');
       await fetchLoans();
       await fetchDashboardData();
       return response.data.loan;
     } catch (error) {
       const message = error.response?.data?.error?.message || 'Failed to accept loan terms';
-      toast.error(message);
+      console.error(message);
       throw error;
     }
   };
@@ -111,13 +111,13 @@ export const LoanProvider = ({ children }) => {
   const makePayment = async (loanId, amount) => {
     try {
       const response = await api.post(`/loans/${loanId}/payment`, { amount });
-      toast.success('Payment made successfully!');
+      console.log('Payment made successfully!');
       await fetchLoans();
       await fetchDashboardData();
       return response.data;
     } catch (error) {
       const message = error.response?.data?.error?.message || 'Failed to make payment';
-      toast.error(message);
+      console.error(message);
       throw error;
     }
   };
@@ -125,13 +125,13 @@ export const LoanProvider = ({ children }) => {
   const cancelLoan = async (loanId) => {
     try {
       const response = await api.post(`/loans/${loanId}/cancel`);
-      toast.success('Loan cancelled successfully!');
+      console.log('Loan cancelled successfully!');
       await fetchLoans();
       await fetchDashboardData();
       return response.data.loan;
     } catch (error) {
       const message = error.response?.data?.error?.message || 'Failed to cancel loan';
-      toast.error(message);
+      console.error(message);
       throw error;
     }
   };
@@ -179,13 +179,13 @@ export const LoanProvider = ({ children }) => {
   const requestLoan = async (loanRequest) => {
     try {
       const response = await api.post('/loans/request', loanRequest);
-      toast.success('Loan request submitted successfully!');
+      console.log('Loan request submitted successfully!');
       await fetchLoans();
       await fetchDashboardData();
       return response.data.loanRequest;
     } catch (error) {
       const message = error.response?.data?.error?.message || 'Failed to submit loan request';
-      toast.error(message);
+      console.error(message);
       throw error;
     }
   };
@@ -203,13 +203,13 @@ export const LoanProvider = ({ children }) => {
   const acceptLoanRequest = async (requestId) => {
     try {
       const response = await api.post(`/loans/requests/${requestId}/accept`);
-      toast.success('Loan request accepted successfully!');
+      console.log('Loan request accepted successfully!');
       await fetchLoans();
       await fetchDashboardData();
       return response.data.loan;
     } catch (error) {
       const message = error.response?.data?.error?.message || 'Failed to accept loan request';
-      toast.error(message);
+      console.error(message);
       throw error;
     }
   };
@@ -220,13 +220,13 @@ export const LoanProvider = ({ children }) => {
         paymentId,
         paymentMethod
       });
-      toast.success('Payment completed successfully!');
+      console.log('Payment completed successfully!');
       await fetchLoans();
       await fetchDashboardData();
       return response.data.loan;
     } catch (error) {
       const message = error.response?.data?.error?.message || 'Failed to complete payment';
-      toast.error(message);
+      console.error(message);
       throw error;
     }
   };

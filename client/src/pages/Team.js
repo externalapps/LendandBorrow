@@ -1,16 +1,43 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { 
   UserIcon,
   TrophyIcon,
   BuildingOfficeIcon,
   SparklesIcon,
-  ShieldCheckIcon
+  ShieldCheckIcon,
+  ArrowLeftIcon,
+  HomeIcon
 } from '@heroicons/react/24/outline';
 
 const Team = () => {
+  const { user } = useAuth();
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Navigation */}
+        <div className="mb-8">
+          {user ? (
+            <Link 
+              to="/dashboard" 
+              className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium"
+            >
+              <ArrowLeftIcon className="w-5 h-5 mr-2" />
+              Back to Dashboard
+            </Link>
+          ) : (
+            <Link 
+              to="/" 
+              className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium"
+            >
+              <ArrowLeftIcon className="w-5 h-5 mr-2" />
+              Back to Home
+            </Link>
+          )}
+        </div>
+
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
@@ -207,6 +234,42 @@ const Team = () => {
                 Striving for the highest quality in everything we build and deliver.
               </p>
             </div>
+          </div>
+        </div>
+
+        {/* Footer Navigation */}
+        <div className="mt-16 pt-8 border-t border-gray-200">
+          <div className="text-center">
+            <div className="flex justify-center space-x-6 mb-6">
+              {user ? (
+                <>
+                  <Link to="/dashboard" className="text-blue-600 hover:text-blue-700 font-medium">
+                    Dashboard
+                  </Link>
+                  <Link to="/lend" className="text-blue-600 hover:text-blue-700 font-medium">
+                    Lend Money
+                  </Link>
+                  <Link to="/borrow" className="text-blue-600 hover:text-blue-700 font-medium">
+                    Borrow Money
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link to="/" className="text-blue-600 hover:text-blue-700 font-medium">
+                    Home
+                  </Link>
+                  <Link to="/login" className="text-blue-600 hover:text-blue-700 font-medium">
+                    Sign In
+                  </Link>
+                  <Link to="/register" className="text-blue-600 hover:text-blue-700 font-medium">
+                    Get Started
+                  </Link>
+                </>
+              )}
+            </div>
+            <p className="text-gray-500 text-sm">
+              © 2025 Beyondx Informatics Analytics Pvt. Ltd.
+            </p>
           </div>
         </div>
       </div>

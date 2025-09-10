@@ -14,7 +14,7 @@ import {
   XMarkIcon
 } from '@heroicons/react/24/outline';
 import LoadingSpinner from '../components/LoadingSpinner';
-import toast from 'react-hot-toast';
+// Toast notifications replaced with modals
 
 const LoanDetail = () => {
   const { loanId } = useParams();
@@ -46,7 +46,7 @@ const LoanDetail = () => {
       setBlocks(blocksData);
     } catch (error) {
       console.error('Error fetching loan data:', error);
-      toast.error('Failed to fetch loan details');
+      console.error('Failed to fetch loan details');
     } finally {
       setLoading(false);
     }
@@ -295,23 +295,39 @@ const LoanDetail = () => {
                           )}
                         </div>
 
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                          <h3 className="font-medium text-green-900 mb-2">Payment Options</h3>
-                          <div className="space-y-2">
-                            <button
-                              onClick={() => navigate(`/repayment/${loan.id}`)}
-                              className="btn-primary w-full text-sm"
-                            >
-                              Make Payment
-                            </button>
-                            <button
-                              onClick={() => navigate(`/collection/${loan.id}`)}
-                              className="btn-outline w-full text-sm"
-                            >
-                              View Communications
-                            </button>
+                        {isBorrower && (
+                          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <h3 className="font-medium text-green-900 mb-2">Payment Options</h3>
+                            <div className="space-y-2">
+                              <button
+                                onClick={() => navigate(`/repayment/${loan.id}`)}
+                                className="btn-primary w-full text-sm"
+                              >
+                                Make Payment
+                              </button>
+                              <button
+                                onClick={() => navigate(`/collection/${loan.id}`)}
+                                className="btn-outline w-full text-sm"
+                              >
+                                View Communications
+                              </button>
+                            </div>
                           </div>
-                        </div>
+                        )}
+                        
+                        {isLender && (
+                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <h3 className="font-medium text-blue-900 mb-2">Lender Actions</h3>
+                            <div className="space-y-2">
+                              <button
+                                onClick={() => navigate(`/collection/${loan.id}`)}
+                                className="btn-outline w-full text-sm"
+                              >
+                                View Communications
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
 

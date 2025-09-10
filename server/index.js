@@ -15,12 +15,33 @@ app.use(cors({
   credentials: true
 }));
 
-// Rate limiting
+// Rate limiting - more lenient for development
+const isDevelopment = process.env.NODE_ENV === 'development';
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
+  max: isDevelopment ? 1000 : 100, // 1000 requests in dev, 100 in production
+  message: {
+    error: {
+      message: 'Too many requests, please try again later'
+    }
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 app.use(limiter);
+
+// More lenient rate limiting for auth routes
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: isDevelopment ? 50 : 10, // 50 login attempts in dev, 10 in production
+  message: {
+    error: {
+      message: 'Too many login attempts, please try again later'
+    }
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
@@ -95,7 +116,7 @@ async function initializeSettings() {
 }
 
 // Routes
-app.use('/api/auth', require('./routes/auth'));
+app.use('/api/auth', authLimiter, require('./routes/auth'));
 
 // Routes - setup immediately, MongoDB connection will be handled in route handlers
 console.log('🔗 Setting up all routes');
