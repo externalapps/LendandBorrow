@@ -3,6 +3,7 @@ const LoanService = require('../services/loanService');
 const Loan = require('../models/Loan');
 const { auth } = require('../middleware/auth');
 const User = require('../models/User');
+const inMemoryAuth = require('../services/inMemoryAuth');
 
 const router = express.Router();
 
@@ -95,7 +96,14 @@ router.get('/requests', auth, async (req, res) => {
     const borrowerIds = [...new Set(loanRequests.map(request => request.borrowerId))];
     console.log('🔍 Looking for borrowers with IDs:', borrowerIds);
     
-    const borrowers = await User.find({ id: { $in: borrowerIds } });
+    // Use in-memory auth service to get borrower data
+    const borrowers = [];
+    borrowerIds.forEach(id => {
+      const user = inMemoryAuth.findUserById(id);
+      if (user) {
+        borrowers.push(user);
+      }
+    });
     console.log('👥 Found borrowers:', borrowers.map(b => ({ id: b.id, name: b.name })));
     
     const borrowerMap = {};
@@ -135,10 +143,9 @@ router.get('/:loanId', auth, async (req, res) => {
       return res.status(404).json({ error: { message: 'Loan not found' } });
     }
     
-    // Manually populate user data
-    const User = require('../models/User');
-    const lender = await User.findOne({ id: loan.lenderId });
-    const borrower = await User.findOne({ id: loan.borrowerId });
+    // Manually populate user data using in-memory auth
+    const lender = inMemoryAuth.findUserById(loan.lenderId);
+    const borrower = inMemoryAuth.findUserById(loan.borrowerId);
     
     // Attach user data
     loan._doc.lender = lender ? {

@@ -44,19 +44,56 @@ const Landing = () => {
 
   return (
     <div className="min-h-screen">
+      {/* Header */}
+      <header className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <Link to="/" className="flex items-center space-x-3">
+              <img 
+                src="/logo.png" 
+                alt="Logo" 
+                className="w-10 h-10"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.nextSibling.style.display = 'flex';
+                }}
+              />
+              <div className="w-10 h-10 bg-gradient-to-r from-navy to-teal rounded-lg flex items-center justify-center hidden">
+                <span className="text-white font-bold text-sm">LB</span>
+              </div>
+              <span className="text-xl font-bold text-gray-900">Lend & Borrow</span>
+            </Link>
+            <div className="flex items-center space-x-4">
+              <Link 
+                to="/login" 
+                className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+              >
+                Sign In
+              </Link>
+              <Link 
+                to="/register" 
+                className="bg-gradient-to-r from-navy to-teal text-white px-4 py-2 rounded-md text-sm font-medium hover:from-navy-600 hover:to-teal-600 transition-all duration-200"
+              >
+                Get Started
+              </Link>
+            </div>
+          </div>
+        </div>
+      </header>
+
       {/* Hero Section */}
       <section className="gradient-bg text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6 animate-fade-in-up">
-              P2P Lending
+              Lend & Borrow
             </h1>
             <p className="text-xl md:text-2xl mb-8 text-gray-200 animate-fade-in-up">
-              Friend-to-Friend P2P Lending Platform
+              Smart Financial Solutions
             </p>
             <p className="text-lg mb-12 text-gray-300 max-w-3xl mx-auto animate-fade-in-up">
-              Lend and borrow money safely with friends. Complete KYC verification, 
-              secure escrow, flexible repayment terms, and transparent CIBIL reporting.
+              Connect with trusted friends for secure lending and borrowing. 
+              Simple, transparent, and reliable financial solutions.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up">
@@ -234,7 +271,7 @@ const Landing = () => {
               </div>
             </div>
             <p className="text-gray-400 mb-4">
-              Secure Lending Platform
+              Lend & Borrow Platform
             </p>
             <p className="text-sm text-gray-500">
               © 2025 Beyondx Informatics Analytics Pvt. Ltd.

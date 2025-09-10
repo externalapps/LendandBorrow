@@ -37,6 +37,12 @@ const Repayment = () => {
         getPaymentRequirements(loanId)
       ]);
       
+      // Check if current user is the borrower
+      if (loanData.borrowerId !== user.id) {
+        setLoading(false);
+        return; // This will show the access denied message
+      }
+      
       setLoan(loanData);
       setPaymentRequirements(requirementsData);
       

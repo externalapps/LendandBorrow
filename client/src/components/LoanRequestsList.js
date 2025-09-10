@@ -35,16 +35,31 @@ const LoanRequestsList = ({ loanRequests, onRequestAccepted, loading }) => {
   const handlePayNow = async (requestId) => {
     setProcessingId(requestId);
     try {
-      // For demo purposes, simulate payment
+      // Show Razorpay simulation
+      const request = requests.find(r => r.id === requestId);
+      if (!request) return;
+
+      // Simulate Razorpay payment flow
+      toast.loading('Opening Razorpay payment gateway...', { duration: 2000 });
+      
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      toast.loading('Processing payment...', { duration: 1500 });
+      
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Simulate successful payment
       const mockPaymentId = `pay_${Date.now()}`;
       await completeLoanPayment(requestId, mockPaymentId, 'Razorpay');
-      toast.success('Payment completed! Loan is now active.');
+      
+      toast.success(`Payment of ₹${request.amount} completed successfully! Loan is now active.`);
+      
       if (onRequestAccepted) {
         onRequestAccepted(requestId);
       }
     } catch (error) {
       console.error('Error completing payment:', error);
-      toast.error('Failed to complete payment');
+      toast.error('Payment failed. Please try again.');
     } finally {
       setProcessingId(null);
     }
@@ -185,7 +200,7 @@ const LoanRequestsList = ({ loanRequests, onRequestAccepted, loading }) => {
                     ) : (
                       <>
                         <BanknotesIcon className="w-5 h-5 mr-2" />
-                        Pay Now
+                        Fund Loan
                       </>
                     )}
                   </button>
