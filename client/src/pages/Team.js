@@ -17,7 +17,7 @@ const Team = () => {
             Our Team
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Meet the co-founders of PaySafe - innovative minds dedicated to revolutionizing 
+            Meet the co-founders - innovative minds dedicated to revolutionizing 
             peer-to-peer lending with cutting-edge technology and user-centric design.
           </p>
         </div>
@@ -25,6 +25,62 @@ const Team = () => {
         {/* Team Members */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
           
+          {/* Katta Sandeep Kumar */}
+          <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-500 to-purple-600 px-8 py-12">
+              <div className="flex items-center space-x-6">
+                <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-lg">
+                  <img 
+                    src="/sandeep.png" 
+                    alt="Katta Sandeep Kumar"
+                    className="w-20 h-20 rounded-full object-cover"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'block';
+                    }}
+                  />
+                  <UserIcon className="w-12 h-12 text-blue-600 hidden" />
+                </div>
+                <div className="text-white">
+                  <h2 className="text-2xl font-bold mb-2">Katta Sandeep Kumar</h2>
+                  <p className="text-blue-100 text-lg">Co-Founder</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-8">
+              <div className="space-y-6">
+                {/* About */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                    <UserIcon className="w-5 h-5 text-blue-600 mr-2" />
+                    About
+                  </h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    Co-founder with expertise in business development and strategic planning. 
+                    Passionate about creating innovative solutions that make a real difference 
+                    in people's lives.
+                  </p>
+                </div>
+
+                {/* Expertise */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                    <SparklesIcon className="w-5 h-5 text-purple-600 mr-2" />
+                    Expertise
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {['Business Strategy', 'Product Management', 'Market Analysis', 'Team Leadership', 'Strategic Planning'].map((skill) => (
+                      <span key={skill} className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Nandagiri Aditya */}
           <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
             <div className="bg-gradient-to-r from-teal-500 to-blue-600 px-8 py-12">
@@ -62,7 +118,7 @@ const Team = () => {
                         <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                         <span className="font-medium text-blue-900">Recognized Innovator</span>
                       </div>
-                      <p className="text-sm text-blue-700 ml-4">(TGIC/KR/INN/2025/007)</p>
+                      <p className="text-sm text-blue-700 ml-4">(TGIC/KR/INN/2025/007) by Innovation Cell, IT Ministry, Government of Telangana</p>
                     </div>
                     <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                       <div className="flex items-center space-x-2 mb-1">
@@ -76,7 +132,7 @@ const Team = () => {
                         <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
                         <span className="font-medium text-purple-900">Founder</span>
                       </div>
-                      <p className="text-sm text-purple-700 ml-4">Peppty & Beyondx</p>
+                      <p className="text-sm text-purple-700 ml-4">Peppty (2017) & Beyondx (2023)</p>
                     </div>
                     <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
                       <div className="flex items-center space-x-2 mb-1">
@@ -106,32 +162,6 @@ const Team = () => {
             </div>
           </div>
 
-          {/* Sandeep - Placeholder */}
-          <div className="bg-white rounded-2xl shadow-xl overflow-hidden border-2 border-dashed border-gray-300">
-            <div className="bg-gradient-to-r from-gray-400 to-gray-500 px-8 py-12">
-              <div className="flex items-center space-x-6">
-                <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-lg">
-                  <UserIcon className="w-12 h-12 text-gray-400" />
-                </div>
-                <div className="text-white">
-                  <h2 className="text-2xl font-bold mb-2">Sandeep</h2>
-                  <p className="text-gray-200 text-lg">Co-Founder</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="p-8">
-              <div className="text-center py-8">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <UserIcon className="w-8 h-8 text-gray-400" />
-                </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Co-Founder</h3>
-                <p className="text-gray-500">
-                  Co-founder information will be added here soon.
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Mission Statement */}

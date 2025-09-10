@@ -46,10 +46,18 @@ const Navbar = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/dashboard" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-navy to-teal rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">PS</span>
+            <img 
+              src="/logo.png" 
+              alt="Logo" 
+              className="w-8 h-8"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'flex';
+              }}
+            />
+            <div className="w-8 h-8 bg-gradient-to-r from-navy to-teal rounded-lg flex items-center justify-center hidden">
+              <span className="text-white font-bold text-sm">P2P</span>
             </div>
-            <span className="text-xl font-bold gradient-text">PaySafe</span>
           </Link>
 
           {/* Desktop Navigation */}

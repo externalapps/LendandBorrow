@@ -49,7 +49,7 @@ const Landing = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6 animate-fade-in-up">
-              PaySafe
+              P2P Lending
             </h1>
             <p className="text-xl md:text-2xl mb-8 text-gray-200 animate-fade-in-up">
               Friend-to-Friend P2P Lending Platform
@@ -83,7 +83,7 @@ const Landing = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Why Choose PaySafe?
+              Why Choose P2P Lending?
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               Built with security, transparency, and user experience in mind
@@ -176,7 +176,7 @@ const Landing = () => {
                 Everything You Need for Safe P2P Lending
               </h2>
               <p className="text-lg text-gray-600 mb-8">
-                PaySafe provides a complete platform for friend-to-friend lending 
+                P2P Lending provides a complete platform for friend-to-friend lending 
                 with enterprise-grade security and compliance features.
               </p>
               
@@ -199,7 +199,7 @@ const Landing = () => {
                   Ready to Get Started?
                 </h3>
                 <p className="text-gray-600 mb-6">
-                  Join thousands of users who trust PaySafe for their P2P lending needs
+                  Join thousands of users who trust P2P Lending for their P2P lending needs
                 </p>
                 <Link
                   to="/register"
@@ -223,7 +223,7 @@ const Landing = () => {
               <div className="w-8 h-8 bg-gradient-to-r from-navy to-teal rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">PS</span>
               </div>
-              <span className="text-xl font-bold">PaySafe</span>
+              <span className="text-xl font-bold">P2P Lending</span>
             </div>
             <p className="text-gray-400 mb-4">
               Secure P2P Lending Platform
