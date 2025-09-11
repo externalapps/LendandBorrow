@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || (process.env.NODE_ENV === 'production' ? 'https://lendandborrow.vercel.app/api' : 'http://localhost:5001/api');
+const API_BASE_URL = process.env.REACT_APP_API_URL || (process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:5001/api');
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -42,7 +42,7 @@ api.interceptors.response.use(
 
 // API endpoints
 export const authAPI = {
-  login: (email, password) => api.post('/auth/login', { email, password }),
+  login: (email, password) => api.post('/login', { email, password }),
   register: (userData) => api.post('/auth/register', userData),
   getMe: () => api.get('/auth/me'),
   sendOTP: (phone) => api.post('/auth/send-otp', { phone }),
