@@ -1,24 +1,4 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "client/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "client/build"
-      }
-    },
-    {
-      "src": "api/auth/login.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "client/build/$1"
-    }
-  ],
   "env": {
     "MONGODB_URI": "mongodb+srv://okatirendu77_db_user:4x5h2WxsbKx7D09a@lendandborrow.krnzcb9.mongodb.net/?retryWrites=true&w=majority&appName=lendandborrow",
     "JWT_SECRET": "f5babcb083fb4cb4bd123e639414a4e1",
