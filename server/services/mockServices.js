@@ -1,268 +1,161 @@
-const { v4: uuidv4 } = require('uuid');
-const Communication = require('../models/Communication');
+/**
+ * Mock services for use when MongoDB is not available
+ */
 
-class MockServices {
-  // Mock CIBIL reporting
-  static async reportToCIBIL(loanId, borrowerId, amountReported, blockNumber) {
-    try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Mock CIBIL response
-      const cibilResponse = {
-        success: true,
-        referenceId: `CIBIL_${loanId}_${blockNumber}_${Date.now()}`,
-        reportedAt: new Date(),
-        status: 'REPORTED',
-        message: 'Successfully reported to CIBIL database'
-      };
-
-      console.log(`📊 Mock CIBIL Report: ${amountReported} for loan ${loanId}, block ${blockNumber}`);
-      
-      return cibilResponse;
-    } catch (error) {
-      console.error('Mock CIBIL reporting error:', error);
-      throw error;
-    }
+const mockLoans = [
+  {
+    _id: 'loan_001',
+    borrowerId: 'user_001',
+    borrowerName: 'Priya Sharma',
+    lenderId: 'user_002',
+    lenderName: 'Arjun Kumar',
+    amount: 10000,
+    term: 30,
+    interestRate: 5,
+    purpose: 'Home renovation',
+    status: 'ACTIVE',
+    createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+    updatedAt: new Date(),
+    disbursedAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
+    nextPaymentDue: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+    outstanding: 10500
+  },
+  {
+    _id: 'loan_002',
+    borrowerId: 'user_003',
+    borrowerName: 'Suresh Patel',
+    lenderId: 'user_001',
+    lenderName: 'Priya Sharma',
+    amount: 5000,
+    term: 15,
+    interestRate: 3,
+    purpose: 'Education',
+    status: 'PENDING_APPROVAL',
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+    updatedAt: new Date(),
+  },
+  {
+    _id: 'loan_003',
+    borrowerId: 'user_002',
+    borrowerName: 'Arjun Kumar',
+    lenderId: 'user_003',
+    lenderName: 'Suresh Patel',
+    amount: 15000,
+    term: 60,
+    interestRate: 7,
+    purpose: 'Business expansion',
+    status: 'COMPLETED',
+    createdAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
+    updatedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+    disbursedAt: new Date(Date.now() - 89 * 24 * 60 * 60 * 1000),
+    completedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+    outstanding: 0
   }
+];
 
-  // Mock VoIP call
-  static async makeVoIPCall(loanId, borrowerPhone, borrowerName, outstanding, minPayment, blockEndDate) {
-    try {
-      const callId = uuidv4();
-      
-      // Generate call transcript
-      const transcript = `Hello ${borrowerName}, this is PaySafe reminder. Your outstanding amount is ₹${outstanding}. Minimum payment due this block is ₹${minPayment}. If unpaid by ${blockEndDate.toLocaleDateString()}, your remaining outstanding may be reported to CIBIL. Please make payment at your earliest convenience. Thank you for using PaySafe.`;
-
-      // Create communication record
-      const communication = new Communication({
-        id: callId,
-        loanId,
-        type: 'call',
-        template: 'payment_reminder',
-        transcript,
-        sentAt: new Date(),
-        status: 'DELIVERED',
-        recipientPhone: borrowerPhone,
-        metadata: {
-          blockNumber: 1, // This would be calculated based on current block
-          outstandingAmount: outstanding,
-          minPayment,
-          blockEndDate
-        }
-      });
-
-      await communication.save();
-
-      console.log(`📞 Mock VoIP Call made to ${borrowerPhone}: ${transcript}`);
-      
-      return {
-        callId,
-        transcript,
-        status: 'DELIVERED',
-        duration: Math.floor(Math.random() * 120) + 30 // 30-150 seconds
-      };
-    } catch (error) {
-      console.error('Mock VoIP call error:', error);
-      throw error;
+// Mock dashboard summary
+const getDashboardSummary = (userId) => {
+  const summary = {
+    totalBorrowed: 0,
+    totalLent: 0,
+    activeLoans: 0,
+    pendingLoans: 0,
+    completedLoans: 0,
+    upcomingPayments: []
+  };
+  
+  mockLoans.forEach(loan => {
+    if (loan.borrowerId === userId) {
+      summary.totalBorrowed += loan.amount;
     }
-  }
-
-  // Mock SMS
-  static async sendSMS(loanId, borrowerPhone, borrowerName, outstanding, minPayment, blockEndDate) {
-    try {
-      const smsId = uuidv4();
-      
-      // Generate SMS content
-      const message = `PaySafe: Hi ${borrowerName}, outstanding ₹${outstanding}, min due ₹${minPayment} by ${blockEndDate.toLocaleDateString()}. Pay now to avoid CIBIL reporting.`;
-
-      // Create communication record
-      const communication = new Communication({
-        id: smsId,
-        loanId,
-        type: 'sms',
-        template: 'payment_reminder_sms',
-        transcript: message,
-        sentAt: new Date(),
-        status: 'DELIVERED',
-        recipientPhone: borrowerPhone,
-        metadata: {
-          blockNumber: 1,
-          outstandingAmount: outstanding,
-          minPayment,
-          blockEndDate
-        }
-      });
-
-      await communication.save();
-
-      console.log(`📱 Mock SMS sent to ${borrowerPhone}: ${message}`);
-      
-      return {
-        smsId,
-        message,
-        status: 'DELIVERED'
-      };
-    } catch (error) {
-      console.error('Mock SMS error:', error);
-      throw error;
+    
+    if (loan.lenderId === userId) {
+      summary.totalLent += loan.amount;
     }
-  }
-
-  // Mock email
-  static async sendEmail(loanId, borrowerEmail, borrowerName, outstanding, minPayment, blockEndDate) {
-    try {
-      const emailId = uuidv4();
+    
+    if (loan.status === 'ACTIVE' && (loan.borrowerId === userId || loan.lenderId === userId)) {
+      summary.activeLoans++;
       
-      // Generate email content
-      const subject = 'PaySafe Payment Reminder';
-      const body = `
-Dear ${borrowerName},
-
-This is a payment reminder from PaySafe.
-
-Loan Details:
-- Outstanding Amount: ₹${outstanding}
-- Minimum Payment Due: ₹${minPayment}
-- Due Date: ${blockEndDate.toLocaleDateString()}
-
-Please make your payment before the due date to avoid any impact on your credit score.
-
-If you have already made the payment, please ignore this message.
-
-Best regards,
-PaySafe Team
-      `;
-
-      // Create communication record
-      const communication = new Communication({
-        id: emailId,
-        loanId,
-        type: 'email',
-        template: 'payment_reminder_email',
-        transcript: body,
-        sentAt: new Date(),
-        status: 'DELIVERED',
-        recipientEmail: borrowerEmail,
-        metadata: {
-          blockNumber: 1,
-          outstandingAmount: outstanding,
-          minPayment,
-          blockEndDate
-        }
-      });
-
-      await communication.save();
-
-      console.log(`📧 Mock Email sent to ${borrowerEmail}: ${subject}`);
-      
-      return {
-        emailId,
-        subject,
-        body,
-        status: 'DELIVERED'
-      };
-    } catch (error) {
-      console.error('Mock email error:', error);
-      throw error;
+      // Add upcoming payment if it's due within 7 days
+      if (loan.nextPaymentDue && new Date(loan.nextPaymentDue) < new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)) {
+        summary.upcomingPayments.push({
+          loanId: loan._id,
+          amount: loan.nextPaymentAmount || Math.round(loan.outstanding * 0.1),
+          dueDate: loan.nextPaymentDue
+        });
+      }
+    } else if (['PENDING_APPROVAL', 'PENDING_DISBURSAL'].includes(loan.status) && 
+               (loan.borrowerId === userId || loan.lenderId === userId)) {
+      summary.pendingLoans++;
+    } else if (loan.status === 'COMPLETED' && 
+               (loan.borrowerId === userId || loan.lenderId === userId)) {
+      summary.completedLoans++;
     }
+  });
+  
+  // Sort upcoming payments by due date
+  summary.upcomingPayments.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+  
+  return summary;
+};
+
+// Get loans for a user
+const getUserLoans = (userId, type, status) => {
+  let userLoans = mockLoans.filter(loan => 
+    (loan.borrowerId === userId || loan.lenderId === userId) && 
+    loan.status !== 'LOAN_REQUEST'
+  );
+  
+  // Apply type filter
+  if (type === 'lent') {
+    userLoans = userLoans.filter(loan => loan.lenderId === userId && loan.status !== 'LOAN_REQUEST');
+  } else if (type === 'borrowed') {
+    userLoans = userLoans.filter(loan => loan.borrowerId === userId && loan.status !== 'LOAN_REQUEST');
   }
-
-  // Mock Razorpay payment
-  static async processRazorpayPayment(amount, currency = 'INR') {
-    try {
-      // Simulate payment processing delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // Mock successful payment response
-      const paymentResponse = {
-        success: true,
-        paymentId: `pay_${uuidv4().replace(/-/g, '')}`,
-        amount: amount * 100, // Razorpay expects amount in paisa
-        currency,
-        status: 'captured',
-        method: 'netbanking',
-        description: 'PaySafe Escrow Payment',
-        createdAt: new Date(),
-        capturedAt: new Date()
-      };
-
-      console.log(`💳 Mock Razorpay Payment: ₹${amount} - ${paymentResponse.paymentId}`);
-      
-      return paymentResponse;
-    } catch (error) {
-      console.error('Mock Razorpay payment error:', error);
-      throw error;
-    }
+  
+  // Apply status filter
+  if (status) {
+    userLoans = userLoans.filter(loan => loan.status === status);
   }
+  
+  return userLoans;
+};
 
-  // Mock KYC verification
-  static async verifyKYC(pan, aadhaar, bankAccount, ifsc) {
-    try {
-      // Simulate KYC verification delay
-      await new Promise(resolve => setTimeout(resolve, 3000));
+// Create a new loan
+const createLoan = (lenderId, borrowerId, amount) => {
+  const lenderUser = { id: lenderId, name: 'Demo Lender' };
+  const borrowerUser = { id: borrowerId, name: 'Demo Borrower' };
+  
+  const newLoan = {
+    _id: `loan_${Date.now()}`,
+    lenderId: lenderUser.id,
+    lenderName: lenderUser.name,
+    borrowerId: borrowerUser.id,
+    borrowerName: borrowerUser.name,
+    amount: Number(amount),
+    term: 30,
+    interestRate: 5,
+    purpose: 'Demo purpose',
+    status: 'PENDING_APPROVAL',
+    createdAt: new Date(),
+    updatedAt: new Date()
+  };
+  
+  mockLoans.push(newLoan);
+  return newLoan;
+};
 
-      // Mock verification response
-      const verificationResponse = {
-        success: true,
-        verificationId: `kyc_${uuidv4()}`,
-        panVerified: true,
-        aadhaarVerified: true,
-        bankAccountVerified: true,
-        ifscVerified: true,
-        riskScore: Math.floor(Math.random() * 100) + 1,
-        verifiedAt: new Date(),
-        message: 'KYC verification completed successfully'
-      };
+// Get pending loan offers
+const getPendingOffers = (userId) => {
+  return mockLoans.filter(loan => 
+    loan.status === 'PENDING_APPROVAL' && loan.borrowerId === userId
+  );
+};
 
-      console.log(`🔍 Mock KYC Verification: PAN ${pan.slice(0, 2)}****${pan.slice(-2)} - ${verificationResponse.verificationId}`);
-      
-      return verificationResponse;
-    } catch (error) {
-      console.error('Mock KYC verification error:', error);
-      throw error;
-    }
-  }
-
-  // Get communication history for a loan
-  static async getCommunicationHistory(loanId) {
-    try {
-      const communications = await Communication.find({ loanId })
-        .sort({ sentAt: -1 });
-
-      return communications;
-    } catch (error) {
-      console.error('Get communication history error:', error);
-      throw error;
-    }
-  }
-
-  // Generate TTS audio (mock)
-  static async generateTTSAudio(transcript) {
-    try {
-      // Mock TTS generation
-      const audioUrl = `/api/mock/tts/${uuidv4()}.mp3`;
-      
-      console.log(`🎵 Mock TTS Audio generated: ${audioUrl}`);
-      
-      return {
-        audioUrl,
-        duration: Math.floor(transcript.length / 10) + 5, // Rough estimate
-        format: 'mp3',
-        quality: 'high'
-      };
-    } catch (error) {
-      console.error('Mock TTS generation error:', error);
-      throw error;
-    }
-  }
-}
-
-module.exports = MockServices;
-
-
-
-
-
-
-
+module.exports = {
+  getDashboardSummary,
+  getUserLoans,
+  createLoan,
+  getPendingOffers,
+  mockLoans
+};

@@ -4,6 +4,7 @@ const Loan = require('../models/Loan');
 const { auth } = require('../middleware/auth');
 const User = require('../models/User');
 const inMemoryAuth = require('../services/inMemoryAuth');
+const mockServices = require('../services/mockServices');
 
 const router = express.Router();
 
@@ -14,6 +15,15 @@ router.post('/', auth, async (req, res) => {
 
     if (!borrowerId || !principal || principal <= 0) {
       return res.status(400).json({ error: { message: 'Invalid loan parameters' } });
+    }
+
+    // If MongoDB is not connected, use mock service
+    if (!global.mongoConnected) {
+      const loan = mockServices.createLoan(req.user.id, borrowerId, principal);
+      return res.status(201).json({
+        message: 'Loan created successfully',
+        loan
+      });
     }
 
     const loan = await LoanService.createLoan(req.user.id, borrowerId, principal, req);
@@ -33,6 +43,12 @@ router.get('/', auth, async (req, res) => {
   try {
     const { type, status } = req.query;
     const userId = req.user.id;
+    
+    // If MongoDB is not connected, use mock service
+    if (!global.mongoConnected) {
+      const loans = mockServices.getUserLoans(userId, type, status);
+      return res.json({ loans });
+    }
 
     let query = {
       $or: [{ lenderId: userId }, { borrowerId: userId }]
