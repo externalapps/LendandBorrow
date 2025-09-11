@@ -1,5 +1,5 @@
-// Serverless function for login
-module.exports = async (req, res) => {
+// Vercel serverless function for login
+export default async function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -12,6 +12,7 @@ module.exports = async (req, res) => {
   }
 
   if (req.method !== 'POST') {
+    res.setHeader('Allow', ['POST']);
     return res.status(405).json({ error: { message: 'Method not allowed' } });
   }
 
@@ -24,8 +25,7 @@ module.exports = async (req, res) => {
       });
     }
 
-    // For demo purposes, we'll accept any login with a valid demo email
-    // This is ONLY for the demo - in a real app, you would validate passwords
+    // Demo users - in production, these work without password for demo purposes
     const mockUsers = [
       { id: 'user_001', email: 'priya@paysafe.com', name: 'Priya Sharma' },
       { id: 'user_002', email: 'arjun@paysafe.com', name: 'Arjun Kumar' },
@@ -47,10 +47,12 @@ module.exports = async (req, res) => {
       });
     }
 
-    // Mock JWT token
-    const token = 'mock-jwt-token-' + user.id;
+    // Generate mock JWT token
+    const token = 'mock-jwt-token-' + user.id + '-' + Date.now();
 
-    res.json({
+    console.log(`Login successful for ${email}`);
+
+    return res.status(200).json({
       message: 'Login successful',
       token,
       user: {
@@ -62,6 +64,6 @@ module.exports = async (req, res) => {
     });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ error: { message: 'Login failed' } });
+    return res.status(500).json({ error: { message: 'Login failed' } });
   }
-};
+}
