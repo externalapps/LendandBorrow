@@ -76,10 +76,10 @@ const Login = () => {
     }
   };
 
-  const handleDemoLogin = async (email, password) => {
+  const handleDemoLogin = async (email) => {
     setLoading(true);
     try {
-      const result = await login(email, password);
+      const result = await login(email);
       if (result.success) {
         navigate('/dashboard');
       }
