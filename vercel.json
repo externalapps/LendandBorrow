@@ -28,6 +28,8 @@
     "JWT_SECRET": "paysafe-jwt-secret-2024-very-secure-key",
     "NODE_ENV": "production",
     "CLIENT_URL": "https://lendandborrow.vercel.app",
-    "REACT_APP_API_URL": ""
+    "REACT_APP_API_URL": "",
+    "RAZORPAY_KEY_ID": "rzp_test_RFvYmAyAAJfrEb",
+    "RAZORPAY_KEY_SECRET": "vV7171QeDtQmvRfVbBba7J2I"
   }
 }
