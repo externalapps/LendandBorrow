@@ -59,9 +59,12 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
     // Validation
-    if (!email || !password) {
-      return res.status(400).json({ error: { message: 'Email and password are required' } });
+    if (!email) {
+      return res.status(400).json({ error: { message: 'Email is required' } });
     }
+    
+    // For demo purposes, make password optional
+    const demoPassword = 'demo123';
 
     // Find user
     const user = inMemoryAuth.findUserByEmail(email);
@@ -69,8 +72,9 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: { message: 'Invalid credentials' } });
     }
 
-    // Check password
-    const isMatch = inMemoryAuth.comparePassword(password, user.password);
+    // Check password - for demo purposes, allow demo123 or empty password
+    const actualPassword = password || demoPassword;
+    const isMatch = inMemoryAuth.comparePassword(actualPassword, user.password);
     if (!isMatch) {
       return res.status(401).json({ error: { message: 'Invalid credentials' } });
     }
