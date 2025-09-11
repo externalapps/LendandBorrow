@@ -1,5 +1,5 @@
 // Vercel serverless function for login
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -66,4 +66,4 @@ export default async function handler(req, res) {
     console.error('Login error:', error);
     return res.status(500).json({ error: { message: 'Login failed' } });
   }
-}
+};
