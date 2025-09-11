@@ -11,12 +11,21 @@
     {
       "src": "server/index.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "api/login.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
       "dest": "server/index.js"
+    },
+    {
+      "src": "/login",
+      "methods": ["POST", "OPTIONS"],
+      "dest": "api/login.js"
     },
     {
       "src": "/(.*)",
