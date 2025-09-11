@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { backgroundStyles } from '../components/BackgroundStyles';
 import { 
   BanknotesIcon, 
   ShieldCheckIcon, 
@@ -91,9 +92,9 @@ const Landing = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white" style={backgroundStyles.landing}>
       {/* Modern Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link to="/" className="flex items-center space-x-3 group">
@@ -134,8 +135,8 @@ const Landing = () => {
       </header>
 
       {/* Simple Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <section className="relative min-h-screen flex items-center justify-center">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center mt-16 bg-white/80 p-8 rounded-xl shadow-lg backdrop-blur-sm"> {/* Added mt-16 to move content down */}
           <div className={`transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             {/* Main Headline */}
             <h1 className="text-4xl md:text-6xl font-bold mb-6 text-gray-900">

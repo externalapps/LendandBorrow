@@ -1,7 +1,7 @@
 {
-  "name": "paysafe-server",
+  "name": "lendandborrow-server",
   "version": "1.0.0",
-  "description": "PaySafe backend server",
+  "description": "Lend & Borrow backend server",
   "main": "index.js",
   "scripts": {
     "dev": "nodemon index.js",

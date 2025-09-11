@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { cibilAPI } from '../services/api';
+import mockCibilService from '../services/mockCibilService';
 import { 
   ChartBarIcon, 
   DocumentTextIcon,
   ExclamationTriangleIcon,
   ArrowDownTrayIcon,
   EyeIcon,
-  CalendarIcon
+  CalendarIcon,
+  ShieldCheckIcon
 } from '@heroicons/react/24/outline';
 import LoadingSpinner from '../components/LoadingSpinner';
 import toast from 'react-hot-toast';
@@ -25,12 +27,15 @@ const CibilLog = () => {
   const fetchReports = async () => {
     setLoading(true);
     try {
-      const response = await cibilAPI.getReports({ borrowerId: user.id });
-      setReports(response.data.reports);
+      // Use mock service instead of real API
+      setTimeout(() => {
+        const mockReports = mockCibilService.getMockCibilReports(user.id);
+        setReports(mockReports);
+        setLoading(false);
+      }, 800); // Simulate API delay
     } catch (error) {
       console.error('Error fetching CIBIL reports:', error);
       toast.error('Failed to fetch CIBIL reports');
-    } finally {
       setLoading(false);
     }
   };
@@ -38,10 +43,16 @@ const CibilLog = () => {
   const handleExport = async () => {
     setExporting(true);
     try {
-      const response = await cibilAPI.exportReports();
+      // Create mock CSV data from reports
+      const csvHeader = 'Report ID,Loan ID,Block Number,Amount Reported,Reported Date,Status,CIBIL Reference\n';
+      const csvRows = reports.map(report => {
+        return `${report.id},${report.loanId.id},${report.blockNumber},${report.amountReported},${new Date(report.reportedAt).toISOString()},${report.status},${report.cibilReferenceId}`;
+      }).join('\n');
+      
+      const csvContent = csvHeader + csvRows;
       
       // Create blob and download
-      const blob = new Blob([response.data], { type: 'text/csv' });
+      const blob = new Blob([csvContent], { type: 'text/csv' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -51,10 +62,10 @@ const CibilLog = () => {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
       
-      toast.success('CIBIL reports exported successfully!');
+      toast('CIBIL reports exported successfully!', { icon: '✅' });
     } catch (error) {
       console.error('Error exporting reports:', error);
-      toast.error('Failed to export CIBIL reports');
+      toast('Failed to export CIBIL reports', { icon: '❌' });
     } finally {
       setExporting(false);
     }
@@ -340,12 +351,14 @@ const CibilLog = () => {
         {/* Demo Notice */}
         <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="flex items-start">
-            <ExclamationTriangleIcon className="w-5 h-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" />
+            <ShieldCheckIcon className="w-5 h-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" />
             <div>
-              <h3 className="text-sm font-medium text-blue-900">Demo Mode</h3>
+              <h3 className="text-sm font-medium text-blue-900">Demo Mode - Dummy Data</h3>
               <p className="text-sm text-blue-700 mt-1">
-                This is a demonstration. CIBIL reports are simulated and not sent to actual credit bureaus. 
-                In a real application, this would integrate with actual CIBIL APIs and credit reporting systems.
+                This is a demonstration with completely dummy data. These CIBIL reports are randomly generated and 
+                have no connection to any real loans or payments in the system. In a real application, this would 
+                integrate with actual CIBIL APIs and credit reporting systems, and reports would be generated based 
+                on actual missed payments.
               </p>
             </div>
           </div>

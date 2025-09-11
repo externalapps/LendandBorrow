@@ -159,7 +159,9 @@ router.get('/:loanId', auth, async (req, res) => {
       id: borrower.id,
       name: borrower.name,
       phone: borrower.phone,
-      email: borrower.email
+      email: borrower.email,
+      kycStatus: borrower.kycStatus,
+      kycVerified: borrower.kycStatus === 'VERIFIED'
     } : { id: loan.borrowerId };
 
     // Calculate additional loan details
@@ -252,8 +254,7 @@ router.get('/pending/offers', auth, async (req, res) => {
   try {
     const loans = await Loan.find({
       borrowerId: req.user.id,
-      status: 'PENDING_BORROWER_ACCEPT',
-      escrowStatus: 'FUNDED'
+      status: 'PENDING_BORROWER_ACCEPT' // Only show loans that haven't been accepted yet
     }).sort({ createdAt: -1 });
     
     // Manually populate user data
@@ -353,11 +354,9 @@ router.post('/request', auth, async (req, res) => {
       return res.status(400).json({ error: { message: 'Lender ID is required' } });
     }
 
-    if (!kycData) {
-      return res.status(400).json({ error: { message: 'KYC verification is required' } });
-    }
+    // KYC verification is checked via user.kycStatus in the database
 
-    // Create a loan request in pending state for the specific lender
+    // Create a loan request for the specific lender
     const loanRequest = await LoanService.createLoanRequest(borrowerId, principal, purpose, repaymentPlan, lenderId, kycData, req);
     
     res.status(201).json({

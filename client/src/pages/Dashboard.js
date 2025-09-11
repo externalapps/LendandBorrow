@@ -19,21 +19,22 @@ const Dashboard = () => {
   const { dashboardData, fetchDashboardData, loading, fetchLoans } = useLoan();
   const [recentLoans, setRecentLoans] = useState([]);
 
-  useEffect(() => {
-    if (user) {
-      fetchDashboardData();
-      fetchRecentLoans();
-    }
-  }, [user]);
-
-  const fetchRecentLoans = async () => {
+  const fetchRecentLoans = React.useCallback(async () => {
+    if (!fetchLoans) return;
     try {
       const loans = await fetchLoans();
       setRecentLoans(loans.slice(0, 5));
     } catch (error) {
       console.error('Error fetching recent loans:', error);
     }
-  };
+  }, [fetchLoans]);
+  
+  useEffect(() => {
+    if (user && fetchDashboardData && fetchRecentLoans) {
+      fetchDashboardData();
+      fetchRecentLoans();
+    }
+  }, [user, fetchDashboardData, fetchRecentLoans]);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-IN', {
@@ -49,6 +50,7 @@ const Dashboard = () => {
       case 'ACTIVE': return 'text-green-600 bg-green-100';
       case 'COMPLETED': return 'text-blue-600 bg-blue-100';
       case 'PENDING_BORROWER_ACCEPT': return 'text-yellow-600 bg-yellow-100';
+      case 'PENDING_LENDER_FUNDING': return 'text-orange-600 bg-orange-100';
       case 'DEFAULT_REPORTED': return 'text-red-600 bg-red-100';
       default: return 'text-gray-600 bg-gray-100';
     }

@@ -1,7 +1,7 @@
 {
-  "name": "paysafe-fullstack",
+  "name": "lendandborrow-fullstack",
   "version": "2.0.0",
-  "description": "PaySafe P2P Lending Platform - Full Stack",
+  "description": "Lend & Borrow P2P Lending Platform - Full Stack",
   "scripts": {
     "build": "cd client && npm run build",
     "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",

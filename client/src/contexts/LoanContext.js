@@ -43,6 +43,9 @@ export const LoanProvider = ({ children }) => {
       setLoading(false);
     }
   };
+  
+  // Make fetchLoans available as a memoized function
+  const memoizedFetchLoans = React.useCallback(fetchLoans, []);
 
   const fetchLoanById = async (loanId) => {
     try {
@@ -65,10 +68,13 @@ export const LoanProvider = ({ children }) => {
       return null;
     }
   };
+  
+  // Make fetchDashboardData available as a memoized function
+  const memoizedFetchDashboardData = React.useCallback(fetchDashboardData, []);
 
-  const createLoan = async (borrowerId, principal) => {
+  const createLoan = async (borrowerId, principal, repaymentDate) => {
     try {
-      const response = await api.post('/loans', { borrowerId, principal });
+      const response = await api.post('/loans', { borrowerId, principal, repaymentDate });
       console.log('Loan created successfully!');
       await fetchLoans();
       await fetchDashboardData();
@@ -200,9 +206,9 @@ export const LoanProvider = ({ children }) => {
     }
   };
   
-  const acceptLoanRequest = async (requestId) => {
+  const acceptLoanRequest = async (requestId, repaymentDate) => {
     try {
-      const response = await api.post(`/loans/requests/${requestId}/accept`);
+      const response = await api.post(`/loans/requests/${requestId}/accept`, { repaymentDate });
       console.log('Loan request accepted successfully!');
       await fetchLoans();
       await fetchDashboardData();
@@ -235,9 +241,9 @@ export const LoanProvider = ({ children }) => {
     loans,
     dashboardData,
     loading,
-    fetchLoans,
+    fetchLoans: memoizedFetchLoans,
     fetchLoanById,
-    fetchDashboardData,
+    fetchDashboardData: memoizedFetchDashboardData,
     createLoan,
     fundEscrow,
     acceptLoanTerms,

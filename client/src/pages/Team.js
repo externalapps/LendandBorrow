@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { backgroundStyles } from '../components/BackgroundStyles';
 import { useAuth } from '../contexts/AuthContext';
 import { 
   UserIcon,
@@ -15,8 +16,8 @@ const Team = () => {
   const { user } = useAuth();
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="min-h-screen" style={backgroundStyles.team}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 bg-white/90 rounded-xl shadow-lg">
         {/* Navigation */}
         <div className="mb-8">
           {user ? (
@@ -88,6 +89,34 @@ const Team = () => {
                     Passionate about creating innovative solutions that make a real difference 
                     in people's lives.
                   </p>
+                </div>
+
+                {/* Contact Information */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                    <BuildingOfficeIcon className="w-5 h-5 text-blue-600 mr-2" />
+                    Contact & Links
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                        <span className="text-green-600 text-sm">📱</span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">Phone</p>
+                        <a href="tel:+919700883504" className="text-sm text-blue-600 hover:text-blue-800">+91 97008 83504</a>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                        <span className="text-blue-600 text-sm">💼</span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">LinkedIn</p>
+                        <a href="https://www.linkedin.com/in/katta-sandeep-94b858125/" target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:text-blue-800">linkedin.com/in/katta-sandeep-94b858125</a>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Expertise */}
@@ -167,6 +196,58 @@ const Team = () => {
                         <span className="font-medium text-orange-900">AI Developer</span>
                       </div>
                       <p className="text-sm text-orange-700 ml-4">Machine Learning & AI Solutions</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Contact Information */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                    <BuildingOfficeIcon className="w-5 h-5 text-blue-600 mr-2" />
+                    Contact & Links
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                        <span className="text-green-600 text-sm">📱</span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">WhatsApp</p>
+                        <a href="https://wa.me/919505009699" className="text-sm text-blue-600 hover:text-blue-800">+91 95050 09699</a>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                        <span className="text-blue-600 text-sm">📧</span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">Email</p>
+                        <div className="space-y-1">
+                          <a href="mailto:ceo@beyondxia.online" className="text-sm text-blue-600 hover:text-blue-800 block">ceo@beyondxia.online</a>
+                          <a href="mailto:aideveloperindia@gmail.com" className="text-sm text-blue-600 hover:text-blue-800 block">aideveloperindia@gmail.com</a>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                        <span className="text-blue-600 text-sm">💼</span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">LinkedIn</p>
+                        <a href="https://www.linkedin.com/in/aditya-nanda" target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:text-blue-800">linkedin.com/in/aditya-nanda</a>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                        <span className="text-purple-600 text-sm">🌐</span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">Websites</p>
+                        <div className="space-y-1">
+                          <a href="https://aideveloperindia.store/" target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:text-blue-800 block">aideveloperindia.store</a>
+                          <a href="https://www.switch-phone.in/" target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:text-blue-800 block">switch-phone.in</a>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>

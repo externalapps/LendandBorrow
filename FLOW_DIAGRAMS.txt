@@ -1,0 +1,83 @@
+
+
+1.Direct lending i. L selects a contact B, sends offer to B ii.  B undergoes KYC consists of four steps Aadhar & PAN Card upload, Bank details upload,live photo upload, live  Video, once verified, this update is shared to L iii. L then funds the loan to B and pays through Razorpay.  2. Borrowing i. B undergoes KYC consists of four steps Aadhar & PAN Card upload, Bank details upload,live photo upload, live  Video, once verified,B can enter details in Loan request sub-section in Borrowing section,  this request is shared to L in their Loan Requests sub-section of Lending Section. ii.  L then accepts and funds the loan and pays through Razorpay.
+
+
+
+
+
+
+
+LEND AND BORROW SYSTEM - FLOW DIAGRAMS
+=============================================
+
+### Direct Lending Diagram
+```
+[Start: L sends offer (L's account: Lending Section via Navbar → Lend Money, Direct Lending sub-section)]
+     ↓
+[B's account: Dashboard/Borrowing (Navbar → Borrow Money)]
+  [Sub-section: Loan Offers tab]
+    [Button: "Accept Loan" (clicked by B)]
+      ↓
+    What happens: B redirects to KYC.
+      ↓
+[B's account: KYC Page]
+  [Sub-sections: Step 1 (PAN/Aadhaar) → Step 2 (Bank) → Step 3 (Selfie) → Step 4 (Video)]
+    [Buttons: "Next" (Steps 1-3) → "Complete KYC" (Step 4) (clicked by B)]
+      ↓
+    What happens: B completes KYC. Loan auto-accepted. Navigates to Loan Detail.
+      ↓
+[L's account: Loan Detail (accessed from Dashboard)]
+  [Sub-section: Loan Overview]
+    [Button: "Fund Loan" (clicked by L)]
+      ↓
+    What happens: L funds via Razorpay. Loan ACTIVE.
+      ↓
+[End]
+```
+
+### Borrowing Diagram
+```
+[Start: B initiates request (B's account: Borrowing Section via Navbar → Borrow Money, Request Loan sub-section)]
+     ↓
+[B's account: Borrowing (Navbar → Borrow Money)]
+  [Sub-section: Request Loan tab]
+    [Button: "Submit Request" (clicked by B)]
+      ↓
+    What happens: B redirects to KYC.
+      ↓
+[B's account: KYC Page]
+  [Sub-sections: Step 1 (PAN/Aadhaar) → Step 2 (Bank) → Step 3 (Selfie) → Step 4 (Video)]
+    [Buttons: "Next" (Steps 1-3) → "Complete KYC" (Step 4) (clicked by B)]
+      ↓
+    What happens: B completes KYC. Navigates back to Request Loan sub-section.
+      ↓
+[B's account: Borrowing (Navbar → Borrow Money)]
+  [Sub-section: Request Loan tab]
+    [Button: "Submit Request" (clicked by B)]
+      ↓
+    What happens: B submits details. Request sent to L (L's account: Lending Section, Loan Requests sub-section).
+      ↓
+[L's account: Lending (Navbar → Lend Money)]
+  [Sub-section: Loan Requests tab]
+    [Button: "Accept Request" (clicked by L)]
+      ↓
+    What happens: L accepts.
+      ↓
+[L's account: Loan Detail (accessed from Dashboard)]
+  [Sub-section: Loan Overview]
+    [Button: "Fund Loan" (clicked by L)]
+      ↓
+    What happens: L funds via Razorpay. Loan ACTIVE.
+      ↓
+[End]
+```
+
+### Key Notes:
+- L = Lender, B = Borrower
+- KYC is always done fresh (no pre-verification checks)
+- Direct Lending: L sends offer → B does KYC → L funds
+- Borrowing: B does KYC → B requests → L accepts and funds
+- No unnecessary borrower acceptance steps after funding
+
+

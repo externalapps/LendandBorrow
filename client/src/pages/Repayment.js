@@ -47,9 +47,15 @@ const Repayment = () => {
       setLoan(loanData);
       setPaymentRequirements(requirementsData);
       
-      // Set default amount to minimum required
-      if (requirementsData) {
+      // Make sure outstanding amount is available
+      if (loanData && loanData.outstanding > 0) {
+        // Set default amount to full outstanding amount
+        setAmount(loanData.outstanding.toString());
+      } else if (requirementsData && requirementsData.totalRequired > 0) {
         setAmount(requirementsData.totalRequired.toString());
+      } else {
+        // Fallback to a minimum amount
+        setAmount("100");
       }
     } catch (error) {
       console.error('Error fetching loan data:', error);
@@ -73,9 +79,6 @@ const Repayment = () => {
     if (!value || numValue <= 0) {
       return 'Please enter a valid amount';
     }
-    if (numValue < paymentRequirements.minPayment) {
-      return `Minimum payment required is ${formatCurrency(paymentRequirements.minPayment)}`;
-    }
     if (numValue > loan.outstanding + (paymentRequirements.blockFee || 0)) {
       return 'Payment amount cannot exceed outstanding amount plus fees';
     }
@@ -94,9 +97,13 @@ const Repayment = () => {
   };
 
   const handleQuickAmount = (percentage) => {
-    if (!paymentRequirements) return;
+    if (!loan || !loan.outstanding) return;
     
-    const quickAmount = Math.round((loan.outstanding * percentage) * 100) / 100;
+    const outstanding = loan.outstanding || 0;
+    const quickAmount = Math.round((outstanding * percentage) * 100) / 100;
+    
+    if (quickAmount <= 0) return;
+    
     setAmount(quickAmount.toString());
     
     const error = validateAmount(quickAmount.toString());
@@ -141,12 +148,15 @@ const Repayment = () => {
     return new Promise((resolve, reject) => {
       script.onload = () => {
         const options = {
-          key: 'rzp_test_1DP5mmOlF5G5ag', // Test key - replace with your actual key
+          key: 'rzp_test_1DP5mmOlF5G5ag', // Test key
           amount: amount * 100, // Amount in paisa
           currency: 'INR',
           name: 'Lend & Borrow',
           description: 'Loan Repayment',
           image: '/logo.png',
+          theme: {
+            color: "#0b1540"
+          },
           handler: async function (response) {
             try {
               await makePayment(loanId, amount);
@@ -165,11 +175,16 @@ const Repayment = () => {
           }
         };
 
-        const rzp = new window.Razorpay(options);
-        rzp.on('payment.failed', function (response) {
-          reject(new Error('Payment failed'));
-        });
-        rzp.open();
+        if (typeof window.Razorpay === 'function') {
+          const rzp = new window.Razorpay(options);
+          rzp.on('payment.failed', function (response) {
+            reject(new Error('Payment failed'));
+          });
+          rzp.open();
+        } else {
+          console.error('Razorpay not loaded');
+          reject(new Error('Payment gateway not loaded. Please refresh the page and try again.'));
+        }
       };
 
       script.onerror = () => {
@@ -320,8 +335,8 @@ const Repayment = () => {
                       <p className="form-error">{errors.amount}</p>
                     )}
                     <p className="text-sm text-gray-500 mt-1">
-                      Minimum: {formatCurrency(paymentRequirements.minPayment)} | 
-                      Maximum: {formatCurrency(paymentRequirements.outstanding + paymentRequirements.blockFee)}
+                      Minimum: {formatCurrency(1)} | 
+                      Maximum: {formatCurrency((loan?.outstanding || 0) + (paymentRequirements?.blockFee || 0))}
                     </p>
                   </div>
 
@@ -330,10 +345,14 @@ const Repayment = () => {
                     <label className="form-label">Quick Amounts</label>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       {[
-                        { label: 'Min Payment', value: paymentRequirements.minPayment },
-                        { label: '25%', percentage: 0.25 },
-                        { label: '50%', percentage: 0.50 },
-                        { label: 'Full Amount', value: paymentRequirements.outstanding + paymentRequirements.blockFee }
+                        { label: '25% Payment', percentage: 0.25 },
+                        { label: '50% Payment', percentage: 0.50 },
+                        { label: '75% Payment', percentage: 0.75 },
+                        { 
+                          label: 'Full Amount', 
+                          value: (loan && loan.outstanding > 0) ? loan.outstanding + (paymentRequirements?.blockFee || 0) : 0,
+                          highlight: true 
+                        }
                       ].map((option, index) => (
                         <button
                           key={index}
@@ -346,12 +365,13 @@ const Repayment = () => {
                               setErrors({});
                             }
                           }}
-                          className="p-3 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                          className={`p-3 text-sm border ${option.highlight ? 'border-green-500 bg-green-50 hover:bg-green-100' : 'border-gray-300 hover:bg-gray-50'} rounded-lg transition-colors`}
                         >
                           {option.label}
                           <br />
-                          <span className="font-medium">
-                            {formatCurrency(option.value || (loan.outstanding * option.percentage))}
+                          <span className={`font-medium ${option.highlight ? 'text-green-700' : ''}`}>
+                            {formatCurrency(option.value !== undefined ? option.value : 
+                              (loan && loan.outstanding > 0 ? (loan.outstanding * (option.percentage || 0)) : 0))}
                           </span>
                         </button>
                       ))}
@@ -430,19 +450,19 @@ const Repayment = () => {
                     <div className="space-y-1 text-sm text-gray-600">
                       <div className="flex justify-between">
                         <span>Outstanding:</span>
-                        <span className="font-medium">{formatCurrency(paymentRequirements.outstanding)}</span>
+                        <span className="font-medium">{formatCurrency(loan?.outstanding || 0)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Block Fee:</span>
-                        <span className="font-medium">{formatCurrency(paymentRequirements.blockFee)}</span>
+                        <span className="font-medium">{formatCurrency(paymentRequirements?.blockFee || 0)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Min Payment:</span>
-                        <span className="font-medium">{formatCurrency(paymentRequirements.minPayment)}</span>
+                        <span>Full Payment:</span>
+                        <span className="font-medium text-green-600">Available anytime</span>
                       </div>
                       <div className="flex justify-between border-t pt-2">
-                        <span className="font-medium">Total Required:</span>
-                        <span className="font-bold text-lg">{formatCurrency(paymentRequirements.totalRequired)}</span>
+                        <span className="font-medium">Total Outstanding:</span>
+                        <span className="font-bold text-lg">{formatCurrency(loan?.outstanding || 0)}</span>
                       </div>
                     </div>
                   </div>

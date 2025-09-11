@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useLoan } from '../contexts/LoanContext';
 import { userAPI } from '../services/api';
 import { 
   DocumentTextIcon, 
   PhotoIcon, 
   CheckCircleIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  VideoCameraIcon
 } from '@heroicons/react/24/outline';
 import LoadingSpinner from '../components/LoadingSpinner';
+import VideoKYC from '../components/VideoKYC';
 import toast from 'react-hot-toast';
 
 const KYC = () => {
@@ -17,14 +20,17 @@ const KYC = () => {
     aadhaar: '',
     bankAccount: '',
     ifsc: '',
-    selfieUrl: ''
+    selfieUrl: '',
+    videoKycCompleted: false
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [currentStep, setCurrentStep] = useState(1);
 
   const { user, updateUser } = useAuth();
+  const { acceptLoanTerms } = useLoan();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -67,8 +73,6 @@ const KYC = () => {
 
       if (!formData.ifsc) {
         newErrors.ifsc = 'IFSC code is required';
-      } else if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(formData.ifsc)) {
-        newErrors.ifsc = 'Invalid IFSC code format';
       }
     }
 
@@ -102,7 +106,7 @@ const KYC = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!validateStep(2)) {
+    if (!validateStep(2) || !formData.videoKycCompleted) {
       return;
     }
 
@@ -110,8 +114,36 @@ const KYC = () => {
     try {
       const response = await userAPI.updateKYC(formData);
       updateUser(response.data.user);
-      toast.success('KYC completed successfully!');
-      navigate('/dashboard');
+      toast.success('KYC completed successfully! You can now receive loan funds.');
+      
+      // Check where to return after KYC completion
+      const fromDirectLoan = location.state?.fromDirectLoan;
+      const flowType = location.state?.flowType;
+      const returnTo = location.state?.returnTo;
+      
+      if (fromDirectLoan && flowType === 'direct') {
+        // Direct lending flow - show T&C first, then accept
+        toast.success('KYC completed successfully!');
+        // Navigate to loan detail page with showTermsModal flag
+        navigate(`/loan/${fromDirectLoan}`, { state: { showTermsModal: true, fromKYC: true } });
+      } else if (returnTo) {
+        // For borrowing flow, redirect to Request Loan tab with verified message
+        if (returnTo === '/borrow') {
+          navigate('/borrow', { 
+            state: { 
+              activeTab: 'request', 
+              showTermsModal: true,
+              kycVerified: true
+            } 
+          });
+        } else {
+          // Return to the page that requested KYC
+          navigate(returnTo);
+        }
+      } else {
+        // Default fallback - return to dashboard
+        navigate('/dashboard');
+      }
     } catch (error) {
       const message = error.response?.data?.error?.message || 'KYC submission failed';
       toast.error(message);
@@ -123,7 +155,8 @@ const KYC = () => {
   const steps = [
     { number: 1, title: 'Identity Verification', description: 'PAN & Aadhaar' },
     { number: 2, title: 'Bank Details', description: 'Account & IFSC' },
-    { number: 3, title: 'Selfie Verification', description: 'Photo Upload' }
+    { number: 3, title: 'Selfie Verification', description: 'Photo Upload' },
+    { number: 4, title: 'Video Verification', description: '10-Second Recording' }
   ];
 
   return (
@@ -342,6 +375,34 @@ const KYC = () => {
                 </div>
               )}
 
+              {/* Step 4: Video KYC */}
+              {currentStep === 4 && (
+                <div className="space-y-6">
+                  <div className="text-center mb-6">
+                    <VideoCameraIcon className="w-12 h-12 text-teal-600 mx-auto mb-4" />
+                    <h2 className="text-xl font-semibold text-gray-900">
+                      Video KYC Verification
+                    </h2>
+                    <p className="text-gray-600">
+                      Record a short video to complete your verification
+                    </p>
+                  </div>
+                  
+                  <VideoKYC 
+                    onKYCComplete={(kycData) => {
+                      setFormData(prev => ({
+                        ...prev,
+                        videoKycCompleted: true
+                      }));
+                      toast.success('Video verification completed!');
+                    }}
+                    onKYCError={(error) => {
+                      toast.error('Video verification failed. Please try again.');
+                    }}
+                  />
+                </div>
+              )}
+
               {/* Demo Notice */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
                 <div className="flex items-start">
@@ -367,18 +428,19 @@ const KYC = () => {
                   Previous
                 </button>
 
-                {currentStep < 3 ? (
+                {currentStep < 4 ? (
                   <button
                     type="button"
                     onClick={handleNext}
                     className="btn-primary"
+                    disabled={(currentStep === 3 && !formData.selfieUrl)}
                   >
                     Next
                   </button>
                 ) : (
                   <button
                     type="submit"
-                    disabled={loading || !formData.selfieUrl}
+                    disabled={loading || !formData.videoKycCompleted}
                     className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                   >
                     {loading ? (

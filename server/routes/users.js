@@ -155,10 +155,10 @@ router.get('/dashboard/summary', auth, async (req, res) => {
     const totalLent = loansGiven.reduce((sum, loan) => sum + loan.principal, 0);
     const activeLoansGiven = loansGiven.filter(loan => loan.status === 'ACTIVE').length;
 
-    // Get loans where user is borrower (exclude LOAN_REQUEST status)
+    // Get loans where user is borrower (include all loans except CANCELLED)
     const loansTaken = await Loan.find({ 
       borrowerId: userId, 
-      status: { $ne: 'LOAN_REQUEST' } 
+      status: { $ne: 'CANCELLED' } 
     });
     const totalBorrowed = loansTaken.reduce((sum, loan) => sum + loan.principal, 0);
     const activeLoansTaken = loansTaken.filter(loan => loan.status === 'ACTIVE').length;
@@ -226,6 +226,108 @@ router.get('/dashboard/summary', auth, async (req, res) => {
   } catch (error) {
     console.error('Dashboard summary error:', error);
     res.status(500).json({ error: { message: 'Failed to fetch dashboard data' } });
+  }
+});
+
+// Update user KYC data (support both PUT and POST)
+router.put('/kyc', auth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const kycData = req.body;
+    
+    // Validate KYC data
+    if (!kycData.pan || !kycData.aadhaar || !kycData.bankAccount || !kycData.ifsc) {
+      return res.status(400).json({ 
+        error: { message: 'Missing required KYC fields' } 
+      });
+    }
+    
+    // Find the user in the in-memory store
+    const inMemoryAuth = require('../services/inMemoryAuth');
+    const user = inMemoryAuth.findUserById(userId);
+    
+    if (!user) {
+      return res.status(404).json({ 
+        error: { message: 'User not found' } 
+      });
+    }
+    
+    // Update KYC data
+    user.kycStatus = 'VERIFIED';
+    user.kycData = {
+      ...kycData,
+      verifiedAt: new Date()
+    };
+    
+    // Log audit
+    await logAudit(userId, 'KYC_UPDATED', { kycStatus: 'VERIFIED' }, req);
+    
+    res.json({
+      message: 'KYC updated successfully',
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        kycStatus: user.kycStatus
+      }
+    });
+  } catch (error) {
+    console.error('KYC update error:', error);
+    res.status(500).json({ 
+      error: { message: 'Failed to update KYC data' } 
+    });
+  }
+});
+
+// Also support POST for KYC updates (some browsers/clients have issues with PUT)
+router.post('/kyc', auth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const kycData = req.body;
+    
+    // Validate KYC data
+    if (!kycData.pan || !kycData.aadhaar || !kycData.bankAccount || !kycData.ifsc) {
+      return res.status(400).json({ 
+        error: { message: 'Missing required KYC fields' } 
+      });
+    }
+    
+    // Find the user in the in-memory store
+    const inMemoryAuth = require('../services/inMemoryAuth');
+    const user = inMemoryAuth.findUserById(userId);
+    
+    if (!user) {
+      return res.status(404).json({ 
+        error: { message: 'User not found' } 
+      });
+    }
+    
+    // Update KYC data
+    user.kycStatus = 'VERIFIED';
+    user.kycData = {
+      ...kycData,
+      verifiedAt: new Date()
+    };
+    
+    // Log audit
+    await logAudit(userId, 'KYC_UPDATED', { kycStatus: 'VERIFIED' }, req);
+    
+    res.json({
+      message: 'KYC updated successfully',
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        kycStatus: user.kycStatus
+      }
+    });
+  } catch (error) {
+    console.error('KYC update error:', error);
+    res.status(500).json({ 
+      error: { message: 'Failed to update KYC data' } 
+    });
   }
 });
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { backgroundStyles } from '../components/BackgroundStyles';
 import { useAuth } from '../contexts/AuthContext';
 import { useModal } from '../contexts/ModalContext';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
@@ -100,8 +101,8 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8" style={backgroundStyles.register}>
+      <div className="max-w-md w-full space-y-8 bg-white/90 p-8 rounded-2xl shadow-xl">
         {/* Header */}
         <div className="text-center">
           <Link to="/" className="flex items-center justify-center space-x-3 mb-6">

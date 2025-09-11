@@ -66,6 +66,7 @@ const loanSchema = new mongoose.Schema({
       'LOAN_REQUEST',
       'PENDING_PAYMENT',
       'PENDING_BORROWER_ACCEPT',
+      'PENDING_LENDER_FUNDING',
       'ACTIVE',
       'COMPLETED',
       'DEFAULT_REPORTED',

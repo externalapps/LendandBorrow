@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LoanProvider } from './contexts/LoanContext';
 import { ModalProvider } from './contexts/ModalContext';
+import { Toaster } from 'react-hot-toast';
+import BackgroundStyles from './components/BackgroundStyles';
 
 // Components
 import Navbar from './components/Navbar';
@@ -64,7 +66,9 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <BackgroundStyles />
       {user && <Navbar />}
+      <Toaster position="top-right" />
       
       <main className={user ? 'pt-16' : ''}>
         <Routes>

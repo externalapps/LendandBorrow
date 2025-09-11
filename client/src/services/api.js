@@ -52,7 +52,7 @@ export const authAPI = {
 export const userAPI = {
   getUsers: () => api.get('/users'),
   getUser: (userId) => api.get(`/users/${userId}`),
-  updateKYC: (kycData) => api.put('/users/kyc', kycData),
+  updateKYC: (kycData) => api.post('/users/kyc', kycData),
   updateProfile: (profileData) => api.put('/users/profile', profileData),
   getDashboardSummary: () => api.get('/users/dashboard/summary'),
 };

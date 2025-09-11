@@ -18,16 +18,9 @@ const initializeDemoUsers = () => {
       phone: '+919000000001',
       email: 'priya@paysafe.com',
       password: 'demo123',
-      bankMask: 'HDFC-1111',
-      kycStatus: 'VERIFIED',
-      kycData: {
-        pan: 'ABCDE1234F',
-        aadhaar: '123456789012',
-        bankAccount: '12345678901111',
-        ifsc: 'HDFC0001111',
-        selfieUrl: '/uploads/selfie_priya.jpg',
-        verifiedAt: new Date()
-      },
+      bankMask: null,
+      kycStatus: 'PENDING',
+      kycData: null,
       createdAt: new Date(),
       lastLoginAt: null
     },
@@ -37,16 +30,9 @@ const initializeDemoUsers = () => {
       phone: '+919000000002',
       email: 'arjun@paysafe.com',
       password: 'demo123',
-      bankMask: 'ICICI-2222',
-      kycStatus: 'VERIFIED',
-      kycData: {
-        pan: 'FGHIJ5678K',
-        aadhaar: '987654321098',
-        bankAccount: '98765432102222',
-        ifsc: 'ICIC0002222',
-        selfieUrl: '/uploads/selfie_arjun.jpg',
-        verifiedAt: new Date()
-      },
+      bankMask: null,
+      kycStatus: 'PENDING',
+      kycData: null,
       createdAt: new Date(),
       lastLoginAt: null
     },
@@ -56,16 +42,9 @@ const initializeDemoUsers = () => {
       phone: '+919000000003',
       email: 'suresh@paysafe.com',
       password: 'demo123',
-      bankMask: 'SBI-3333',
-      kycStatus: 'VERIFIED',
-      kycData: {
-        pan: 'KLMNO9012P',
-        aadhaar: '111111111111',
-        bankAccount: '11111111113333',
-        ifsc: 'SBIN0003333',
-        selfieUrl: '/uploads/selfie_suresh.jpg',
-        verifiedAt: new Date()
-      },
+      bankMask: null,
+      kycStatus: 'PENDING',
+      kycData: null,
       createdAt: new Date(),
       lastLoginAt: null
     },
@@ -75,16 +54,9 @@ const initializeDemoUsers = () => {
       phone: '+919000000004',
       email: 'meera@paysafe.com',
       password: 'demo123',
-      bankMask: 'AXIS-4444',
-      kycStatus: 'VERIFIED',
-      kycData: {
-        pan: 'PQRST3456U',
-        aadhaar: '222222222222',
-        bankAccount: '22222222224444',
-        ifsc: 'AXIS0004444',
-        selfieUrl: '/uploads/selfie_meera.jpg',
-        verifiedAt: new Date()
-      },
+      bankMask: null,
+      kycStatus: 'PENDING',
+      kycData: null,
       createdAt: new Date(),
       lastLoginAt: null
     },
@@ -94,16 +66,9 @@ const initializeDemoUsers = () => {
       phone: '+919000000005',
       email: 'rajesh@paysafe.com',
       password: 'demo123',
-      bankMask: 'KOTAK-5555',
-      kycStatus: 'VERIFIED',
-      kycData: {
-        pan: 'UVWXY7890Z',
-        aadhaar: '333333333333',
-        bankAccount: '33333333335555',
-        ifsc: 'KKBK0005555',
-        selfieUrl: '/uploads/selfie_rajesh.jpg',
-        verifiedAt: new Date()
-      },
+      bankMask: null,
+      kycStatus: 'PENDING',
+      kycData: null,
       createdAt: new Date(),
       lastLoginAt: null
     },
@@ -113,16 +78,9 @@ const initializeDemoUsers = () => {
       phone: '+919000000006',
       email: 'anita@paysafe.com',
       password: 'demo123',
-      bankMask: 'PNB-6666',
-      kycStatus: 'VERIFIED',
-      kycData: {
-        pan: 'ZABCD1234E',
-        aadhaar: '444444444444',
-        bankAccount: '44444444446666',
-        ifsc: 'PUNB0006666',
-        selfieUrl: '/uploads/selfie_anita.jpg',
-        verifiedAt: new Date()
-      },
+      bankMask: null,
+      kycStatus: 'PENDING',
+      kycData: null,
       createdAt: new Date(),
       lastLoginAt: null
     },
@@ -132,16 +90,9 @@ const initializeDemoUsers = () => {
       phone: '+919000000007',
       email: 'vikram@paysafe.com',
       password: 'demo123',
-      bankMask: 'BOI-7777',
-      kycStatus: 'VERIFIED',
-      kycData: {
-        pan: 'EFGHI5678J',
-        aadhaar: '555555555555',
-        bankAccount: '55555555557777',
-        ifsc: 'BKID0007777',
-        selfieUrl: '/uploads/selfie_vikram.jpg',
-        verifiedAt: new Date()
-      },
+      bankMask: null,
+      kycStatus: 'PENDING',
+      kycData: null,
       createdAt: new Date(),
       lastLoginAt: null
     },
@@ -151,16 +102,9 @@ const initializeDemoUsers = () => {
       phone: '+919000000008',
       email: 'deepika@paysafe.com',
       password: 'demo123',
-      bankMask: 'CANARA-8888',
-      kycStatus: 'VERIFIED',
-      kycData: {
-        pan: 'JKLMN9012O',
-        aadhaar: '666666666666',
-        bankAccount: '66666666668888',
-        ifsc: 'CNRB0008888',
-        selfieUrl: '/uploads/selfie_deepika.jpg',
-        verifiedAt: new Date()
-      },
+      bankMask: null,
+      kycStatus: 'PENDING',
+      kycData: null,
       createdAt: new Date(),
       lastLoginAt: null
     },
@@ -170,16 +114,9 @@ const initializeDemoUsers = () => {
       phone: '+919000000009',
       email: 'rohit@paysafe.com',
       password: 'demo123',
-      bankMask: 'UNION-9999',
-      kycStatus: 'VERIFIED',
-      kycData: {
-        pan: 'OPQRS3456T',
-        aadhaar: '777777777777',
-        bankAccount: '77777777779999',
-        ifsc: 'UBIN0009999',
-        selfieUrl: '/uploads/selfie_rohit.jpg',
-        verifiedAt: new Date()
-      },
+      bankMask: null,
+      kycStatus: 'PENDING',
+      kycData: null,
       createdAt: new Date(),
       lastLoginAt: null
     },
@@ -189,16 +126,21 @@ const initializeDemoUsers = () => {
       phone: '+919000000010',
       email: 'kavya@paysafe.com',
       password: 'demo123',
-      bankMask: 'FEDERAL-0000',
-      kycStatus: 'VERIFIED',
-      kycData: {
-        pan: 'TUVWX7890Y',
-        aadhaar: '888888888888',
-        bankAccount: '88888888880000',
-        ifsc: 'FDRL0000000',
-        selfieUrl: '/uploads/selfie_kavya.jpg',
-        verifiedAt: new Date()
-      },
+      bankMask: null,
+      kycStatus: 'PENDING', // Changed to PENDING to test the flow
+      kycData: null,
+      createdAt: new Date(),
+      lastLoginAt: null
+    },
+    {
+      id: 'user_011',
+      name: 'Rahul Singh',
+      phone: '+919000000011',
+      email: 'rahul@paysafe.com',
+      password: 'demo123',
+      bankMask: null,
+      kycStatus: 'PENDING', // Another user without KYC
+      kycData: null,
       createdAt: new Date(),
       lastLoginAt: null
     }

@@ -51,19 +51,19 @@ const PaymentModal = ({ isOpen, onClose, amount, onConfirm, loading }) => {
                 </p>
               </div>
 
-              <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                <div className="bg-gray-50 rounded-lg p-4 mb-6">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Loan Amount:</span>
-                  <span className="text-xl font-bold text-gray-900">₹{amount}</span>
+                  <span className="text-xl font-bold text-gray-900">₹{parseFloat(amount).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between items-center mt-2">
                   <span className="text-gray-600">Platform Fee (1%):</span>
-                  <span className="text-gray-900">₹{Math.round(amount * 0.01)}</span>
+                  <span className="text-gray-900">₹{Math.round(parseFloat(amount || 0) * 0.01).toLocaleString()}</span>
                 </div>
                 <div className="border-t border-gray-200 mt-2 pt-2">
                   <div className="flex justify-between items-center">
                     <span className="font-semibold text-gray-900">Total Amount:</span>
-                    <span className="text-xl font-bold text-green-600">₹{Math.round(amount * 1.01)}</span>
+                    <span className="text-xl font-bold text-green-600">₹{Math.round(parseFloat(amount || 0) * 1.01).toLocaleString()}</span>
                   </div>
                 </div>
               </div>

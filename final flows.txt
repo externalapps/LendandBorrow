@@ -1,0 +1,13 @@
+Flow Implementation:
+Direct Lending:
+L selects contact B, sends offer (Lending Section → Direct Lending tab → "Create Loan")
+B sees offer (Borrowing Section → Loan Offers tab → "Accept Loan")
+B automatically redirects to KYC (4 steps: PAN/Aadhaar → Bank → Selfie → Video)
+After KYC completion, loan is auto-accepted and L is notified
+L funds the loan (Loan Detail → "Fund Loan" via Razorpay)
+Borrowing:
+B initiates request (Borrowing Section → Request Loan tab → "Submit Request")
+B automatically redirects to KYC (same 4 steps)
+After KYC, B returns to form, enters details, submits request
+L sees request (Lending Section → Loan Requests tab → "Accept Request")
+L funds the loan (Loan Detail → "Fund Loan" via Razorpay)

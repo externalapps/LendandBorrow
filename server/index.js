@@ -48,7 +48,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Database connection - using MongoDB Atlas
-const MONGODB_URI = 'mongodb+srv://okatirendu77_db_user:sUg2RID7cEe5PHOr@paysafe.lgkelc4.mongodb.net/?retryWrites=true&w=majority&appName=paysafe';
+const MONGODB_URI = 'mongodb+srv://okatirendu77_db_user:4x5h2WxsbKx7D09a@lendandborrow.krnzcb9.mongodb.net/?retryWrites=true&w=majority&appName=lendandborrow';
 
 // Try to connect to MongoDB, but don't exit if it fails (for demo purposes)
 let mongoConnected = false;
@@ -86,6 +86,11 @@ app.use('/api', (req, res, next) => {
   
   // Allow loan routes to work with mock data
   if (req.path.startsWith('/loans')) {
+    return next();
+  }
+  
+  // Allow user routes to work with mock data
+  if (req.path.startsWith('/users')) {
     return next();
   }
   
@@ -158,7 +163,7 @@ if (process.env.NODE_ENV !== 'production') {
   // Start server only if not in serverless environment
   if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
     app.listen(PORT, () => {
-      console.log(`🚀 PaySafe server running on port ${PORT}`);
+      console.log(`🚀 Lend & Borrow server running on port ${PORT}`);
       console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
       console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
     });

@@ -14,16 +14,31 @@ import LoadingSpinner from './LoadingSpinner';
 
 const LoanRequestsList = ({ loanRequests, onRequestAccepted, loading }) => {
   const [processingId, setProcessingId] = useState(null);
+  const [showDateModal, setShowDateModal] = useState(false);
+  const [selectedRequestId, setSelectedRequestId] = useState(null);
+  const [repaymentDate, setRepaymentDate] = useState('');
   const { acceptLoanRequest, completeLoanPayment } = useLoan();
   const { showSuccess, showError, showPayment } = useModal();
 
-  const handleAcceptRequest = async (requestId) => {
-    setProcessingId(requestId);
+  const openDateSelectionModal = (requestId) => {
+    setSelectedRequestId(requestId);
+    // Set default date to 30 days from now
+    const defaultDate = new Date();
+    defaultDate.setDate(defaultDate.getDate() + 30);
+    setRepaymentDate(defaultDate.toISOString().split('T')[0]);
+    setShowDateModal(true);
+  };
+
+  const handleAcceptRequest = async () => {
+    if (!selectedRequestId || !repaymentDate) return;
+    
+    setProcessingId(selectedRequestId);
     try {
-      await acceptLoanRequest(requestId);
+      await acceptLoanRequest(selectedRequestId, new Date(repaymentDate));
+      setShowDateModal(false);
       showSuccess('Loan Accepted', 'Loan request accepted! Please complete payment to fund the loan.');
       if (onRequestAccepted) {
-        onRequestAccepted(requestId);
+        onRequestAccepted(selectedRequestId);
       }
     } catch (error) {
       console.error('Error accepting loan request:', error);
@@ -37,11 +52,11 @@ const LoanRequestsList = ({ loanRequests, onRequestAccepted, loading }) => {
     const request = loanRequests.find(r => r.id === requestId);
     if (!request) return;
 
-    showPayment(request.amount, async () => {
+    showPayment(request.principal, async () => {
       setProcessingId(requestId);
       try {
-        await processRazorpayPayment(requestId, request.amount);
-        showSuccess('Payment Successful', `Payment of ₹${request.amount} completed successfully! Loan is now active.`);
+        await processRazorpayPayment(requestId, request.principal);
+        showSuccess('Payment Successful', `Payment of ₹${request.principal.toLocaleString()} completed successfully! Loan is now active.`);
         if (onRequestAccepted) {
           onRequestAccepted(requestId);
         }
@@ -89,11 +104,16 @@ const LoanRequestsList = ({ loanRequests, onRequestAccepted, loading }) => {
           }
         };
 
-        const rzp = new window.Razorpay(options);
-        rzp.on('payment.failed', function (response) {
-          reject(new Error('Payment failed'));
-        });
-        rzp.open();
+        if (typeof window.Razorpay === 'function') {
+          const rzp = new window.Razorpay(options);
+          rzp.on('payment.failed', function (response) {
+            reject(new Error('Payment failed'));
+          });
+          rzp.open();
+        } else {
+          console.error('Razorpay not loaded');
+          reject(new Error('Payment gateway not loaded. Please refresh the page and try again.'));
+        }
       };
 
       script.onerror = () => {
@@ -135,6 +155,60 @@ const LoanRequestsList = ({ loanRequests, onRequestAccepted, loading }) => {
 
   return (
     <div className="space-y-6">
+      {/* Repayment Date Selection Modal */}
+      {showDateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Set Repayment Date
+            </h3>
+            
+            <div className="space-y-4 mb-6">
+              <p className="text-sm text-gray-600">
+                Please select the date when the borrower should repay the loan. This date will be used to calculate the repayment schedule and grace period.
+              </p>
+              
+              <div>
+                <label htmlFor="repaymentDate" className="block text-sm font-medium text-gray-700 mb-1">
+                  Repayment Date
+                </label>
+                <input
+                  id="repaymentDate"
+                  type="date"
+                  value={repaymentDate}
+                  onChange={(e) => setRepaymentDate(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                  min={new Date(new Date().setDate(new Date().getDate() + 7)).toISOString().split('T')[0]}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Minimum 7 days from today
+                </p>
+              </div>
+            </div>
+
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setShowDateModal(false)}
+                className="btn-secondary flex-1"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAcceptRequest}
+                disabled={!repaymentDate || processingId === selectedRequestId}
+                className="btn-primary flex-1 flex items-center justify-center"
+              >
+                {processingId === selectedRequestId ? (
+                  <LoadingSpinner size="sm" />
+                ) : (
+                  'Accept & Continue'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {loanRequests.map((request) => (
         <div key={request.id} className="card">
           <div className="card-body">
@@ -192,6 +266,19 @@ const LoanRequestsList = ({ loanRequests, onRequestAccepted, loading }) => {
                     </p>
                   </div>
                 </div>
+                
+                {request.dueAt && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-6">
+                    <div className="flex items-start">
+                      <div className="flex-1">
+                        <h4 className="text-sm font-medium text-blue-800">Repayment Date</h4>
+                        <p className="text-sm text-blue-700 mt-1">
+                          {new Date(request.dueAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <div className="space-y-4">
                   <div>
@@ -213,7 +300,7 @@ const LoanRequestsList = ({ loanRequests, onRequestAccepted, loading }) => {
               <div className="flex flex-col space-y-3 ml-6">
                 {request.status === 'LOAN_REQUEST' ? (
                   <button
-                    onClick={() => handleAcceptRequest(request.id)}
+                    onClick={() => openDateSelectionModal(request.id)}
                     disabled={processingId === request.id}
                     className="btn-primary flex items-center justify-center"
                   >

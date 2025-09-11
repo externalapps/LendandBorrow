@@ -10,7 +10,7 @@ const Settings = require('../models/Settings');
 const AuditLog = require('../models/AuditLog');
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://okatirendu77_db_user:sUg2RID7cEe5PHOr@paysafe.lgkelc4.mongodb.net/?retryWrites=true&w=majority&appName=paysafe', {
+mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://okatirendu77_db_user:4x5h2WxsbKx7D09a@lendandborrow.krnzcb9.mongodb.net/?retryWrites=true&w=majority&appName=lendandborrow', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })

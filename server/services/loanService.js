@@ -26,6 +26,8 @@ class LoanService {
       if (lenderId === borrowerId) {
         throw new Error('Cannot lend to yourself');
       }
+      
+      // Note: KYC check removed from loan creation - borrower will do KYC after accepting loan offer
 
       // Calculate initial platform fee
       const initialPlatformFee = Math.round(principal * INITIAL_PLATFORM_FEE_RATE * 100) / 100;
@@ -80,8 +82,23 @@ class LoanService {
         throw new Error('Escrow already funded or released');
       }
 
-      // Update escrow status
+      // Check if borrower has completed KYC before funding
+      const inMemoryAuth = require('./inMemoryAuth');
+      const borrower = inMemoryAuth.findUserById(loan.borrowerId);
+      if (!borrower || borrower.kycStatus !== 'VERIFIED') {
+        throw new Error('Cannot fund loan: Borrower has not completed KYC verification yet');
+      }
+
+      // Update escrow status and loan status
       loan.escrowStatus = 'FUNDED';
+      
+      // If borrower has already accepted terms, make the loan active
+      if (loan.status === 'PENDING_LENDER_FUNDING') {
+        loan.status = 'ACTIVE';
+        loan.disbursedAt = new Date();
+        loan.dueAt = new Date(loan.disbursedAt.getTime() + (TERM_DAYS * 24 * 60 * 60 * 1000));
+      }
+      
       await loan.save();
 
       // Log audit
@@ -97,7 +114,7 @@ class LoanService {
     }
   }
 
-  // Accept loan terms and release funds
+  // Accept loan terms (borrower accepts the loan offer)
   static async acceptLoanTerms(loanId, borrowerId, req) {
     try {
       const loan = await Loan.findOne({ id: loanId, borrowerId });
@@ -105,24 +122,27 @@ class LoanService {
         throw new Error('Loan not found or unauthorized');
       }
 
-      if (loan.escrowStatus !== 'FUNDED') {
-        throw new Error('Escrow not funded');
-      }
-
       if (loan.status !== 'PENDING_BORROWER_ACCEPT') {
         throw new Error('Loan already accepted or cancelled');
       }
 
-      // Update loan status
-      loan.status = 'ACTIVE';
-      loan.escrowStatus = 'RELEASED';
-      loan.disbursedAt = new Date();
-      loan.dueAt = new Date(loan.disbursedAt.getTime() + (TERM_DAYS * 24 * 60 * 60 * 1000));
+      // Check if borrower has completed KYC
+      const inMemoryAuth = require('./inMemoryAuth');
+      const borrower = inMemoryAuth.findUserById(borrowerId);
+      if (!borrower || borrower.kycStatus !== 'VERIFIED') {
+        throw new Error('You must complete KYC verification before accepting a loan offer');
+      }
+
+      // For direct lending: borrower accepts terms, but loan isn't active until lender funds it
+      // Update loan status to show borrower has accepted
+      loan.status = 'PENDING_LENDER_FUNDING'; // New status to indicate borrower accepted, waiting for lender to fund
       loan.termsAcceptedAt = new Date();
       loan.termsAcceptedBy = borrowerId;
       loan.termsAcceptedIP = req.ip;
       loan.termsAcceptedUserAgent = req.get('User-Agent');
-
+      
+      // The escrowStatus remains 'PENDING' until lender funds
+      
       await loan.save();
 
       // Log audit
@@ -412,11 +432,14 @@ class LoanService {
         throw new Error('Lender ID is required');
       }
 
-      if (!kycData) {
-        throw new Error('KYC verification is required');
+      // Check if borrower has completed KYC
+      const inMemoryAuth = require('./inMemoryAuth');
+      const borrower = inMemoryAuth.findUserById(borrowerId);
+      if (!borrower || borrower.kycStatus !== 'VERIFIED') {
+        throw new Error('KYC verification is required before requesting a loan');
       }
 
-      // Create loan request
+      // Create loan request for specific lender
       const loanRequest = new Loan({
         id: uuidv4(),
         borrowerId,
@@ -541,10 +564,11 @@ class LoanService {
         throw new Error('Loan request not found or not in pending payment status');
       }
 
-      // Update loan to active status and fund escrow
-      loanRequest.status = 'PENDING_BORROWER_ACCEPT';
-      loanRequest.escrowStatus = 'FUNDED';
+      // Update loan to active status and fund escrow directly
+      loanRequest.status = 'ACTIVE';
+      loanRequest.escrowStatus = 'RELEASED';
       loanRequest.disbursedAt = new Date();
+      loanRequest.dueAt = new Date(loanRequest.disbursedAt.getTime() + (TERM_DAYS * 24 * 60 * 60 * 1000));
       
       // Add payment record to ledger
       loanRequest.ledger.push({
@@ -627,6 +651,9 @@ class LoanService {
 }
 
 module.exports = LoanService;
+
+
+
 
 
 

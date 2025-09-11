@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useLoan } from '../contexts/LoanContext';
 import { 
@@ -18,6 +18,9 @@ const BorrowMoney = () => {
   const [loading, setLoading] = useState(false);
   const [selectedLoan, setSelectedLoan] = useState(null);
   const [showTermsModal, setShowTermsModal] = useState(false);
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState(location.state?.activeTab || 'offers'); // 'offers' or 'request'
+  const [kycVerified, setKycVerified] = useState(location.state?.kycVerified || false);
 
   const { user } = useAuth();
   const { acceptLoanTerms, cancelLoan, getPendingOffers } = useLoan();
@@ -48,19 +51,12 @@ const BorrowMoney = () => {
   const handleConfirmAccept = async () => {
     if (!selectedLoan) return;
 
-    setLoading(true);
-    try {
-      await acceptLoanTerms(selectedLoan.id);
-      toast.success('Loan accepted successfully!');
-      setShowTermsModal(false);
-      setSelectedLoan(null);
-      fetchPendingOffers();
-      navigate(`/loan/${selectedLoan.id}`);
-    } catch (error) {
-      console.error('Error accepting loan:', error);
-    } finally {
-      setLoading(false);
-    }
+    // Always redirect to KYC for direct lending - no pre-verification checks
+    toast('Please complete your KYC verification to accept this loan.', {
+      icon: 'ℹ️',
+    });
+    setShowTermsModal(false);
+    navigate('/kyc', { state: { fromDirectLoan: selectedLoan.id, flowType: 'direct' } });
   };
 
   const handleRejectLoan = async (loanId) => {
@@ -110,31 +106,68 @@ const BorrowMoney = () => {
             Borrow Money
           </h1>
           <p className="text-gray-600">
-            Request loans or review pending offers from friends
+            Accept loan offers or request money from friends
           </p>
         </div>
 
-        {/* Loan Request Form */}
-        <div className="mb-12">
-          <LoanRequestForm 
-            onRequestSubmitted={() => {
-              toast.success('Your loan request has been submitted!');
-              fetchPendingOffers();
-            }}
-          />
-        </div>
-
-        {/* Pending Offers Section */}
+        {/* Tab Navigation */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            Pending Loan Offers
-          </h2>
-          <p className="text-gray-600 mb-6">
-            Review and accept loan offers from your friends
-          </p>
+          <div className="border-b border-gray-200">
+            <nav className="-mb-px flex space-x-8">
+              <button
+                onClick={() => setActiveTab('offers')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'offers'
+                    ? 'border-teal-500 text-teal-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Loan Offers ({pendingOffers.length})
+              </button>
+              <button
+                onClick={() => setActiveTab('request')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'request'
+                    ? 'border-teal-500 text-teal-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Request Loan
+              </button>
+            </nav>
+          </div>
         </div>
 
-        {pendingOffers.length > 0 ? (
+        {activeTab === 'offers' ? (
+          <>
+            {/* Pending Offers Section */}
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Pending Loan Offers
+              </h2>
+              <p className="text-gray-600 mb-6">
+                Review and accept loan offers from your friends
+              </p>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Loan Request Form */}
+            <div className="mb-12">
+              <LoanRequestForm 
+                onRequestSubmitted={() => {
+                  toast.success('Your loan request has been submitted!');
+                  setActiveTab('offers'); // Switch back to offers tab
+                  fetchPendingOffers();
+                }}
+              />
+            </div>
+          </>
+        )}
+
+        {activeTab === 'offers' && (
+          <>
+            {pendingOffers.length > 0 ? (
           <div className="space-y-6">
             {pendingOffers.map((loan) => (
               <div key={loan.id} className="card">
@@ -183,20 +216,20 @@ const BorrowMoney = () => {
                           <h4 className="font-medium text-gray-900 mb-2">Loan Terms</h4>
                           <div className="space-y-1 text-sm text-gray-600">
                             <div className="flex justify-between">
-                              <span>Loan Term:</span>
-                              <span className="font-medium">30 days</span>
+                              <span>Repayment Date:</span>
+                              <span className="font-medium">{loan.dueAt ? new Date(loan.dueAt).toLocaleDateString() : 'To be determined'}</span>
                             </div>
                             <div className="flex justify-between">
                               <span>Grace Period:</span>
-                              <span className="font-medium">10 days</span>
+                              <span className="font-medium">10 days after repayment date</span>
                             </div>
                             <div className="flex justify-between">
                               <span>Block Fee Rate:</span>
                               <span className="font-medium">1% per block</span>
                             </div>
                             <div className="flex justify-between">
-                              <span>Minimum Payment:</span>
-                              <span className="font-medium">20% per block</span>
+                              <span>Full Payment:</span>
+                              <span className="font-medium text-green-600">Available anytime</span>
                             </div>
                           </div>
                         </div>
@@ -285,6 +318,8 @@ const BorrowMoney = () => {
               </button>
             </div>
           </div>
+        )}
+          </>
         )}
 
         {/* Terms and Conditions Modal */}

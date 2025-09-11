@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLoan } from '../contexts/LoanContext';
+import { useModal } from '../contexts/ModalContext';
 import { 
   BanknotesIcon, 
   CalculatorIcon,
@@ -17,6 +18,7 @@ import toast from 'react-hot-toast';
 const LendMoney = () => {
   const [selectedContact, setSelectedContact] = useState(null);
   const [amount, setAmount] = useState('');
+  const [repaymentDate, setRepaymentDate] = useState('');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -26,15 +28,10 @@ const LendMoney = () => {
   const [loadingRequests, setLoadingRequests] = useState(false);
 
   const { createLoan, fundEscrow, getLoanRequests } = useLoan();
+  const { showSuccess } = useModal();
   const navigate = useNavigate();
   
-  useEffect(() => {
-    if (activeTab === 'requests') {
-      fetchLoanRequests();
-    }
-  }, [activeTab]);
-  
-  const fetchLoanRequests = async () => {
+  const fetchLoanRequests = React.useCallback(async () => {
     setLoadingRequests(true);
     try {
       const requests = await getLoanRequests();
@@ -44,7 +41,13 @@ const LendMoney = () => {
     } finally {
       setLoadingRequests(false);
     }
-  };
+  }, [getLoanRequests]);
+  
+  useEffect(() => {
+    if (activeTab === 'requests') {
+      fetchLoanRequests();
+    }
+  }, [activeTab, fetchLoanRequests]);
 
   const calculateFees = (principal) => {
     const platformFee = Math.round(principal * 0.01 * 100) / 100; // 1% platform fee
@@ -65,6 +68,18 @@ const LendMoney = () => {
       newErrors.amount = 'Minimum loan amount is ₹100';
     } else if (amount > 50000) {
       newErrors.amount = 'Maximum loan amount is ₹50,000';
+    }
+    
+    if (!repaymentDate) {
+      newErrors.repaymentDate = 'Please select a repayment date';
+    } else {
+      const selectedDate = new Date(repaymentDate);
+      const minDate = new Date();
+      minDate.setDate(minDate.getDate() + 7); // Minimum 7 days from today
+      
+      if (selectedDate < minDate) {
+        newErrors.repaymentDate = 'Repayment date must be at least 7 days from today';
+      }
     }
 
     setErrors(newErrors);
@@ -87,7 +102,8 @@ const LendMoney = () => {
       borrowerPhone: selectedContact.phone,
       principal,
       platformFee,
-      totalAmount
+      totalAmount,
+      repaymentDate: new Date(repaymentDate)
     });
     
     setShowConfirmModal(true);
@@ -97,18 +113,26 @@ const LendMoney = () => {
     setLoading(true);
     try {
       // Create loan
-      const loan = await createLoan(loanDetails.borrowerId, loanDetails.principal);
+      const loan = await createLoan(loanDetails.borrowerId, loanDetails.principal, loanDetails.repaymentDate);
       
-      // Fund escrow (mock payment)
-      await fundEscrow(loan.id);
+      // Close modal first
+      setShowConfirmModal(false);
       
-      toast.success('Loan created and escrow funded successfully!');
-      navigate(`/loan/${loan.id}`);
+      // Show success notification - loan created but not funded yet
+      showSuccess(
+        'Loan Offer Sent Successfully', 
+        `Your loan offer of ₹${loanDetails.principal.toLocaleString()} has been sent to ${loanDetails.borrowerName}. You can fund the loan once they accept and complete KYC verification.`
+      );
+      
+      // Navigate to loan page after a short delay
+      setTimeout(() => {
+        navigate(`/loan/${loan.id}`);
+      }, 2000);
     } catch (error) {
       console.error('Error creating loan:', error);
+      toast.error(error.response?.data?.error?.message || 'Failed to create loan');
     } finally {
       setLoading(false);
-      setShowConfirmModal(false);
     }
   };
 
@@ -214,18 +238,41 @@ const LendMoney = () => {
                       Minimum: ₹100 | Maximum: ₹50,000
                     </p>
                   </div>
+                  
+                  {/* Repayment Date */}
+                  <div>
+                    <label htmlFor="repaymentDate" className="form-label">
+                      Repayment Date
+                    </label>
+                    <input
+                      id="repaymentDate"
+                      type="date"
+                      value={repaymentDate}
+                      onChange={(e) => setRepaymentDate(e.target.value)}
+                      className={`form-input ${errors.repaymentDate ? 'border-red-500' : ''}`}
+                      min={new Date(new Date().setDate(new Date().getDate() + 7)).toISOString().split('T')[0]}
+                    />
+                    {errors.repaymentDate && (
+                      <p className="form-error">{errors.repaymentDate}</p>
+                    )}
+                    <p className="text-sm text-gray-500 mt-1">
+                      Select the date when the borrower should repay the loan (minimum 7 days from today)
+                    </p>
+                  </div>
 
                   {/* Loan Terms */}
                   <div className="bg-gray-50 rounded-lg p-4">
                     <h3 className="font-medium text-gray-900 mb-3">Loan Terms</h3>
                     <div className="space-y-2 text-sm text-gray-600">
                       <div className="flex justify-between">
-                        <span>Loan Term:</span>
-                        <span className="font-medium">30 days</span>
+                        <span>Repayment Date:</span>
+                        <span className="font-medium">
+                          {repaymentDate ? new Date(repaymentDate).toLocaleDateString() : 'Not selected'}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span>Grace Period:</span>
-                        <span className="font-medium">10 days</span>
+                        <span className="font-medium">10 days after repayment date</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Block Length:</span>
@@ -236,8 +283,8 @@ const LendMoney = () => {
                         <span className="font-medium">1% per block</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Minimum Payment:</span>
-                        <span className="font-medium">20% per block</span>
+                        <span>Full Payment:</span>
+                        <span className="font-medium text-green-600">Available anytime without penalty</span>
                       </div>
                     </div>
                   </div>
@@ -389,6 +436,10 @@ const LendMoney = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Platform Fee (1%)</span>
                   <span className="font-semibold text-gray-900">₹{loanDetails.platformFee.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Repayment Date</span>
+                  <span className="font-semibold text-gray-900">{loanDetails.repaymentDate.toLocaleDateString()}</span>
                 </div>
                 <div className="border-t border-gray-200 pt-3">
                   <div className="flex justify-between items-center">
