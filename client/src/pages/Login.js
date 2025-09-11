@@ -81,9 +81,7 @@ const Login = () => {
     try {
       const result = await login(email);
       if (result.success) {
-        showSuccess('Login Successful', 'Welcome back! Redirecting to dashboard...', () => {
-          navigate('/dashboard');
-        });
+        navigate('/dashboard');
       }
     } catch (error) {
       console.error('Demo login error:', error);

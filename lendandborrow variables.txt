@@ -1,0 +1,11 @@
+CLIENT_URL=https://lendandborrow.vercel.app
+
+JWT_SECRET=f5babcb083fb4cb4bd123e639414a4e1
+
+MONGODB_URI=mongodb+srv://okatirendu77_db_user:4x5h2WxsbKx7D09a@lendandborrow.krnzcb9.mongodb.net/?retryWrites=true&w=majority&appName=lendandborrow
+
+RAZORPAY_KEY_ID=rzp_test_RFvYmAyAAJfrEb
+
+RAZORPAY_KEY_SECRET=vV7171QeDtQmvRfVbBba7J2I
+
+NODE_ENV=production
