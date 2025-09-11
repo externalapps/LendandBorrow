@@ -81,10 +81,13 @@ const Login = () => {
     try {
       const result = await login(email);
       if (result.success) {
-        navigate('/dashboard');
+        showSuccess('Login Successful', 'Welcome back! Redirecting to dashboard...', () => {
+          navigate('/dashboard');
+        });
       }
     } catch (error) {
       console.error('Demo login error:', error);
+      showError('Login Failed', 'An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
