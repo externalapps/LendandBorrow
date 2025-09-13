@@ -1,0 +1,151 @@
+NOTE : "MANY ISSUES ARE MENTIONED IN THIS FILE, WHICH NEED TO BE FIXED BEFORE UPLOADING TO GIT AND DEPLOYING ON VERCEL. MONGODB IS USED FOR DATABASE PURPOSE "
+
+ISSUE NO.1 : Here’s the root of the problem and exactly what we must fix—without deleting anything that already works.
+Root cause
+The server never really connected to MongoDB Atlas.
+Your credentials are correct, but Mongoose v8 silently ignores the legacy options useNewUrlParser and useUnifiedTopology.
+Because the connection promise never resolves, the fallback “in-memory” branch keeps running and every endpoint that depends on MongoDB (/loans, /payments, etc.) times out, which is why buttons spin forever.
+On your dev machine the file server/.env is missing, so process.env.MONGODB_URI is ​undefined when the server starts.
+Vercel has the vars, but they aren’t present locally.
+There is a guard-middleware in server/index.js that blocks requests when global.mongoConnected is false; once the connection fails every request after login returns 503 or just hangs.
+What we’ll do (no hard-coding, no deletions)
+A. Configuration
+1 Create a local server/.env containing the exact variables you already use on Vercel.
+2 Add .env.example to remind future devs which vars are required.
+B. Code (non-destructive edits only)
+1 Replace the obsolete Mongoose options with the new v8 syntax:
+2 Remove the forced “in-memory” fallback for production; keep it only when NODE_ENV=development && !MONGODB_URI so local work remains easy.
+3 Keep every existing model, route and flow from final flows.txt; only wrap DB-dependent logic with a simple helper that chooses MongoDB first, mock second. No code will be deleted.
+C. Performance
+Once the API stops timing-out the UI lag disappears (30-60 seconds per click right now are just Axios retries).
+No ports will be hard-coded; everything stays behind process.env.PORT and the React proxy.
+Immediate next steps
+1 Please paste the four lines below into server/.env on your machine (exactly the same as Vercel):
+(Keep CLIENT_URL and NODE_ENV as they already are.)
+2 After the file is saved, restart the dev script:
+3 Watch the terminal. You should see:
+4 Then refresh the browser and try the same buttons. They should respond instantly.
+What happens if the connection still fails?
+I’ll capture the exact error message from Mongoose and adjust the connection string or DNS driver if necessary (rare with Atlas).
+Only after MongoDB reports “connected” will we revisit any remaining endpoint errors.
+
+
+ISSUE 2: LOGIN PAGE - MISSING DEMO BUTTONS
+❌ PROBLEM: I documented 10 demo user login buttons, but the actual Login.js only shows the header and footer - NO DEMO BUTTONS EXIST!
+CURRENT STATE: Login page has basic form structure but missing all the demo account buttons I mentioned.
+IMPACT: Users cannot easily test the application with demo accounts.
+ISSUE 3: LOAN REQUEST FLOW - INCORRECT IMPLEMENTATION
+❌ PROBLEM: I said "KYC first, then form" but the actual code does the OPPOSITE!
+CURRENT CODE:
+Apply to api.js
+WHAT IT ACTUALLY DOES:
+User fills form FIRST
+User clicks submit
+THEN redirects to KYC
+WHAT I DOCUMENTED: KYC first, then form - COMPLETELY WRONG!
+ISSUE 4: PLATFORM FEE CALCULATION - MAJOR ERROR
+❌ PROBLEM: The payment modal shows LENDER PAYS EXTRA instead of fee being deducted from principal!
+CURRENT CODE:
+Apply to api.js
+WHAT IT ACTUALLY DOES: For ₹1000 loan → Lender pays ₹1010 (₹1000 + ₹10 fee)
+WHAT I DOCUMENTED: For ₹1000 loan → Lender pays ₹1000 → ₹10 deducted → ₹990 to borrower
+THIS IS COMPLETELY WRONG!
+ISSUE 5: BLOCK vs EXCUSE TERMINOLOGY - PARTIALLY IMPLEMENTED
+❌ PROBLEM: Code still uses "Block" in many places instead of "Excuse"
+FOUND INSTANCES STILL USING "BLOCK":
+getLoanBlocks function in LoanContext.js
+/loans/${loanId}/blocks API endpoint
+blockFee, blockEndDate variables in payment requirements
+Backend models and calculations still use "block" terminology
+ONLY SOME PLACES CHANGED: Frontend display text in a few components
+ISSUE 6: MONGODB CONNECTION - STILL PROBLEMATIC
+❌ PROBLEM: Based on the error you showed earlier, MongoDB connection is still failing
+EVIDENCE:
+Server logs showed "Login error: MongooseError: Operation users.findOne() buffering timed out"
+This means the fixes I suggested haven't resolved the core connectivity issue
+ISSUE 7: CONTACT SELECTOR - UNCLEAR IMPLEMENTATION
+❌ PROBLEM: I documented contact selection but didn't verify how contacts are populated
+UNCLEAR: How does the ContactSelector actually get the list of users? Is it from MongoDB or in-memory?
+ISSUE 8: REPAYMENT BUTTONS - TERMINOLOGY INCONSISTENT
+❌ PROBLEM: Repayment page still uses "Block" terminology in several places:
+Apply to api.js
+ISSUE 9: API ENDPOINTS - MIXED IMPLEMENTATION
+❌ PROBLEM: Some endpoints use MongoDB, others use mock data, creating inconsistent behavior
+EXAMPLES:
+/loans route tries MongoDB first, falls back to mock
+/mockLoans route exists separately
+This creates confusion about which system is actually being used
+📋 SUMMARY OF CRITICAL FIXES NEEDED
+ADD the 10 demo user login buttons to Login.js
+FIX platform fee calculation to deduct from principal, not charge extra
+CHANGE all remaining "Block" references to "Excuse" throughout codebase
+RESOLVE MongoDB connection issues properly
+CLARIFY loan request flow implementation (currently contradicts documentation)
+STANDARDIZE API endpoints to use either MongoDB OR mock consistently
+FIX contact selection mechanism
+UPDATE all backend models and variables to use "excuse" terminology
+The website has significant functionality gaps and implementation errors compared to what I documented. Many core features either don't work as described or are missing entirely.
+
+ISSUE 1: PLATFORM FEE CALCULATION - MAJOR ERROR
+❌ PROBLEM: Payment modal charges lender EXTRA instead of deducting from principal
+CURRENT CODE (PaymentModal.js line 66):
+Apply to api.js
+WHAT IT DOES: ₹1000 loan → Lender pays ₹1010
+WHAT IT SHOULD DO: ₹1000 loan → Lender pays ₹1000 → ₹10 deducted → ₹990 to borrower
+ISSUE 2: BLOCK vs EXCUSE TERMINOLOGY - INCOMPLETE
+❌ PROBLEM: Backend and many frontend parts still use "Block" instead of "Excuse"
+FOUND IN CODE:
+getLoanBlocks function name (should be getLoanExcuses)
+/blocks API endpoint (should be /excuses)
+blockFee, blockEndDate variables
+Database models still use "block" terminology
+ISSUE 3: MIXED MONGODB/MOCK IMPLEMENTATION
+❌ PROBLEM: Code has both MongoDB and mock systems running simultaneously
+EXAMPLES:
+server/routes/loans.js tries MongoDB first, falls back to in-memory
+server/routes/mockLoans.js exists as separate mock system
+inMemoryAuth is still being used alongside MongoDB
+This creates inconsistent behavior
+SHOULD BE: MongoDB only, remove all mock/in-memory fallbacks
+ISSUE 4: LOAN REQUEST FLOW vs DOCUMENTATION MISMATCH
+❌ PROBLEM: My documentation says "KYC first, then form" but code does "Form first, then KYC"
+ACTUAL CODE FLOW:
+User fills loan request form
+User clicks submit
+Form data stored in sessionStorage
+User redirected to KYC
+After KYC, form data retrieved and submitted
+MY DOCUMENTATION SAID: KYC first, then form
+QUESTION: Which is correct? Should I update documentation or should code be changed?
+ISSUE 5: SERVER ROUTES INCONSISTENCY
+❌ PROBLEM: Server has multiple route files that conflict:
+CONFLICTING FILES:
+server/routes/loans.js (main MongoDB implementation)
+server/routes/mockLoans.js (mock implementation)
+Both are probably registered, causing conflicts
+SHOULD BE: Only loans.js using MongoDB
+ISSUE 6: AUTHENTICATION SYSTEM CONFUSION
+❌ PROBLEM: Code uses both MongoDB User model AND inMemoryAuth simultaneously
+IN AUTH MIDDLEWARE:
+Apply to api.js
+SHOULD BE: MongoDB only, remove inMemoryAuth completely
+ISSUE 7: DATABASE CONNECTION STILL FAILING
+❌ PROBLEM: Earlier you showed MongoDB timeout errors
+ROOT CAUSE: Server might not be connecting to MongoDB Atlas properly despite having correct credentials
+NEEDS INVESTIGATION:
+Is MongoDB Atlas cluster running?
+Are IP addresses whitelisted?
+Is connection string format correct?
+ISSUE 8: CONTACT SELECTOR DATA SOURCE
+❌ UNCLEAR: How does ContactSelector populate the list of available users?
+QUESTIONS:
+Does it query MongoDB for all users?
+Does it use in-memory data?
+How does it filter users?
+ISSUE 9: LOAN STATUS TRANSITIONS
+❌ UNCLEAR: Are the loan status transitions working correctly with MongoDB?
+STATUS FLOW SHOULD BE:
+Direct Lending: PENDING_BORROWER_ACCEPT → PENDING_LENDER_FUNDING → ACTIVE
+Loan Requests: LOAN_REQUEST → PENDING_PAYMENT → ACTIVE
+NEEDS VERIFICATION: Are these transitions working with MongoDB?
+

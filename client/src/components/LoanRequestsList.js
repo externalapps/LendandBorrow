@@ -11,6 +11,7 @@ import {
 import { useLoan } from '../contexts/LoanContext';
 import { useModal } from '../contexts/ModalContext';
 import LoadingSpinner from './LoadingSpinner';
+import CibilScoreDisplay from './CibilScoreDisplay';
 
 const LoanRequestsList = ({ loanRequests, onRequestAccepted, loading }) => {
   const [processingId, setProcessingId] = useState(null);
@@ -262,7 +263,7 @@ const LoanRequestsList = ({ loanRequests, onRequestAccepted, loading }) => {
                   <div>
                     <p className="text-sm text-gray-600">Total Amount</p>
                     <p className="text-2xl font-bold text-blue-600">
-                      {formatCurrency(request.principal + request.initialPlatformFee)}
+                      {formatCurrency(request.principal)}
                     </p>
                   </div>
                 </div>
@@ -298,6 +299,16 @@ const LoanRequestsList = ({ loanRequests, onRequestAccepted, loading }) => {
               </div>
 
               <div className="flex flex-col space-y-3 ml-6">
+                {/* CIBIL Score Display for Lender */}
+                {request.status === 'LOAN_REQUEST' && (
+                  <div className="mb-4">
+                    <CibilScoreDisplay 
+                      borrowerId={request.borrowerId} 
+                      borrowerName={request.borrowerName} 
+                    />
+                  </div>
+                )}
+                
                 {request.status === 'LOAN_REQUEST' ? (
                   <button
                     onClick={() => openDateSelectionModal(request.id)}

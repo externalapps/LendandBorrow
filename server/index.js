@@ -61,78 +61,34 @@ const authLimiter = rateLimit({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Database connection - using MongoDB Atlas
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://okatirendu77_db_user:4x5h2WxsbKx7D09a@lendandborrow.krnzcb9.mongodb.net/?retryWrites=true&w=majority&appName=lendandborrow';
+// Database connection
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/lendandborrow-demo';
 
-// Try to connect to MongoDB, but don't exit if it fails (for demo purposes)
-let mongoConnected = false;
-console.log('🔗 Connecting to MongoDB:', MONGODB_URI.replace(/\/\/.*:.*@/, '//***:***@')); // Log connection string (hide credentials)
-
-mongoose.connect(MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+// Connect to MongoDB
+mongoose.connect(MONGODB_URI)
 .then(() => {
-  console.log('✅ Connected to MongoDB Atlas');
-  mongoConnected = true;
+  console.log('✅ Connected to MongoDB');
   global.mongoConnected = true;
-  // Initialize default settings
-  initializeSettings();
 })
 .catch((error) => {
-  console.warn('⚠️ MongoDB connection failed, using in-memory storage for demo:', error.message);
-  console.log('💡 Connection string used:', MONGODB_URI.replace(/\/\/.*:.*@/, '//***:***@'));
-  mongoConnected = false;
+  console.error('❌ MongoDB connection error:', error.message);
+  console.error('❌ Please check your MongoDB connection and .env file');
   global.mongoConnected = false;
-  // Don't exit - continue with in-memory storage
-  initializeSettings();
+  process.exit(1);
 });
 
-// Make mongoConnected available globally
-global.mongoConnected = mongoConnected;
-
-// Middleware to handle MongoDB-dependent routes
+// Middleware to ensure MongoDB connection for all routes
 app.use('/api', (req, res, next) => {
-  // Allow auth routes to work without MongoDB
-  if (req.path.startsWith('/auth')) {
-    return next();
-  }
-  
-  // Allow loan routes to work with mock data
-  if (req.path.startsWith('/loans')) {
-    return next();
-  }
-  
-  // Allow user routes to work with mock data
-  if (req.path.startsWith('/users')) {
-    return next();
-  }
-  
-  // For other routes, check if MongoDB is connected
   if (!global.mongoConnected) {
     return res.status(503).json({ 
       error: { 
-        message: 'Database not available. This is a demo application using in-memory storage for authentication only.' 
+        message: 'Database not available. Please check MongoDB connection.' 
       } 
     });
   }
-  
   next();
 });
 
-// Initialize default settings
-async function initializeSettings() {
-  const Settings = require('./models/Settings');
-  try {
-    const existingSettings = await Settings.findOne({ id: 'default' });
-    if (!existingSettings) {
-      await Settings.create({ id: 'default' });
-      console.log('✅ Default settings initialized');
-    }
-  } catch (error) {
-    console.error('❌ Error initializing settings:', error);
-  }
-}
 
 // Routes
 app.use('/api/auth', authLimiter, require('./routes/auth'));
@@ -143,8 +99,8 @@ app.use('/api/users', require('./routes/users'));
 app.use('/api/loans', require('./routes/loans'));
 app.use('/api/payments', require('./routes/payments'));
 app.use('/api/admin', require('./routes/admin'));
-app.use('/api/mock-cibil', require('./routes/mockCibil'));
 app.use('/api/communications', require('./routes/communications'));
+app.use('/api/mock-cibil', require('./routes/mockCibil'));
 app.use('/api/settings', require('./routes/settings'));
 
 // Health check endpoint

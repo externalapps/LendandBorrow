@@ -1,4 +1,4 @@
-# PaySafe - P2P Lending Platform Demo
+# LendAndBorrow - P2P Lending Platform Demo
 
 A comprehensive friend-to-friend P2P lending platform with KYC onboarding, escrow management, flexible repayment terms, and CIBIL reporting. Built as a professional demo showcasing fintech compliance workflows.
 
@@ -61,7 +61,7 @@ A comprehensive friend-to-friend P2P lending platform with KYC onboarding, escro
 ### 1. Clone the Repository
 ```bash
 git clone <repository-url>
-cd PaySafe
+cd LendAndBorrow
 ```
 
 ### 2. Install Dependencies
@@ -75,7 +75,7 @@ npm run install:all
 cp server/env.example server/.env
 
 # Edit server/.env with your configuration
-MONGODB_URI=mongodb://localhost:27017/paysafe-demo
+MONGODB_URI=mongodb://localhost:27017/lendandborrow-demo
 JWT_SECRET=your-super-secret-jwt-key
 RAZORPAY_KEY_ID=your_razorpay_key_id
 RAZORPAY_KEY_SECRET=your_razorpay_secret
@@ -103,10 +103,10 @@ This will start:
 ### Users
 | Role | Email | Password | Phone | KYC Status |
 |------|-------|----------|-------|------------|
-| Lender | user_a@paysafe.com | demo123 | +919000000001 | VERIFIED |
-| Borrower | user_b@paysafe.com | demo123 | +919000000002 | VERIFIED |
-| Admin | admin@paysafe.com | admin123 | +919000000000 | VERIFIED |
-| Demo | demo@paysafe.com | demo123 | +919000000003 | VERIFIED |
+| Lender | user_a@lendandborrow.com | demo123 | +919000000001 | VERIFIED |
+| Borrower | user_b@lendandborrow.com | demo123 | +919000000002 | VERIFIED |
+| Admin | admin@lendandborrow.com | admin123 | +919000000000 | VERIFIED |
+| Demo | demo@lendandborrow.com | demo123 | +919000000003 | VERIFIED |
 
 ### Sample Loan
 - **Loan ID**: loan_1
@@ -189,7 +189,7 @@ This will start:
 ## 🏗 Project Structure
 
 ```
-PaySafe/
+LendAndBorrow/
 ├── client/                 # React frontend
 │   ├── public/
 │   ├── src/
@@ -329,12 +329,12 @@ PaySafe/
 
 2. **Update Environment**
    ```
-   MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/paysafe-demo
+   MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/lendandborrow-demo
    ```
 
 ### Environment Variables (Production)
 ```env
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/paysafe-demo
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/lendandborrow-demo
 JWT_SECRET=your-production-jwt-secret
 RAZORPAY_KEY_ID=your_razorpay_key_id
 RAZORPAY_KEY_SECRET=your_razorpay_secret
@@ -453,7 +453,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 mongod --version
 
 # Check connection string format
-mongodb://localhost:27017/paysafe-demo
+mongodb://localhost:27017/lendandborrow-demo
 ```
 
 #### Port Conflicts

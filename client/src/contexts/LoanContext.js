@@ -75,13 +75,20 @@ export const LoanProvider = ({ children }) => {
   const createLoan = async (borrowerId, principal, repaymentDate) => {
     try {
       const response = await api.post('/loans', { borrowerId, principal, repaymentDate });
-      console.log('Loan created successfully!');
+      console.log('Loan created successfully!', response.data);
+      
+      // Ensure we have the loan object with ID
+      const loan = response.data.loan || response.data;
+      if (!loan.id && !loan._id) {
+        throw new Error('Loan created but no ID returned');
+      }
+      
       await fetchLoans();
       await fetchDashboardData();
-      return response.data.loan;
+      return loan;
     } catch (error) {
       const message = error.response?.data?.error?.message || 'Failed to create loan';
-      console.error(message);
+      console.error('Create loan error:', message);
       throw error;
     }
   };
@@ -172,12 +179,12 @@ export const LoanProvider = ({ children }) => {
     }
   };
 
-  const getLoanBlocks = async (loanId) => {
+  const getLoanExcuses = async (loanId) => {
     try {
-      const response = await api.get(`/loans/${loanId}/blocks`);
-      return response.data.blocks;
+      const response = await api.get(`/loans/${loanId}/excuses`);
+      return response.data.excuses;
     } catch (error) {
-      console.error('Fetch loan blocks error:', error);
+      console.error('Fetch loan excuses error:', error);
       return [];
     }
   };
@@ -252,7 +259,7 @@ export const LoanProvider = ({ children }) => {
     getPendingOffers,
     getPaymentRequirements,
     getLoanLedger,
-    getLoanBlocks,
+    getLoanExcuses,
     requestLoan,
     getLoanRequests,
     acceptLoanRequest,

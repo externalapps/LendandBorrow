@@ -84,28 +84,6 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* KYC Status Alert */}
-        {user?.kycStatus !== 'VERIFIED' && (
-          <div className="mb-8 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <div className="flex items-center">
-              <ExclamationTriangleIcon className="w-5 h-5 text-yellow-600 mr-3" />
-              <div>
-                <h3 className="text-sm font-medium text-yellow-800">
-                  KYC Verification Required
-                </h3>
-                <p className="text-sm text-yellow-700 mt-1">
-                  Complete your KYC verification to start lending and borrowing.
-                </p>
-                <Link
-                  to="/kyc"
-                  className="text-sm font-medium text-yellow-800 hover:text-yellow-900 mt-2 inline-block"
-                >
-                  Complete KYC →
-                </Link>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Dashboard Cards */}
         {dashboardData && (
@@ -238,13 +216,13 @@ const Dashboard = () => {
               {dashboardData?.upcomingCheckpoints?.length > 0 ? (
                 <div className="space-y-3">
                   {dashboardData.upcomingCheckpoints.slice(0, 3).map((checkpoint, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+                    <div key={`checkpoint-${checkpoint.loanId}-${index}`} className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
                       <div>
                         <p className="font-medium text-gray-900">
-                          Block {checkpoint.blockNumber}
+                          Excuse {checkpoint.excuseNumber || checkpoint.blockNumber}
                         </p>
                         <p className="text-sm text-gray-600">
-                          Due: {new Date(checkpoint.blockEndDate).toLocaleDateString()}
+                          Due: {new Date(checkpoint.excuseEndDate || checkpoint.blockEndDate).toLocaleDateString()}
                         </p>
                       </div>
                       <div className="text-right">

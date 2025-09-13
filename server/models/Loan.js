@@ -4,7 +4,7 @@ const ledgerEntrySchema = new mongoose.Schema({
   id: String,
   type: {
     type: String,
-    enum: ['platform', 'fee', 'principal'],
+    enum: ['platform', 'fee', 'principal', 'funding'],
     required: true
   },
   amount: {
@@ -20,15 +20,15 @@ const ledgerEntrySchema = new mongoose.Schema({
   txRef: String
 });
 
-const blockHistorySchema = new mongoose.Schema({
-  blockNumber: Number,
+const excuseHistorySchema = new mongoose.Schema({
+  excuseNumber: Number,
   startDate: Date,
   endDate: Date,
   outstandingAtStart: Number,
   feeApplied: Number,
   minPaymentRequired: Number,
   totalRequired: Number,
-  paidDuringBlock: Number,
+  paidDuringExcuse: Number,
   satisfied: Boolean,
   defaulted: Boolean,
   reportedToCIBIL: Boolean
@@ -92,7 +92,7 @@ const loanSchema = new mongoose.Schema({
     txRef: String
   }],
   ledger: [ledgerEntrySchema],
-  blockHistory: [blockHistorySchema],
+  excuseHistory: [excuseHistorySchema],
   termsAcceptedAt: Date,
   termsAcceptedBy: String,
   termsAcceptedIP: String,
@@ -126,52 +126,56 @@ loanSchema.virtual('totalPaymentsMade').get(function() {
     .reduce((sum, entry) => sum + entry.amount, 0);
 });
 
-// Method to calculate block schedule
-loanSchema.methods.calculateBlockSchedule = function() {
+// Method to calculate excuse schedule
+loanSchema.methods.calculateExcuseSchedule = function() {
   if (!this.disbursedAt) return [];
   
-  const blocks = [];
+  const excuses = [];
   const dueDate = new Date(this.disbursedAt.getTime() + (30 * 24 * 60 * 60 * 1000)); // 30 days
   const mainGraceEnd = new Date(dueDate.getTime() + (10 * 24 * 60 * 60 * 1000)); // +10 days
   
   // First checkpoint (main grace end)
-  blocks.push({
-    blockNumber: 1,
+  excuses.push({
+    excuseNumber: 1,
     startDate: dueDate,
     endDate: mainGraceEnd,
     isMainGrace: true
   });
   
-  // Subsequent blocks (4 more blocks of 10 days each)
+  // Subsequent excuses (4 more excuses of 10 days each)
   for (let i = 2; i <= 5; i++) {
     const startDate = new Date(mainGraceEnd.getTime() + ((i - 2) * 10 * 24 * 60 * 60 * 1000));
     const endDate = new Date(startDate.getTime() + (10 * 24 * 60 * 60 * 1000));
     
-    blocks.push({
-      blockNumber: i,
+    excuses.push({
+      excuseNumber: i,
       startDate,
       endDate,
       isMainGrace: false
     });
   }
   
-  return blocks;
+  return excuses;
 };
 
-// Method to get current block
-loanSchema.methods.getCurrentBlock = function() {
+// Method to get current excuse
+loanSchema.methods.getCurrentExcuse = function() {
   const now = new Date();
-  const blocks = this.calculateBlockSchedule();
+  const excuses = this.calculateExcuseSchedule();
   
-  for (const block of blocks) {
-    if (now >= block.startDate && now <= block.endDate) {
-      return block;
+  for (const excuse of excuses) {
+    if (now >= excuse.startDate && now <= excuse.endDate) {
+      return excuse;
     }
   }
   
-  // If past all blocks, return the last one
-  return blocks[blocks.length - 1] || null;
+  // If past all excuses, return the last one
+  return excuses[excuses.length - 1] || null;
 };
+
+// Ensure virtual fields are included in JSON output
+loanSchema.set('toJSON', { virtuals: true });
+loanSchema.set('toObject', { virtuals: true });
 
 // Method to check if loan is in grace period
 loanSchema.methods.isInGracePeriod = function() {

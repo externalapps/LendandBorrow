@@ -1,8 +1,8 @@
-generate a polished end-to-end demo of PaySafe: a friend-to-friend P2P lending demo (A ↔ B), with KYC onboarding (dummy for demo), escrow (Razorpay sandbox), full repayment + 4×10-day grace blocks, rolling 1% block fees, 20% minimum per block, simulated VoIP & SMS collection, and simulated CIBIL reporting. The repo must be runnable, deployable (Vercel + MongoDB Atlas), and include demo scripts and README.
+generate a polished end-to-end demo of LendAndBorrow: a friend-to-friend P2P lending demo (A ↔ B), with KYC onboarding (dummy for demo), escrow (Razorpay sandbox), full repayment + 4×10-day grace blocks, rolling 1% block fees, 20% minimum per block, simulated VoIP & SMS collection, and simulated CIBIL reporting. The repo must be runnable, deployable (Vercel + MongoDB Atlas), and include demo scripts and README.
 
 Project brief (one sentence)
 
-Build a beautiful, professional, investor-ready demo app called PaySafe that shows two friends lending to each other, the full loan lifecycle (KYC → escrow → disbursement → repayments → grace blocks → block fees → simulated CIBIL reporting), plus admin controls and a time simulator. All KYC/actions are dummy for demo purposes (Razorpay sandbox optional). Provide a runnable repo with README and demo scripts.
+Build a beautiful, professional, investor-ready demo app called LendAndBorrow that shows two friends lending to each other, the full loan lifecycle (KYC → escrow → disbursement → repayments → grace blocks → block fees → simulated CIBIL reporting), plus admin controls and a time simulator. All KYC/actions are dummy for demo purposes (Razorpay sandbox optional). Provide a runnable repo with README and demo scripts.
 
 Required tech stack
 
@@ -148,7 +148,7 @@ MockVoIP
 
 On scheduled reminder or on block end, create call transcript:
 
-Template: "Hello {borrower.name}, this is PaySafe reminder. Outstanding: ₹{outstanding}. Minimum due this block: ₹{minPayment}. If unpaid by {blockEndDate}, your remaining outstanding may be reported to CIBIL."
+Template: "Hello {borrower.name}, this is LendAndBorrow reminder. Outstanding: ₹{outstanding}. Minimum due this block: ₹{minPayment}. If unpaid by {blockEndDate}, your remaining outstanding may be reported to CIBIL."
 
 Provide a “Play Call” button that displays transcript and a faux audio player (optional TTS file).
 

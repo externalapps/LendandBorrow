@@ -7,12 +7,12 @@ const AuditLog = require('../models/AuditLog');
 
 // Business constants
 const INITIAL_PLATFORM_FEE_RATE = 0.01;
-const BLOCK_FEE_RATE = 0.01;
-const BLOCK_MIN_PERCENT = 0.20;
+const EXCUSE_FEE_RATE = 0.01;
+const EXCUSE_MIN_PERCENT = 0.20;
 const TERM_DAYS = 30;
 const MAIN_GRACE_DAYS = 10;
-const BLOCK_LENGTH_DAYS = 10;
-const BLOCK_COUNT = 4;
+const EXCUSE_LENGTH_DAYS = 10;
+const EXCUSE_COUNT = 4;
 
 class LoanService {
   // Create a new loan
@@ -83,8 +83,8 @@ class LoanService {
       }
 
       // Check if borrower has completed KYC before funding
-      const inMemoryAuth = require('./inMemoryAuth');
-      const borrower = inMemoryAuth.findUserById(loan.borrowerId);
+      const User = require('../models/User');
+      const borrower = await User.findOne({ id: loan.borrowerId });
       if (!borrower || borrower.kycStatus !== 'VERIFIED') {
         throw new Error('Cannot fund loan: Borrower has not completed KYC verification yet');
       }
@@ -127,8 +127,8 @@ class LoanService {
       }
 
       // Check if borrower has completed KYC
-      const inMemoryAuth = require('./inMemoryAuth');
-      const borrower = inMemoryAuth.findUserById(borrowerId);
+      const User = require('../models/User');
+      const borrower = await User.findOne({ id: borrowerId });
       if (!borrower || borrower.kycStatus !== 'VERIFIED') {
         throw new Error('You must complete KYC verification before accepting a loan offer');
       }
@@ -249,33 +249,33 @@ class LoanService {
     return Math.max(0, totalFeesAccrued - feePayments);
   }
 
-  // Evaluate block and apply fees
-  static async evaluateBlock(loan, blockNumber, req) {
+  // Evaluate excuse and apply fees
+  static async evaluateExcuse(loan, excuseNumber, req) {
     try {
-      const blocks = loan.calculateBlockSchedule();
-      const block = blocks.find(b => b.blockNumber === blockNumber);
+      const excuses = loan.calculateExcuseSchedule();
+      const excuse = excuses.find(e => e.excuseNumber === excuseNumber);
       
-      if (!block) {
-        throw new Error('Invalid block number');
+      if (!excuse) {
+        throw new Error('Invalid excuse number');
       }
 
       const now = new Date();
-      if (now < block.endDate) {
-        throw new Error('Block evaluation not yet due');
+      if (now < excuse.endDate) {
+        throw new Error('Excuse evaluation not yet due');
       }
 
-      // Check if block already evaluated
-      const existingBlock = loan.blockHistory.find(b => b.blockNumber === blockNumber);
-      if (existingBlock) {
-        return existingBlock;
+      // Check if excuse already evaluated
+      const existingExcuse = loan.excuseHistory.find(e => e.excuseNumber === excuseNumber);
+      if (existingExcuse) {
+        return existingExcuse;
       }
 
-      // Calculate outstanding at start of block
+      // Calculate outstanding at start of excuse
       const outstandingAtStart = loan.outstanding;
       
-      // Apply block fee
-      const feeApplied = Math.round(outstandingAtStart * BLOCK_FEE_RATE * 100) / 100;
-      const minPaymentRequired = Math.round(outstandingAtStart * BLOCK_MIN_PERCENT * 100) / 100;
+      // Apply excuse fee
+      const feeApplied = Math.round(outstandingAtStart * EXCUSE_FEE_RATE * 100) / 100;
+      const minPaymentRequired = Math.round(outstandingAtStart * EXCUSE_MIN_PERCENT * 100) / 100;
       const totalRequired = minPaymentRequired + feeApplied;
 
       // Add fee to ledger
@@ -284,70 +284,70 @@ class LoanService {
         type: 'fee',
         amount: feeApplied,
         date: new Date(),
-        description: `Block ${blockNumber} fee`,
-        txRef: `BLOCK_FEE_${loan.id}_${blockNumber}`
+        description: `Excuse ${excuseNumber} fee`,
+        txRef: `EXCUSE_FEE_${loan.id}_${excuseNumber}`
       });
 
-      // Calculate payments made during this block
-      const blockStartDate = block.startDate;
-      const blockEndDate = block.endDate;
+      // Calculate payments made during this excuse
+      const excuseStartDate = excuse.startDate;
+      const excuseEndDate = excuse.endDate;
       
-      const paymentsDuringBlock = loan.ledger
+      const paymentsDuringExcuse = loan.ledger
         .filter(entry => 
-          entry.date >= blockStartDate && 
-          entry.date <= blockEndDate &&
+          entry.date >= excuseStartDate && 
+          entry.date <= excuseEndDate &&
           (entry.type === 'principal' || entry.type === 'fee')
         )
         .reduce((sum, entry) => sum + entry.amount, 0);
 
-      // Check if block is satisfied
-      const satisfied = paymentsDuringBlock >= totalRequired;
+      // Check if excuse is satisfied
+      const satisfied = paymentsDuringExcuse >= totalRequired;
       const defaulted = !satisfied;
 
-      // Create block history entry
-      const blockHistoryEntry = {
-        blockNumber,
-        startDate: blockStartDate,
-        endDate: blockEndDate,
+      // Create excuse history entry
+      const excuseHistoryEntry = {
+        excuseNumber,
+        startDate: excuseStartDate,
+        endDate: excuseEndDate,
         outstandingAtStart,
         feeApplied,
         minPaymentRequired,
         totalRequired,
-        paidDuringBlock: paymentsDuringBlock,
+        paidDuringExcuse: paymentsDuringExcuse,
         satisfied,
         defaulted,
         reportedToCIBIL: false
       };
 
-      loan.blockHistory.push(blockHistoryEntry);
+      loan.excuseHistory.push(excuseHistoryEntry);
 
       // If defaulted, report to CIBIL
       if (defaulted) {
-        await this.reportToCIBIL(loan, blockNumber, req);
-        blockHistoryEntry.reportedToCIBIL = true;
+        await this.reportToCIBIL(loan, excuseNumber, req);
+        excuseHistoryEntry.reportedToCIBIL = true;
         loan.status = 'DEFAULT_REPORTED';
       }
 
       await loan.save();
 
       // Log audit
-      await this.logAudit('system', 'BLOCK_EVALUATED', { 
+      await this.logAudit('system', 'EXCUSE_EVALUATED', { 
         loanId: loan.id, 
-        blockNumber, 
+        excuseNumber, 
         satisfied, 
         defaulted,
         outstanding: loan.outstanding
       }, req);
 
-      return blockHistoryEntry;
+      return excuseHistoryEntry;
     } catch (error) {
-      console.error('Evaluate block error:', error);
+      console.error('Evaluate excuse error:', error);
       throw error;
     }
   }
 
   // Report to CIBIL
-  static async reportToCIBIL(loan, blockNumber, req) {
+  static async reportToCIBIL(loan, excuseNumber, req) {
     try {
       const cibilReport = new CibilReport({
         id: uuidv4(),
@@ -355,9 +355,9 @@ class LoanService {
         borrowerId: loan.borrowerId,
         amountReported: loan.outstanding,
         reportedAt: new Date(),
-        blockNumber,
+        excuseNumber,
         status: 'REPORTED',
-        cibilReferenceId: `CIBIL_${loan.id}_${blockNumber}_${Date.now()}`
+        cibilReferenceId: `CIBIL_${loan.id}_${excuseNumber}_${Date.now()}`
       });
 
       await cibilReport.save();
@@ -367,7 +367,7 @@ class LoanService {
         loanId: loan.id, 
         borrowerId: loan.borrowerId,
         amountReported: loan.outstanding,
-        blockNumber
+        excuseNumber
       }, req);
 
       return cibilReport;
@@ -384,18 +384,18 @@ class LoanService {
       const results = [];
 
       for (const loan of activeLoans) {
-        const blocks = loan.calculateBlockSchedule();
+        const excuses = loan.calculateExcuseSchedule();
         const now = new Date();
 
-        for (const block of blocks) {
-          // Check if block end date has passed and not yet evaluated
-          if (now >= block.endDate) {
-            const existingBlock = loan.blockHistory.find(b => b.blockNumber === block.blockNumber);
-            if (!existingBlock) {
-              const result = await this.evaluateBlock(loan, block.blockNumber, req);
+        for (const excuse of excuses) {
+          // Check if excuse end date has passed and not yet evaluated
+          if (now >= excuse.endDate) {
+            const existingExcuse = loan.excuseHistory.find(e => e.excuseNumber === excuse.excuseNumber);
+            if (!existingExcuse) {
+              const result = await this.evaluateExcuse(loan, excuse.excuseNumber, req);
               results.push({
                 loanId: loan.id,
-                blockNumber: block.blockNumber,
+                excuseNumber: excuse.excuseNumber,
                 result
               });
             }
@@ -406,7 +406,7 @@ class LoanService {
       // Log audit
       await this.logAudit('system', 'SCHEDULER_RUN', { 
         activeLoans: activeLoans.length,
-        blocksEvaluated: results.length
+        excusesEvaluated: results.length
       }, req);
 
       return results;
@@ -432,12 +432,8 @@ class LoanService {
         throw new Error('Lender ID is required');
       }
 
-      // Check if borrower has completed KYC
-      const inMemoryAuth = require('./inMemoryAuth');
-      const borrower = inMemoryAuth.findUserById(borrowerId);
-      if (!borrower || borrower.kycStatus !== 'VERIFIED') {
-        throw new Error('KYC verification is required before requesting a loan');
-      }
+      // KYC verification is handled per-loan, not per-user
+      // The kycData parameter indicates if KYC was completed for this specific loan request
 
       // Create loan request for specific lender
       const loanRequest = new Loan({
@@ -516,7 +512,7 @@ class LoanService {
   }
 
   // Accept loan request (by lender)
-  static async acceptLoanRequest(loanRequestId, lenderId, req) {
+  static async acceptLoanRequest(loanRequestId, lenderId, repaymentDate, req) {
     try {
       const loanRequest = await Loan.findOne({ 
         id: loanRequestId, 
@@ -534,6 +530,11 @@ class LoanService {
       // Update loan request to pending payment status
       loanRequest.lenderId = lenderId;
       loanRequest.status = 'PENDING_PAYMENT';
+      
+      // Set the repayment date if provided
+      if (repaymentDate) {
+        loanRequest.dueAt = new Date(repaymentDate);
+      }
       
       await loanRequest.save();
 
@@ -568,13 +569,17 @@ class LoanService {
       loanRequest.status = 'ACTIVE';
       loanRequest.escrowStatus = 'RELEASED';
       loanRequest.disbursedAt = new Date();
-      loanRequest.dueAt = new Date(loanRequest.disbursedAt.getTime() + (TERM_DAYS * 24 * 60 * 60 * 1000));
+      // Keep the dueAt date that was set by the lender when accepting the request
+      // Only set default dueAt if none was set
+      if (!loanRequest.dueAt) {
+        loanRequest.dueAt = new Date(loanRequest.disbursedAt.getTime() + (TERM_DAYS * 24 * 60 * 60 * 1000));
+      }
       
-      // Add payment record to ledger
+      // Add funding record to ledger (not a principal payment)
       loanRequest.ledger.push({
         id: uuidv4(),
         date: new Date(),
-        type: 'principal',
+        type: 'funding',
         amount: loanRequest.principal,
         description: `Loan funded via ${paymentMethod}`,
         paymentId: paymentId

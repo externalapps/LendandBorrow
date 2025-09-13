@@ -3,7 +3,7 @@ const DEMO_USERS = [
   {
     id: 'user_a',
     name: 'Priya Rajesh',
-    email: 'user_a@paysafe.com',
+    email: 'user_a@lendandborrow.com',
     password: 'demo123',
     phone: '+919000000001',
     kycStatus: 'VERIFIED',
@@ -17,7 +17,7 @@ const DEMO_USERS = [
   {
     id: 'user_b',
     name: 'Arjun Kumar',
-    email: 'user_b@paysafe.com',
+    email: 'user_b@lendandborrow.com',
     password: 'demo123',
     phone: '+919000000002',
     kycStatus: 'VERIFIED',
@@ -31,7 +31,7 @@ const DEMO_USERS = [
   {
     id: 'admin',
     name: 'Suresh Venkatesh',
-    email: 'admin@paysafe.com',
+    email: 'admin@lendandborrow.com',
     password: 'admin123',
     phone: '+919000000000',
     kycStatus: 'VERIFIED',

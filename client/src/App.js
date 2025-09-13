@@ -39,7 +39,7 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (adminOnly && !['admin@paysafe.com', 'demo@paysafe.com'].includes(user.email)) {
+  if (adminOnly && !['admin@lendandborrow.com', 'demo@lendandborrow.com'].includes(user.email)) {
     return <Navigate to="/dashboard" replace />;
   }
 

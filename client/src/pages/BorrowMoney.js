@@ -14,17 +14,30 @@ import LoanRequestForm from '../components/LoanRequestForm';
 import toast from 'react-hot-toast';
 
 const BorrowMoney = () => {
+  const { user } = useAuth();
   const [pendingOffers, setPendingOffers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedLoan, setSelectedLoan] = useState(null);
   const [showTermsModal, setShowTermsModal] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(location.state?.activeTab || 'offers'); // 'offers' or 'request'
   const [kycVerified, setKycVerified] = useState(location.state?.kycVerified || false);
-
-  const { user } = useAuth();
   const { acceptLoanTerms, cancelLoan, getPendingOffers } = useLoan();
-  const navigate = useNavigate();
+  
+  // BIBLE: "B automatically redirects to KYC (same 4 steps) After KYC, B returns to form, enters details, submits request"
+  // If user switches to 'request' tab and is not KYC verified, redirect to KYC immediately
+  useEffect(() => {
+    if (activeTab === 'request' && user?.kycStatus !== 'VERIFIED') {
+      navigate('/kyc', { 
+        state: { 
+          returnTo: '/borrow', 
+          flowType: 'request',
+          activeTab: 'request'
+        } 
+      });
+    }
+  }, [activeTab, user?.kycStatus, navigate]);
 
   useEffect(() => {
     fetchPendingOffers();
@@ -51,7 +64,7 @@ const BorrowMoney = () => {
   const handleConfirmAccept = async () => {
     if (!selectedLoan) return;
 
-    // Always redirect to KYC for direct lending - no pre-verification checks
+    // BIBLE: "B automatically redirects to KYC" - ALWAYS, no exceptions
     toast('Please complete your KYC verification to accept this loan.', {
       icon: 'ℹ️',
     });
@@ -180,7 +193,7 @@ const BorrowMoney = () => {
                         </div>
                         <div>
                           <h3 className="text-lg font-semibold text-gray-900">
-                            Loan from {loan.lenderId?.name}
+                            Loan from {loan.lender?.name || 'Unknown Lender'}
                           </h3>
                           <p className="text-sm text-gray-500">
                             Loan ID: {loan.id}
@@ -224,8 +237,8 @@ const BorrowMoney = () => {
                               <span className="font-medium">10 days after repayment date</span>
                             </div>
                             <div className="flex justify-between">
-                              <span>Block Fee Rate:</span>
-                              <span className="font-medium">1% per block</span>
+                              <span>Excuse Fee Rate:</span>
+                              <span className="font-medium">1% per excuse</span>
                             </div>
                             <div className="flex justify-between">
                               <span>Full Payment:</span>
@@ -246,12 +259,12 @@ const BorrowMoney = () => {
                               <span className="font-medium">Day 40</span>
                             </div>
                             <div className="flex justify-between">
-                              <span>Block Length:</span>
+                              <span>Excuse Length:</span>
                               <span className="font-medium">10 days</span>
                             </div>
                             <div className="flex justify-between">
-                              <span>Total Blocks:</span>
-                              <span className="font-medium">4 blocks</span>
+                              <span>Total Excuses:</span>
+                              <span className="font-medium">4 excuses</span>
                             </div>
                           </div>
                         </div>
@@ -263,8 +276,8 @@ const BorrowMoney = () => {
                           <div>
                             <h4 className="text-sm font-medium text-yellow-800">Important Terms</h4>
                             <ul className="text-sm text-yellow-700 mt-1 space-y-1">
-                              <li>• You must make minimum payments by each block end date</li>
-                              <li>• Missing payments will result in 1% block fees</li>
+                              <li>• You must make minimum payments by each excuse end date</li>
+                              <li>• Missing payments will result in 1% excuse fees</li>
                               <li>• Outstanding amounts may be reported to CIBIL if payments are missed</li>
                               <li>• You can pay more than the minimum amount at any time</li>
                             </ul>
@@ -359,9 +372,9 @@ const BorrowMoney = () => {
                     <div className="text-sm text-gray-600 space-y-2">
                       <p>1. <strong>Loan Term:</strong> 30 days from disbursement date</p>
                       <p>2. <strong>Grace Period:</strong> 10 days after due date (Day 40)</p>
-                      <p>3. <strong>Block Structure:</strong> 4 blocks of 10 days each after grace period</p>
-                      <p>4. <strong>Block Fees:</strong> 1% of outstanding amount per block if minimum payment not made</p>
-                      <p>5. <strong>Minimum Payment:</strong> 20% of outstanding amount per block</p>
+                      <p>3. <strong>Excuse Structure:</strong> 4 excuses of 10 days each after grace period</p>
+                      <p>4. <strong>Excuse Fees:</strong> 1% of outstanding amount per excuse if minimum payment not made</p>
+                      <p>5. <strong>Minimum Payment:</strong> 20% of outstanding amount per excuse</p>
                       <p>6. <strong>CIBIL Reporting:</strong> Outstanding amounts may be reported to credit bureaus if payments are missed</p>
                       <p>7. <strong>Early Repayment:</strong> You can pay the full amount at any time without penalty</p>
                       <p>8. <strong>Payment Allocation:</strong> Payments are first applied to fees, then to principal</p>
@@ -375,7 +388,7 @@ const BorrowMoney = () => {
                         <h4 className="text-sm font-medium text-red-800">Important Notice</h4>
                         <p className="text-sm text-red-700 mt-1">
                           By accepting this loan, you agree to the terms above. Failure to make minimum payments 
-                          by block end dates will result in additional fees and potential CIBIL reporting.
+                          by excuse end dates will result in additional fees and potential CIBIL reporting.
                         </p>
                       </div>
                     </div>

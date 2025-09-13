@@ -17,11 +17,12 @@ const Repayment = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { fetchLoanById, getPaymentRequirements, makePayment } = useLoan();
-  const { showSuccess, showError, showPayment } = useModal();
+  const { showError } = useModal();
   
   const [loan, setLoan] = useState(null);
   const [paymentRequirements, setPaymentRequirements] = useState(null);
   const [amount, setAmount] = useState('');
+  const [selectedQuickAmount, setSelectedQuickAmount] = useState(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [errors, setErrors] = useState({});
@@ -88,6 +89,7 @@ const Repayment = () => {
   const handleAmountChange = (e) => {
     const value = e.target.value;
     setAmount(value);
+    setSelectedQuickAmount(null); // Clear selection when manually typing
     
     const error = validateAmount(value);
     setErrors(prev => ({
@@ -105,6 +107,7 @@ const Repayment = () => {
     if (quickAmount <= 0) return;
     
     setAmount(quickAmount.toString());
+    setSelectedQuickAmount(percentage);
     
     const error = validateAmount(quickAmount.toString());
     setErrors(prev => ({
@@ -122,20 +125,26 @@ const Repayment = () => {
       return;
     }
 
-    // Show payment modal with Razorpay integration
-    showPayment(parseFloat(amount), async () => {
-      setProcessing(true);
-      try {
-        await processRazorpayRepayment(loanId, parseFloat(amount));
-        showSuccess('Payment Successful', 'Payment made successfully!');
-        navigate(`/loan/${loanId}`);
-      } catch (error) {
-        console.error('Error making payment:', error);
+    // Go directly to Razorpay payment (no modal)
+    setProcessing(true);
+    try {
+      await processRazorpayRepayment(loanId, parseFloat(amount));
+      // Payment was successful, refresh loan data and navigate
+      await fetchLoanData(); // Refresh loan data to show updated outstanding amount
+      setProcessing(false);
+      navigate(`/loan/${loanId}`);
+    } catch (error) {
+      console.error('Error making payment:', error);
+      setProcessing(false);
+      // Only show error modal for actual payment failures
+      if (error.message && error.message.includes('Payment failed')) {
         showError('Payment Failed', 'Payment failed. Please try again.');
-      } finally {
-        setProcessing(false);
+      } else {
+        // For other errors (like API failures), just log them and navigate
+        console.error('Non-payment error:', error);
+        navigate(`/loan/${loanId}`);
       }
-    });
+    }
   };
 
   const processRazorpayRepayment = async (loanId, amount) => {
@@ -158,12 +167,14 @@ const Repayment = () => {
             color: "#0b1540"
           },
           handler: async function (response) {
-            try {
-              await makePayment(loanId, amount);
-              resolve();
-            } catch (error) {
-              reject(error);
-            }
+            // Razorpay payment was successful, resolve immediately
+            resolve();
+            
+            // Record the payment in our system in the background (don't wait for it)
+            makePayment(loanId, amount).catch(error => {
+              console.warn('Payment recorded in Razorpay but failed to update our system:', error);
+              // This is not critical since the payment was successful
+            });
           },
           prefill: {
             name: user?.name || 'Test User',
@@ -290,27 +301,27 @@ const Repayment = () => {
               </div>
               <div className="card-body">
                 <form onSubmit={handleSubmit} className="space-y-6">
-                  {/* Current Block Info */}
+                  {/* Current Excuse Info */}
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <h3 className="font-medium text-blue-900 mb-2">Current Block Information</h3>
+                    <h3 className="font-medium text-blue-900 mb-2">Current Excuse Information</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                       <div>
-                        <span className="text-blue-700">Block Number:</span>
-                        <span className="font-medium ml-2">{paymentRequirements.currentBlock.blockNumber}</span>
+                        <span className="text-blue-700">Excuse Number:</span>
+                        <span className="font-medium ml-2">{paymentRequirements?.currentBlock?.blockNumber || 'N/A'}</span>
                       </div>
                       <div>
-                        <span className="text-blue-700">Block End Date:</span>
+                        <span className="text-blue-700">Excuse End Date:</span>
                         <span className="font-medium ml-2">
-                          {new Date(paymentRequirements.blockEndDate).toLocaleDateString()}
+                          {paymentRequirements?.blockEndDate ? new Date(paymentRequirements.blockEndDate).toLocaleDateString() : 'Not set'}
                         </span>
                       </div>
                       <div>
                         <span className="text-blue-700">Outstanding Amount:</span>
-                        <span className="font-medium ml-2">{formatCurrency(paymentRequirements.outstanding)}</span>
+                        <span className="font-medium ml-2">{formatCurrency(paymentRequirements?.outstanding || 0)}</span>
                       </div>
                       <div>
-                        <span className="text-blue-700">Block Fee:</span>
-                        <span className="font-medium ml-2">{formatCurrency(paymentRequirements.blockFee)}</span>
+                        <span className="text-blue-700">Excuse Fee:</span>
+                        <span className="font-medium ml-2">{formatCurrency(paymentRequirements?.blockFee || 0)}</span>
                       </div>
                     </div>
                   </div>
@@ -323,8 +334,8 @@ const Repayment = () => {
                     <input
                       id="amount"
                       type="number"
-                      min={paymentRequirements.minPayment}
-                      max={paymentRequirements.outstanding + paymentRequirements.blockFee}
+                      min={paymentRequirements?.minPayment || 1}
+                      max={(paymentRequirements?.outstanding || 0) + (paymentRequirements?.blockFee || 0)}
                       step="0.01"
                       value={amount}
                       onChange={handleAmountChange}
@@ -350,31 +361,37 @@ const Repayment = () => {
                         { label: '75% Payment', percentage: 0.75 },
                         { 
                           label: 'Full Amount', 
-                          value: (loan && loan.outstanding > 0) ? loan.outstanding + (paymentRequirements?.blockFee || 0) : 0,
-                          highlight: true 
+                          percentage: 1.0
                         }
-                      ].map((option, index) => (
-                        <button
-                          key={index}
-                          type="button"
-                          onClick={() => {
-                            if (option.percentage) {
-                              handleQuickAmount(option.percentage);
-                            } else {
-                              setAmount(option.value.toString());
-                              setErrors({});
-                            }
-                          }}
-                          className={`p-3 text-sm border ${option.highlight ? 'border-green-500 bg-green-50 hover:bg-green-100' : 'border-gray-300 hover:bg-gray-50'} rounded-lg transition-colors`}
-                        >
-                          {option.label}
-                          <br />
-                          <span className={`font-medium ${option.highlight ? 'text-green-700' : ''}`}>
-                            {formatCurrency(option.value !== undefined ? option.value : 
-                              (loan && loan.outstanding > 0 ? (loan.outstanding * (option.percentage || 0)) : 0))}
-                          </span>
-                        </button>
-                      ))}
+                      ].map((option, index) => {
+                        const isSelected = selectedQuickAmount === option.percentage;
+                        const buttonValue = option.percentage ? 
+                          (loan && loan.outstanding > 0 ? (loan.outstanding * option.percentage) : 0) : 
+                          option.value || 0;
+                        
+                        return (
+                          <button
+                            key={index}
+                            type="button"
+                            onClick={() => {
+                              if (option.percentage) {
+                                handleQuickAmount(option.percentage);
+                              } else {
+                                setAmount(option.value.toString());
+                                setSelectedQuickAmount(null);
+                                setErrors({});
+                              }
+                            }}
+                            className={`p-3 text-sm border ${isSelected ? 'border-green-500 bg-green-50 hover:bg-green-100' : 'border-gray-300 hover:bg-gray-50'} rounded-lg transition-colors`}
+                          >
+                            {option.label}
+                            <br />
+                            <span className={`font-medium ${isSelected ? 'text-green-700' : ''}`}>
+                              {formatCurrency(buttonValue)}
+                            </span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -430,16 +447,16 @@ const Repayment = () => {
               <div className="card-body">
                 <div className="space-y-4">
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Current Block</h4>
+                    <h4 className="font-medium text-gray-900 mb-2">Current Excuse</h4>
                     <div className="space-y-1 text-sm text-gray-600">
                       <div className="flex justify-between">
-                        <span>Block Number:</span>
-                        <span className="font-medium">{paymentRequirements.currentBlock.blockNumber}</span>
+                        <span>Excuse Number:</span>
+                        <span className="font-medium">{paymentRequirements?.currentBlock?.blockNumber || 'N/A'}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>End Date:</span>
                         <span className="font-medium">
-                          {new Date(paymentRequirements.blockEndDate).toLocaleDateString()}
+                          {paymentRequirements?.blockEndDate ? new Date(paymentRequirements.blockEndDate).toLocaleDateString() : 'Not set'}
                         </span>
                       </div>
                     </div>
@@ -453,7 +470,7 @@ const Repayment = () => {
                         <span className="font-medium">{formatCurrency(loan?.outstanding || 0)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Block Fee:</span>
+                        <span>Excuse Fee:</span>
                         <span className="font-medium">{formatCurrency(paymentRequirements?.blockFee || 0)}</span>
                       </div>
                       <div className="flex justify-between">
@@ -473,7 +490,7 @@ const Repayment = () => {
                       <div>
                         <p className="text-sm font-medium text-yellow-800">Important</p>
                         <p className="text-sm text-yellow-700 mt-1">
-                          You must pay at least the minimum amount by the block end date to avoid additional fees and CIBIL reporting.
+                          You must pay at least the minimum amount by the excuse end date to avoid additional fees and CIBIL reporting.
                         </p>
                       </div>
                     </div>

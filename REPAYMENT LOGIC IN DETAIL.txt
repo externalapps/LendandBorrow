@@ -1,0 +1,137 @@
+Loan Repayment & Excuse Logic – With Continuous CIBIL Reporting
+Step 1: Loan Activation
+
+Loan amount = X (example: 1000).
+
+Platform fee = X * 1% (10).
+
+Borrower receives X - fee (990).
+
+Lender expects repayment of full X (1000).
+
+Step 2: Repayment Timeline
+
+Due Date (Day 30)
+
+Borrower must repay full X.
+
+If repaid → loan closed.
+
+If not → loan enters Excuse 1.
+
+Excuse 1 (Day 31–40)
+
+Borrower must pay ≥ 20% of outstanding.
+
+If paid ≥ 20% →
+
+Platform levies 1% fee on outstanding principal.
+
+Loan continues.
+
+If paid < 20% →
+
+On Day 40, CIBIL report: 30+ DPD (days past due).
+
+Loan still continues, but borrower is marked delinquent.
+
+Excuse 2 (Day 41–50)
+
+Same rules as Excuse 1.
+
+If borrower fails:
+
+On Day 50, CIBIL report: 40+ DPD.
+
+Excuse 3 (Day 51–60)
+
+Same rules.
+
+If borrower fails:
+
+On Day 60, CIBIL report: 50+ DPD.
+
+Excuse 4 (Day 61–70)
+
+Same rules.
+
+If borrower fails:
+
+On Day 70, CIBIL report: 60+ DPD (final default).
+
+After Day 70
+
+If loan is not cleared → final CIBIL report as “Default” and loan closed as non-performing.
+
+Step 3: Core Rules
+
+Outstanding Calculation:
+
+outstanding = original_loan - total_paid
+
+
+Minimum Payment Rule:
+
+≥ 20% of outstanding principal must be paid in each excuse window.
+
+Excuse Fee Rule:
+
+If ≥ 20% paid → levy 1% fee on outstanding.
+
+If < 20% paid → report to CIBIL at end of excuse.
+
+CIBIL Reporting:
+
+Sent at end of each excuse period if borrower fails rule.
+
+Reports escalate as:
+
+Day 40 → 30+ DPD
+
+Day 50 → 40+ DPD
+
+Day 60 → 50+ DPD
+
+Day 70 → 60+ DPD + Default
+
+Step 4: Example Flow
+
+Loan = 1000
+
+Borrower gets 990 (after platform fee).
+
+Day 30: No repayment. Outstanding = 1000.
+
+Day 31–40 (Excuse 1):
+
+Borrower pays only 100 (< 20%).
+
+→ On Day 40 → CIBIL report “30+ DPD”.
+
+Day 41–50 (Excuse 2):
+
+Borrower pays nothing.
+
+→ On Day 50 → CIBIL report “40+ DPD”.
+
+Day 51–60 (Excuse 3):
+
+Borrower pays 200 (≥ 20%).
+
+→ Platform levies 1% of 800 = 8. Loan continues. No CIBIL this time.
+
+Day 61–70 (Excuse 4):
+
+Borrower again pays nothing.
+
+→ On Day 70 → CIBIL report “60+ DPD + Default”.
+
+✅ This way, the borrower always knows:
+
+They must pay ≥ 20% each excuse window to avoid CIBIL.
+
+Even if they fail once, CIBIL keeps updating every excuse window with worsening delinquency.
+
+Platform earns fees: 1% upfront + 1% each excuse window (if ≥ 20% paid).
+
+Lender always gets back exactly the principal they lent.

@@ -16,7 +16,7 @@ const initializeDemoUsers = () => {
       id: 'user_001',
       name: 'Priya Rajesh',
       phone: '+919000000001',
-      email: 'priya@paysafe.com',
+      email: 'priya@lendandborrow.com',
       password: 'demo123',
       bankMask: null,
       kycStatus: 'PENDING',
@@ -28,7 +28,7 @@ const initializeDemoUsers = () => {
       id: 'user_002',
       name: 'Arjun Kumar',
       phone: '+919000000002',
-      email: 'arjun@paysafe.com',
+      email: 'arjun@lendandborrow.com',
       password: 'demo123',
       bankMask: null,
       kycStatus: 'PENDING',
@@ -40,7 +40,7 @@ const initializeDemoUsers = () => {
       id: 'user_003',
       name: 'Suresh Venkatesh',
       phone: '+919000000003',
-      email: 'suresh@paysafe.com',
+      email: 'suresh@lendandborrow.com',
       password: 'demo123',
       bankMask: null,
       kycStatus: 'PENDING',
@@ -52,7 +52,7 @@ const initializeDemoUsers = () => {
       id: 'user_004',
       name: 'Meera Patel',
       phone: '+919000000004',
-      email: 'meera@paysafe.com',
+      email: 'meera@lendandborrow.com',
       password: 'demo123',
       bankMask: null,
       kycStatus: 'PENDING',
@@ -64,7 +64,7 @@ const initializeDemoUsers = () => {
       id: 'user_005',
       name: 'Rajesh Gupta',
       phone: '+919000000005',
-      email: 'rajesh@paysafe.com',
+      email: 'rajesh@lendandborrow.com',
       password: 'demo123',
       bankMask: null,
       kycStatus: 'PENDING',
@@ -76,7 +76,7 @@ const initializeDemoUsers = () => {
       id: 'user_006',
       name: 'Anita Sharma',
       phone: '+919000000006',
-      email: 'anita@paysafe.com',
+      email: 'anita@lendandborrow.com',
       password: 'demo123',
       bankMask: null,
       kycStatus: 'PENDING',
@@ -88,7 +88,7 @@ const initializeDemoUsers = () => {
       id: 'user_007',
       name: 'Vikram Singh',
       phone: '+919000000007',
-      email: 'vikram@paysafe.com',
+      email: 'vikram@lendandborrow.com',
       password: 'demo123',
       bankMask: null,
       kycStatus: 'PENDING',
@@ -100,7 +100,7 @@ const initializeDemoUsers = () => {
       id: 'user_008',
       name: 'Deepika Reddy',
       phone: '+919000000008',
-      email: 'deepika@paysafe.com',
+      email: 'deepika@lendandborrow.com',
       password: 'demo123',
       bankMask: null,
       kycStatus: 'PENDING',
@@ -112,7 +112,7 @@ const initializeDemoUsers = () => {
       id: 'user_009',
       name: 'Rohit Agarwal',
       phone: '+919000000009',
-      email: 'rohit@paysafe.com',
+      email: 'rohit@lendandborrow.com',
       password: 'demo123',
       bankMask: null,
       kycStatus: 'PENDING',
@@ -124,7 +124,7 @@ const initializeDemoUsers = () => {
       id: 'user_010',
       name: 'Kavya Nair',
       phone: '+919000000010',
-      email: 'kavya@paysafe.com',
+      email: 'kavya@lendandborrow.com',
       password: 'demo123',
       bankMask: null,
       kycStatus: 'PENDING', // Changed to PENDING to test the flow
@@ -136,7 +136,7 @@ const initializeDemoUsers = () => {
       id: 'user_011',
       name: 'Rahul Singh',
       phone: '+919000000011',
-      email: 'rahul@paysafe.com',
+      email: 'rahul@lendandborrow.com',
       password: 'demo123',
       bankMask: null,
       kycStatus: 'PENDING', // Another user without KYC
@@ -160,7 +160,7 @@ const initializeDemoUsers = () => {
 
 // Generate JWT token
 const generateToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET || 'paysafe-jwt-secret-2024-very-secure-key', { expiresIn: '7d' });
+  return jwt.sign({ userId }, process.env.JWT_SECRET || 'lendandborrow-jwt-secret-2024-very-secure-key', { expiresIn: '7d' });
 };
 
 // Find user by email

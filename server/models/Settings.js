@@ -13,13 +13,13 @@ const settingsSchema = new mongoose.Schema({
     min: 0,
     max: 1
   },
-  blockFeeRate: {
+  excuseFeeRate: {
     type: Number,
     default: 0.01,
     min: 0,
     max: 1
   },
-  blockMinPercent: {
+  excuseMinPercent: {
     type: Number,
     default: 0.20,
     min: 0,
@@ -35,12 +35,12 @@ const settingsSchema = new mongoose.Schema({
     default: 10,
     min: 0
   },
-  blockLengthDays: {
+  excuseLengthDays: {
     type: Number,
     default: 10,
     min: 1
   },
-  blockCount: {
+  excuseCount: {
     type: Number,
     default: 4,
     min: 0

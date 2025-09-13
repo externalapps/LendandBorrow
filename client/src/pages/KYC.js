@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { useLoan } from '../contexts/LoanContext';
 import { userAPI } from '../services/api';
 import { 
   DocumentTextIcon, 
@@ -27,8 +26,7 @@ const KYC = () => {
   const [errors, setErrors] = useState({});
   const [currentStep, setCurrentStep] = useState(1);
 
-  const { user, updateUser } = useAuth();
-  const { acceptLoanTerms } = useLoan();
+  const { updateUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -112,20 +110,54 @@ const KYC = () => {
 
     setLoading(true);
     try {
-      const response = await userAPI.updateKYC(formData);
+      // Include fromDirectLoan in the KYC data for server-side auto-accept
+      const kycDataWithContext = {
+        ...formData,
+        fromDirectLoan: location.state?.fromDirectLoan
+      };
+      const response = await userAPI.updateKYC(kycDataWithContext);
       updateUser(response.data.user);
       toast.success('KYC completed successfully! You can now receive loan funds.');
       
       // Check where to return after KYC completion
       const fromDirectLoan = location.state?.fromDirectLoan;
       const flowType = location.state?.flowType;
+      const fromLoanRequest = location.state?.fromLoanRequest;
       const returnTo = location.state?.returnTo;
       
       if (fromDirectLoan && flowType === 'direct') {
-        // Direct lending flow - show T&C first, then accept
+        // Direct lending flow - KYC completed, loan should be auto-accepted
         toast.success('KYC completed successfully!');
-        // Navigate to loan detail page with showTermsModal flag
-        navigate(`/loan/${fromDirectLoan}`, { state: { showTermsModal: true, fromKYC: true } });
+        // Navigate to loan detail page - loan should already be accepted
+        navigate(`/loan/${fromDirectLoan}?fromKYC=true`, { state: { fromKYC: true } });
+      } else if (fromLoanRequest && flowType === 'request') {
+        // Loan request flow - submit the loan request after KYC
+        const pendingRequest = sessionStorage.getItem('pendingLoanRequest');
+        if (pendingRequest) {
+          try {
+            const loanRequestData = JSON.parse(pendingRequest);
+            
+            // Submit loan request with KYC verification
+            const { loanAPI } = await import('../services/api');
+            const response = await loanAPI.requestLoan({
+              principal: loanRequestData.principal,
+              purpose: loanRequestData.purpose,
+              repaymentPlan: loanRequestData.repaymentPlan,
+              lenderId: loanRequestData.lenderId,
+              kycVerified: true // Mark this loan request as KYC verified
+            });
+            
+            sessionStorage.removeItem('pendingLoanRequest');
+            toast.success(`Loan request submitted to ${loanRequestData.lenderName} successfully!`);
+            navigate('/borrow', { state: { activeTab: 'request', kycVerified: true } });
+          } catch (error) {
+            console.error('Error submitting loan request after KYC:', error);
+            toast.error('Failed to submit loan request. Please try again.');
+            navigate('/borrow', { state: { activeTab: 'request' } });
+          }
+        } else {
+          navigate('/borrow', { state: { activeTab: 'request' } });
+        }
       } else if (returnTo) {
         // For borrowing flow, redirect to Request Loan tab with verified message
         if (returnTo === '/borrow') {

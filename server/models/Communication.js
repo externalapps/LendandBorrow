@@ -30,10 +30,10 @@ const communicationSchema = new mongoose.Schema({
   recipientPhone: String,
   recipientEmail: String,
   metadata: {
-    blockNumber: Number,
+    excuseNumber: Number,
     outstandingAmount: Number,
     minPayment: Number,
-    blockEndDate: Date
+    excuseEndDate: Date
   }
 });
 

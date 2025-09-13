@@ -45,7 +45,7 @@ router.post('/razorpay/order', auth, async (req, res) => {
       status: 'created',
       created_at: new Date(),
       notes: {
-        description: 'PaySafe Escrow Payment'
+        description: 'LendAndBorrow Escrow Payment'
       }
     };
 

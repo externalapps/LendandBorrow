@@ -61,6 +61,7 @@ export const loanAPI = {
   getLoans: (params) => api.get('/loans', { params }),
   getLoan: (loanId) => api.get(`/loans/${loanId}`),
   createLoan: (loanData) => api.post('/loans', loanData),
+  requestLoan: (loanRequestData) => api.post('/loans/request', loanRequestData),
   fundEscrow: (loanId) => api.post(`/loans/${loanId}/fund-escrow`),
   acceptLoanTerms: (loanId) => api.post(`/loans/${loanId}/accept`),
   makePayment: (loanId, amount) => api.post(`/loans/${loanId}/payment`, { amount }),
@@ -68,7 +69,7 @@ export const loanAPI = {
   getPendingOffers: () => api.get('/loans/pending/offers'),
   getPaymentRequirements: (loanId) => api.get(`/loans/${loanId}/payment-requirements`),
   getLoanLedger: (loanId) => api.get(`/loans/${loanId}/ledger`),
-  getLoanBlocks: (loanId) => api.get(`/loans/${loanId}/blocks`),
+  getLoanExcuses: (loanId) => api.get(`/loans/${loanId}/excuses`),
 };
 
 export const paymentAPI = {

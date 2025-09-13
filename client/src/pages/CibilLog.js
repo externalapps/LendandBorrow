@@ -44,7 +44,7 @@ const CibilLog = () => {
     setExporting(true);
     try {
       // Create mock CSV data from reports
-      const csvHeader = 'Report ID,Loan ID,Block Number,Amount Reported,Reported Date,Status,CIBIL Reference\n';
+      const csvHeader = 'Report ID,Loan ID,Excuse Number,Amount Reported,Reported Date,Status,CIBIL Reference\n';
       const csvRows = reports.map(report => {
         return `${report.id},${report.loanId.id},${report.blockNumber},${report.amountReported},${new Date(report.reportedAt).toISOString()},${report.status},${report.cibilReferenceId}`;
       }).join('\n');
@@ -220,7 +220,7 @@ const CibilLog = () => {
                         Loan ID
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Block Number
+                        Excuse Number
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Amount Reported
@@ -249,7 +249,7 @@ const CibilLog = () => {
                           {report.loanId?.id || 'N/A'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          Block {report.blockNumber}
+                          Excuse {report.blockNumber}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                           {formatCurrency(report.amountReported)}
@@ -306,7 +306,7 @@ const CibilLog = () => {
             <div className="card-body">
               <div className="space-y-3 text-sm text-gray-600">
                 <p>
-                  CIBIL reports are generated when you miss minimum payments by block end dates.
+                  CIBIL reports are generated when you miss minimum payments by excuse end dates.
                 </p>
                 <p>
                   Each report includes the outstanding principal amount at the time of default.
@@ -329,7 +329,7 @@ const CibilLog = () => {
               <div className="space-y-3 text-sm text-gray-600">
                 <div className="flex items-start">
                   <div className="w-2 h-2 bg-teal-600 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                  <p>Make minimum payments by block end dates</p>
+                  <p>Make minimum payments by excuse end dates</p>
                 </div>
                 <div className="flex items-start">
                   <div className="w-2 h-2 bg-teal-600 rounded-full mt-2 mr-3 flex-shrink-0"></div>

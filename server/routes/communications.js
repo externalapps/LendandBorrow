@@ -1,14 +1,17 @@
 const express = require('express');
-const MockServices = require('../services/mockServices');
+const { getCommunicationService } = require('../config/services');
 const Communication = require('../models/Communication');
 const { auth } = require('../middleware/auth');
+
+// Get the active communication service (mock or real)
+const communicationService = getCommunicationService();
 
 const router = express.Router();
 
 // Get communication history for a loan
 router.get('/loan/:loanId', auth, async (req, res) => {
   try {
-    const communications = await MockServices.getCommunicationHistory(req.params.loanId);
+    const communications = await communicationService.getCommunicationHistory(req.params.loanId);
     
     res.json({ communications });
   } catch (error) {
@@ -26,10 +29,10 @@ router.post('/call', auth, async (req, res) => {
       return res.status(400).json({ error: { message: 'Missing required fields' } });
     }
 
-    const callResult = await MockServices.makeVoIPCall(
-      loanId, 
+    const callResult = await communicationService.makeVoIPCall(
       borrowerPhone, 
       borrowerName, 
+      loanId, 
       outstanding, 
       minPayment, 
       new Date(blockEndDate)
@@ -54,13 +57,10 @@ router.post('/sms', auth, async (req, res) => {
       return res.status(400).json({ error: { message: 'Missing required fields' } });
     }
 
-    const smsResult = await MockServices.sendSMS(
-      loanId, 
+    const smsResult = await communicationService.sendSMS(
       borrowerPhone, 
-      borrowerName, 
-      outstanding, 
-      minPayment, 
-      new Date(blockEndDate)
+      `Payment reminder for loan #${loanId}. Outstanding: ₹${outstanding}. Please pay ₹${minPayment} by ${new Date(blockEndDate).toLocaleDateString()}.`,
+      loanId
     );
 
     res.json({
@@ -82,13 +82,11 @@ router.post('/email', auth, async (req, res) => {
       return res.status(400).json({ error: { message: 'Missing required fields' } });
     }
 
-    const emailResult = await MockServices.sendEmail(
-      loanId, 
+    const emailResult = await communicationService.sendEmail(
       borrowerEmail, 
-      borrowerName, 
-      outstanding, 
-      minPayment, 
-      new Date(blockEndDate)
+      `Payment Reminder - Loan #${loanId}`,
+      `Dear ${borrowerName},\n\nThis is a reminder that you have an outstanding payment of ₹${outstanding} for loan #${loanId}.\n\nMinimum payment required: ₹${minPayment}\nDue date: ${new Date(blockEndDate).toLocaleDateString()}\n\nPlease make your payment to avoid any penalties.\n\nBest regards,\nLend & Borrow Team`,
+      loanId
     );
 
     res.json({
@@ -101,24 +99,78 @@ router.post('/email', auth, async (req, res) => {
   }
 });
 
-// Generate TTS audio (mock)
-router.post('/tts', auth, async (req, res) => {
+// Send overdue payment reminder
+router.post('/overdue-reminder', auth, async (req, res) => {
   try {
-    const { transcript } = req.body;
+    const { borrower, loan } = req.body;
 
-    if (!transcript) {
-      return res.status(400).json({ error: { message: 'Transcript is required' } });
+    if (!borrower || !loan) {
+      return res.status(400).json({ error: { message: 'Borrower and loan data are required' } });
     }
 
-    const ttsResult = await MockServices.generateTTSAudio(transcript);
+    const result = await communicationService.sendOverdueReminder(borrower, loan);
 
     res.json({
-      message: 'TTS audio generated successfully',
-      audio: ttsResult
+      message: 'Overdue reminder sent successfully',
+      result
     });
   } catch (error) {
-    console.error('Generate TTS error:', error);
-    res.status(500).json({ error: { message: 'Failed to generate TTS audio' } });
+    console.error('Send overdue reminder error:', error);
+    res.status(500).json({ error: { message: 'Failed to send overdue reminder' } });
+  }
+});
+
+// Send payment confirmation
+router.post('/payment-confirmation', auth, async (req, res) => {
+  try {
+    const { borrower, loan, paymentAmount } = req.body;
+
+    if (!borrower || !loan || !paymentAmount) {
+      return res.status(400).json({ error: { message: 'Borrower, loan, and payment amount are required' } });
+    }
+
+    const result = await communicationService.sendPaymentConfirmation(borrower, loan, paymentAmount);
+
+    res.json({
+      message: 'Payment confirmation sent successfully',
+      result
+    });
+  } catch (error) {
+    console.error('Send payment confirmation error:', error);
+    res.status(500).json({ error: { message: 'Failed to send payment confirmation' } });
+  }
+});
+
+// Send loan disbursement notification
+router.post('/disbursement-notification', auth, async (req, res) => {
+  try {
+    const { borrower, loan } = req.body;
+
+    if (!borrower || !loan) {
+      return res.status(400).json({ error: { message: 'Borrower and loan data are required' } });
+    }
+
+    const result = await communicationService.sendDisbursementNotification(borrower, loan);
+
+    res.json({
+      message: 'Disbursement notification sent successfully',
+      result
+    });
+  } catch (error) {
+    console.error('Send disbursement notification error:', error);
+    res.status(500).json({ error: { message: 'Failed to send disbursement notification' } });
+  }
+});
+
+// Get communication service statistics
+router.get('/stats', auth, async (req, res) => {
+  try {
+    const stats = await communicationService.getServiceStats();
+
+    res.json({ stats });
+  } catch (error) {
+    console.error('Get communication stats error:', error);
+    res.status(500).json({ error: { message: 'Failed to fetch communication statistics' } });
   }
 });
 
@@ -186,6 +238,11 @@ router.put('/:communicationId/status', auth, async (req, res) => {
 });
 
 module.exports = router;
+
+
+
+
+
 
 
 

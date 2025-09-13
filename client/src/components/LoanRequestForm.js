@@ -4,13 +4,11 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   BanknotesIcon, 
-  DocumentTextIcon,
   ArrowRightIcon,
   CheckCircleIcon
 } from '@heroicons/react/24/outline';
 import LoadingSpinner from './LoadingSpinner';
 import ContactSelector from './ContactSelector';
-import VideoKYC from './VideoKYC';
 import toast from 'react-hot-toast';
 
 const LoanRequestForm = ({ onRequestSubmitted }) => {
@@ -20,26 +18,10 @@ const LoanRequestForm = ({ onRequestSubmitted }) => {
   const [purpose, setPurpose] = useState('');
   const [repaymentPlan, setRepaymentPlan] = useState('');
   const [selectedLender, setSelectedLender] = useState(null);
-  // Use user's KYC status from AuthContext instead of local state
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
-  // Check if coming from KYC completion
-  const [kycVerified, setKycVerified] = useState(location.state?.kycVerified || false);
-  // Show KYC first unless already verified from KYC flow
-  const [showKycFirst, setShowKycFirst] = useState(!kycVerified);
-  
-  // Check for KYC status changes
-  useEffect(() => {
-    // If coming from KYC with verified status, don't show KYC first
-    if (location.state?.kycVerified) {
-      setKycVerified(true);
-      setShowKycFirst(false);
-    } else {
-      // Otherwise always require KYC
-      setShowKycFirst(true);
-    }
-  }, [location.state?.kycVerified]);
+  // No KYC checking needed - flows handle KYC automatically
 
   const { requestLoan } = useLoan();
 
@@ -66,9 +48,8 @@ const LoanRequestForm = ({ onRequestSubmitted }) => {
       newErrors.repaymentPlan = 'Please describe your repayment plan';
     }
 
-    if (user?.kycStatus !== 'VERIFIED') {
-      newErrors.kyc = 'Please complete KYC verification';
-    }
+    // KYC will be completed during the loan request process
+    // No need to check user-level KYC here
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -77,33 +58,23 @@ const LoanRequestForm = ({ onRequestSubmitted }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!validateForm()) {
-      return;
-    }
-
+    // User is already KYC verified (form only shows after KYC), proceed with loan request
     setLoading(true);
     try {
-      const principal = parseFloat(amount);
-      
-      await requestLoan({
-        principal,
+      const response = await requestLoan({
+        principal: parseFloat(amount),
         purpose,
         repaymentPlan,
         lenderId: selectedLender.id
       });
       
-      toast.success(`Loan request submitted to ${selectedLender.name} successfully!`);
-      setAmount('');
-      setPurpose('');
-      setRepaymentPlan('');
-      setSelectedLender(null);
-      
+      toast.success('Loan request submitted successfully!');
       if (onRequestSubmitted) {
         onRequestSubmitted();
       }
     } catch (error) {
-      console.error('Error requesting loan:', error);
-      toast.error('Failed to submit loan request');
+      console.error('Error submitting loan request:', error);
+      toast.error('Failed to submit loan request. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -117,69 +88,21 @@ const LoanRequestForm = ({ onRequestSubmitted }) => {
         </h2>
       </div>
       <div className="card-body">
-        {showKycFirst ? (
-          <div className="space-y-6">
-            <div>
-              <label className="form-label">
-                KYC Verification {kycVerified ? '(Verified)' : '(Required)'}
-              </label>
-              {kycVerified ? (
-                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <div className="flex items-start">
-                    <div className="flex-1">
-                      <h3 className="text-sm font-medium text-green-800">
-                        KYC Verification Completed
-                      </h3>
-                      <p className="text-sm text-green-700 mt-1">
-                        Your KYC verification has been completed successfully. You can now proceed with your loan request.
-                      </p>
-                      <button
-                        onClick={() => setShowKycFirst(false)}
-                        className="mt-3 btn-success text-sm flex items-center"
-                      >
-                        <CheckCircleIcon className="w-4 h-4 mr-2" />
-                        Continue to Loan Request
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <div className="flex items-start">
-                    <div className="flex-1">
-                      <h3 className="text-sm font-medium text-yellow-800">
-                        KYC Required
-                      </h3>
-                      <p className="text-sm text-yellow-700 mt-1">
-                        You must complete KYC verification before requesting a loan.
-                        This is a mandatory step to ensure secure and compliant lending.
-                      </p>
-                      <button
-                        onClick={() => navigate('/kyc', { state: { returnTo: '/borrow', flowType: 'request' } })}
-                        className="mt-3 btn-warning text-sm flex items-center"
-                      >
-                        <CheckCircleIcon className="w-4 h-4 mr-2" />
-                        Complete KYC
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
+        {/* BIBLE: "B automatically redirects to KYC (same 4 steps) After KYC, B returns to form, enters details, submits request" */}
+        {/* Form is only shown after KYC completion - KYC redirect handled at page level */}
+        <div className="space-y-6">
+          {/* KYC Success Message */}
+          <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div className="flex items-center space-x-2">
+              <CheckCircleIcon className="w-5 h-5 text-green-600" />
+              <span className="text-sm text-green-800">
+                KYC verification completed - you can now request loans
+              </span>
             </div>
           </div>
-        ) : (
+          
+          {/* Loan Request Form - Only shown AFTER KYC */}
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* KYC Verification Status - Show success message */}
-            <div className="mb-6">
-              <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                <div className="flex items-center space-x-2">
-                  <CheckCircleIcon className="w-5 h-5 text-green-600" />
-                  <span className="text-sm text-green-800">
-                    KYC verification completed successfully
-                  </span>
-                </div>
-              </div>
-            </div>
             
             {/* Select Friend to Borrow From */}
             <div>
@@ -270,7 +193,7 @@ const LoanRequestForm = ({ onRequestSubmitted }) => {
             <div>
               <button
                 type="submit"
-                disabled={loading || !selectedLender || user?.kycStatus !== 'VERIFIED'}
+                disabled={loading || !selectedLender}
                 className="btn-primary w-full flex items-center justify-center"
               >
                 {loading ? (
@@ -291,6 +214,13 @@ const LoanRequestForm = ({ onRequestSubmitted }) => {
               </h3>
               <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 bg-green-500 rounded-full"></div>
+                  <span className="text-green-700">
+                    Complete KYC
+                  </span>
+                </div>
+                <ArrowRightIcon className="w-4 h-4 text-gray-400" />
+                <div className="flex items-center space-x-2">
                   {selectedLender ? (
                     <div className="w-4 h-4 bg-green-500 rounded-full"></div>
                   ) : (
@@ -298,17 +228,6 @@ const LoanRequestForm = ({ onRequestSubmitted }) => {
                   )}
                   <span className={selectedLender ? 'text-green-700' : 'text-gray-600'}>
                     Select friend
-                  </span>
-                </div>
-                <ArrowRightIcon className="w-4 h-4 text-gray-400" />
-                <div className="flex items-center space-x-2">
-                  {user?.kycStatus === 'VERIFIED' ? (
-                    <div className="w-4 h-4 bg-green-500 rounded-full"></div>
-                  ) : (
-                    <div className="w-4 h-4 border-2 border-gray-300 rounded-full"></div>
-                  )}
-                  <span className={user?.kycStatus === 'VERIFIED' ? 'text-green-700' : 'text-gray-600'}>
-                    Complete KYC
                   </span>
                 </div>
                 <ArrowRightIcon className="w-4 h-4 text-gray-400" />
@@ -325,7 +244,7 @@ const LoanRequestForm = ({ onRequestSubmitted }) => {
               </div>
             </div>
           </form>
-        )}
+        </div>
       </div>
     </div>
   );

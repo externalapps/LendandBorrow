@@ -3,8 +3,6 @@ const LoanService = require('../services/loanService');
 const Loan = require('../models/Loan');
 const { auth } = require('../middleware/auth');
 const User = require('../models/User');
-const inMemoryAuth = require('../services/inMemoryAuth');
-const mockServices = require('../services/mockServices');
 
 const router = express.Router();
 
@@ -17,15 +15,7 @@ router.post('/', auth, async (req, res) => {
       return res.status(400).json({ error: { message: 'Invalid loan parameters' } });
     }
 
-    // If MongoDB is not connected, use mock service
-    if (!global.mongoConnected) {
-      const loan = mockServices.createLoan(req.user.id, borrowerId, principal);
-      return res.status(201).json({
-        message: 'Loan created successfully',
-        loan
-      });
-    }
-
+    // Use MongoDB directly for production-ready implementation
     const loan = await LoanService.createLoan(req.user.id, borrowerId, principal, req);
     
     res.status(201).json({
@@ -44,11 +34,6 @@ router.get('/', auth, async (req, res) => {
     const { type, status } = req.query;
     const userId = req.user.id;
     
-    // If MongoDB is not connected, use mock service
-    if (!global.mongoConnected) {
-      const loans = mockServices.getUserLoans(userId, type, status);
-      return res.json({ loans });
-    }
 
     let query = {
       $or: [{ lenderId: userId }, { borrowerId: userId }]
@@ -113,13 +98,7 @@ router.get('/requests', auth, async (req, res) => {
     console.log('🔍 Looking for borrowers with IDs:', borrowerIds);
     
     // Use in-memory auth service to get borrower data
-    const borrowers = [];
-    borrowerIds.forEach(id => {
-      const user = inMemoryAuth.findUserById(id);
-      if (user) {
-        borrowers.push(user);
-      }
-    });
+    const borrowers = await User.find({ id: { $in: borrowerIds } });
     console.log('👥 Found borrowers:', borrowers.map(b => ({ id: b.id, name: b.name })));
     
     const borrowerMap = {};
@@ -150,6 +129,7 @@ router.get('/requests', auth, async (req, res) => {
 // Get loan by ID
 router.get('/:loanId', auth, async (req, res) => {
   try {
+    // Use MongoDB directly for production-ready implementation
     const loan = await Loan.findOne({ 
       id: req.params.loanId,
       $or: [{ lenderId: req.user.id }, { borrowerId: req.user.id }]
@@ -159,9 +139,9 @@ router.get('/:loanId', auth, async (req, res) => {
       return res.status(404).json({ error: { message: 'Loan not found' } });
     }
     
-    // Manually populate user data using in-memory auth
-    const lender = inMemoryAuth.findUserById(loan.lenderId);
-    const borrower = inMemoryAuth.findUserById(loan.borrowerId);
+    // Manually populate user data using MongoDB
+    const lender = await User.findOne({ id: loan.lenderId });
+    const borrower = await User.findOne({ id: loan.borrowerId });
     
     // Attach user data
     loan._doc.lender = lender ? {
@@ -186,8 +166,8 @@ router.get('/:loanId', auth, async (req, res) => {
       outstanding: loan.outstanding,
       totalFeesPaid: loan.totalFeesPaid,
       totalPaymentsMade: loan.totalPaymentsMade,
-      blockSchedule: loan.calculateBlockSchedule(),
-      currentBlock: loan.getCurrentBlock(),
+      excuseSchedule: loan.calculateExcuseSchedule(),
+      currentExcuse: loan.getCurrentExcuse(),
       isInGracePeriod: loan.isInGracePeriod()
     };
 
@@ -237,6 +217,7 @@ router.post('/:loanId/payment', auth, async (req, res) => {
       return res.status(400).json({ error: { message: 'Invalid payment amount' } });
     }
 
+    // Use MongoDB directly for production-ready implementation
     const result = await LoanService.makePayment(req.params.loanId, req.user.id, amount, req);
     
     res.json({
@@ -304,6 +285,7 @@ router.get('/pending/offers', auth, async (req, res) => {
 // Get loan ledger
 router.get('/:loanId/ledger', auth, async (req, res) => {
   try {
+    // Use MongoDB directly for production-ready implementation
     const loan = await Loan.findOne({ 
       id: req.params.loanId,
       $or: [{ lenderId: req.user.id }, { borrowerId: req.user.id }]
@@ -320,9 +302,10 @@ router.get('/:loanId/ledger', auth, async (req, res) => {
   }
 });
 
-// Get loan block history
-router.get('/:loanId/blocks', auth, async (req, res) => {
+// Get loan excuse history
+router.get('/:loanId/excuses', auth, async (req, res) => {
   try {
+    // Use MongoDB directly for production-ready implementation
     const loan = await Loan.findOne({ 
       id: req.params.loanId,
       $or: [{ lenderId: req.user.id }, { borrowerId: req.user.id }]
@@ -332,23 +315,23 @@ router.get('/:loanId/blocks', auth, async (req, res) => {
       return res.status(404).json({ error: { message: 'Loan not found' } });
     }
 
-    const blockSchedule = loan.calculateBlockSchedule();
-    const blockHistory = loan.blockHistory;
+    const excuseSchedule = loan.calculateExcuseSchedule();
+    const excuseHistory = loan.excuseHistory;
 
     // Merge schedule with history
-    const blocks = blockSchedule.map(block => {
-      const history = blockHistory.find(h => h.blockNumber === block.blockNumber);
+    const excuses = excuseSchedule.map(excuse => {
+      const history = excuseHistory.find(h => h.excuseNumber === excuse.excuseNumber);
       return {
-        ...block,
+        ...excuse,
         ...history,
         evaluated: !!history
       };
     });
 
-    res.json({ blocks });
+    res.json({ blocks: excuses });
   } catch (error) {
-    console.error('Get blocks error:', error);
-    res.status(500).json({ error: { message: 'Failed to fetch blocks' } });
+    console.error('Get excuses error:', error);
+    res.status(500).json({ error: { message: 'Failed to fetch excuses' } });
   }
 });
 
@@ -390,8 +373,9 @@ router.post('/requests/:requestId/accept', auth, async (req, res) => {
   try {
     const lenderId = req.user.id;
     const requestId = req.params.requestId;
+    const { repaymentDate } = req.body;
     
-    const loan = await LoanService.acceptLoanRequest(requestId, lenderId, req);
+    const loan = await LoanService.acceptLoanRequest(requestId, lenderId, repaymentDate, req);
     
     res.json({
       message: 'Loan request accepted successfully. Please complete payment to fund the loan.',
@@ -425,6 +409,7 @@ router.post('/requests/:requestId/pay', auth, async (req, res) => {
 // Calculate payment requirements for current block
 router.get('/:loanId/payment-requirements', auth, async (req, res) => {
   try {
+    // Use MongoDB directly for production-ready implementation
     const loan = await Loan.findOne({ 
       id: req.params.loanId,
       $or: [{ lenderId: req.user.id }, { borrowerId: req.user.id }]
@@ -434,31 +419,68 @@ router.get('/:loanId/payment-requirements', auth, async (req, res) => {
       return res.status(404).json({ error: { message: 'Loan not found' } });
     }
 
-    if (loan.status !== 'ACTIVE') {
-      return res.status(400).json({ error: { message: 'Loan is not active' } });
+    // Allow payment requirements for ACTIVE loans or loans that have been funded
+    if (!['ACTIVE', 'PENDING_LENDER_FUNDING'].includes(loan.status)) {
+      return res.status(400).json({ error: { message: 'Loan is not ready for payments' } });
     }
 
-    const currentBlock = loan.getCurrentBlock();
-    if (!currentBlock) {
-      return res.status(400).json({ error: { message: 'No active block found' } });
+    const outstanding = loan.outstanding || loan.principal || 0;
+    
+    // If loan is not yet active (not disbursed), return basic payment info
+    if (loan.status !== 'ACTIVE' || !loan.disbursedAt) {
+      return res.json({
+        currentBlock: null,
+        outstanding,
+        blockFee: 0,
+        minPayment: 1,
+        totalRequired: outstanding,
+        blockEndDate: null
+      });
     }
 
-    const outstanding = loan.outstanding;
-    const blockFee = Math.round(outstanding * 0.01 * 100) / 100; // 1% block fee
-    const minPayment = Math.round(outstanding * 0.20 * 100) / 100; // 20% minimum
-    const totalRequired = minPayment + blockFee;
+    const currentExcuse = loan.getCurrentExcuse();
+    if (!currentExcuse) {
+      // If no current excuse, return basic payment info
+      return res.json({
+        currentBlock: null,
+        outstanding,
+        blockFee: 0,
+        minPayment: 1,
+        totalRequired: outstanding,
+        blockEndDate: null
+      });
+    }
+
+    // Check if excuse period is over (past excuse end date)
+    const now = new Date();
+    const isExcusePeriodOver = currentExcuse.endDate && now > currentExcuse.endDate;
+    
+    let excuseFee = 0;
+    let minPayment = 1; // Minimum ₹1 payment allowed
+    
+    if (isExcusePeriodOver) {
+      // Only apply excuse fees if excuse period is over
+      excuseFee = Math.round(outstanding * 0.01 * 100) / 100; // 1% excuse fee
+      minPayment = Math.round(outstanding * 0.20 * 100) / 100; // 20% minimum
+    }
+    
+    const totalRequired = outstanding + excuseFee;
 
     res.json({
-      currentBlock,
+      currentBlock: {
+        blockNumber: currentExcuse.excuseNumber,
+        startDate: currentExcuse.startDate,
+        endDate: currentExcuse.endDate
+      },
       outstanding,
-      blockFee,
+      blockFee: excuseFee,
       minPayment,
       totalRequired,
-      blockEndDate: currentBlock.endDate
+      blockEndDate: currentExcuse.endDate
     });
   } catch (error) {
     console.error('Get payment requirements error:', error);
-    res.status(500).json({ error: { message: 'Failed to calculate payment requirements' } });
+    res.status(500).json({ error: { message: error.message || 'Failed to calculate payment requirements' } });
   }
 });
 

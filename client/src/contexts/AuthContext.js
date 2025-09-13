@@ -27,6 +27,32 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
+      // Check if it's a demo token
+      if (token.startsWith('demo-token-')) {
+        const userId = token.replace('demo-token-', '');
+        
+        // Demo user data mapping
+        const demoUsers = {
+          'priya_rajesh': { id: 'priya_rajesh', name: 'Priya Rajesh', email: 'priya@lendandborrow.com', phone: '+919000000001', kycStatus: 'PENDING' },
+          'arjun_kumar': { id: 'arjun_kumar', name: 'Arjun Kumar', email: 'arjun@lendandborrow.com', phone: '+919000000002', kycStatus: 'PENDING' },
+          'suresh_venkatesh': { id: 'suresh_venkatesh', name: 'Suresh Venkatesh', email: 'suresh@lendandborrow.com', phone: '+919000000003', kycStatus: 'PENDING' },
+          'meera_patel': { id: 'meera_patel', name: 'Meera Patel', email: 'meera@lendandborrow.com', phone: '+919000000004', kycStatus: 'PENDING' },
+          'rajesh_gupta': { id: 'rajesh_gupta', name: 'Rajesh Gupta', email: 'rajesh@lendandborrow.com', phone: '+919000000005', kycStatus: 'PENDING' },
+          'anita_sharma': { id: 'anita_sharma', name: 'Anita Sharma', email: 'anita@lendandborrow.com', phone: '+919000000006', kycStatus: 'PENDING' },
+          'vikram_singh': { id: 'vikram_singh', name: 'Vikram Singh', email: 'vikram@lendandborrow.com', phone: '+919000000007', kycStatus: 'PENDING' },
+          'deepika_reddy': { id: 'deepika_reddy', name: 'Deepika Reddy', email: 'deepika@lendandborrow.com', phone: '+919000000008', kycStatus: 'PENDING' },
+          'rohit_agarwal': { id: 'rohit_agarwal', name: 'Rohit Agarwal', email: 'rohit@lendandborrow.com', phone: '+919000000009', kycStatus: 'PENDING' },
+          'kavya_nair': { id: 'kavya_nair', name: 'Kavya Nair', email: 'kavya@lendandborrow.com', phone: '+919000000010', kycStatus: 'PENDING' }
+        };
+
+        if (demoUsers[userId]) {
+          setUser(demoUsers[userId]);
+          api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+          setLoading(false);
+          return;
+        }
+      }
+
       // Set token in API headers
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
@@ -44,6 +70,34 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password = '') => {
     try {
+      // Demo user data mapping
+      const demoUsers = {
+        'priya@lendandborrow.com': { id: 'priya_rajesh', name: 'Priya Rajesh', email: 'priya@lendandborrow.com', phone: '+919000000001', kycStatus: 'PENDING' },
+        'arjun@lendandborrow.com': { id: 'arjun_kumar', name: 'Arjun Kumar', email: 'arjun@lendandborrow.com', phone: '+919000000002', kycStatus: 'PENDING' },
+        'suresh@lendandborrow.com': { id: 'suresh_venkatesh', name: 'Suresh Venkatesh', email: 'suresh@lendandborrow.com', phone: '+919000000003', kycStatus: 'PENDING' },
+        'meera@lendandborrow.com': { id: 'meera_patel', name: 'Meera Patel', email: 'meera@lendandborrow.com', phone: '+919000000004', kycStatus: 'PENDING' },
+        'rajesh@lendandborrow.com': { id: 'rajesh_gupta', name: 'Rajesh Gupta', email: 'rajesh@lendandborrow.com', phone: '+919000000005', kycStatus: 'PENDING' },
+        'anita@lendandborrow.com': { id: 'anita_sharma', name: 'Anita Sharma', email: 'anita@lendandborrow.com', phone: '+919000000006', kycStatus: 'PENDING' },
+        'vikram@lendandborrow.com': { id: 'vikram_singh', name: 'Vikram Singh', email: 'vikram@lendandborrow.com', phone: '+919000000007', kycStatus: 'PENDING' },
+        'deepika@lendandborrow.com': { id: 'deepika_reddy', name: 'Deepika Reddy', email: 'deepika@lendandborrow.com', phone: '+919000000008', kycStatus: 'PENDING' },
+        'rohit@lendandborrow.com': { id: 'rohit_agarwal', name: 'Rohit Agarwal', email: 'rohit@lendandborrow.com', phone: '+919000000009', kycStatus: 'PENDING' },
+        'kavya@lendandborrow.com': { id: 'kavya_nair', name: 'Kavya Nair', email: 'kavya@lendandborrow.com', phone: '+919000000010', kycStatus: 'PENDING' }
+      };
+
+      // Check if it's a demo user
+      if (demoUsers[email]) {
+        const user = demoUsers[email];
+        const token = 'demo-token-' + user.id;
+        
+        localStorage.setItem('token', token);
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        setUser(user);
+
+        console.log('Demo login successful!', user.name);
+        return { success: true };
+      }
+
+      // Fallback to API login for non-demo users
       const response = await api.post('/auth/login', { email, password });
       const { token, user } = response.data;
 
@@ -103,7 +157,7 @@ export const AuthProvider = ({ children }) => {
 
   const verifyOTP = async (phone, otp) => {
     try {
-      const response = await api.post('/auth/verify-otp', { phone, otp });
+      await api.post('/auth/verify-otp', { phone, otp });
       console.log('OTP verified successfully!');
       return { success: true };
     } catch (error) {
@@ -123,7 +177,7 @@ export const AuthProvider = ({ children }) => {
     sendOTP,
     verifyOTP,
     isAuthenticated: !!user,
-    isAdmin: user && ['admin@paysafe.com', 'demo@paysafe.com'].includes(user.email)
+    isAdmin: user && ['admin@lendandborrow.com', 'demo@lendandborrow.com'].includes(user.email)
   };
 
   return (

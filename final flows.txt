@@ -4,10 +4,37 @@ L selects contact B, sends offer (Lending Section → Direct Lending tab → "Cr
 B sees offer (Borrowing Section → Loan Offers tab → "Accept Loan")
 B automatically redirects to KYC (4 steps: PAN/Aadhaar → Bank → Selfie → Video)
 After KYC completion, loan is auto-accepted and L is notified
-L funds the loan (Loan Detail → "Fund Loan" via Razorpay)
+L funds the loan (Loan Detail along with CIBIL SCORE AND BORROWER CREDIT INFORMATION → "Fund Loan" via Razorpay)
+
 Borrowing:
 B initiates request (Borrowing Section → Request Loan tab → "Submit Request")
 B automatically redirects to KYC (same 4 steps)
 After KYC, B returns to form, enters details, submits request
 L sees request (Lending Section → Loan Requests tab → "Accept Request")
-L funds the loan (Loan Detail → "Fund Loan" via Razorpay)
+L funds the loan (Loan Detail along with CIBIL SCORE AND BORROWER CREDIT INFORMATION → "Fund Loan" via Razorpay)
+
+
+
+Borrowing Process Flow:
+B initiates request → POST /requests → Creates loan with status: 'PENDING_LENDER_ACCEPT'
+B auto-redirects to KYC → ✅ Working
+After KYC, B submits request → ✅ Working
+L sees request → GET /requests → Shows loan requests
+L accepts request → POST /requests/:id/accept → Sets status: 'PENDING_PAYMENT' ✅ FIXED
+L funds via Razorpay → POST /requests/:id/pay → Sets status: 'ACTIVE' ✅ FIXED
+B can now repay → Repayment page with 25%, 50%, 75%, 100% buttons ✅ FIXED
+Direct Lending Process Flow:
+L creates loan → POST /loans → Creates loan with status: 'PENDING_BORROWER_ACCEPT'
+B sees offer → ✅ Working
+B accepts offer → POST /:id/accept → Sets status: 'PENDING_LENDER_FUNDING' ✅ FIXED
+L funds via Razorpay → POST /:id/fund-escrow → Sets status: 'ACTIVE' ✅ FIXED
+B can now repay → Repayment page with 25%, 50%, 75%, 100% buttons ✅ FIXED
+✅ Both Processes Are Fixed!
+Borrowing Process:
+✅ Correct roles (Rajesh = Borrower, Priya = Lender)
+✅ L can accept and fund the loan
+✅ B gets repayment options after funding
+Direct Lending Process:
+✅ L can fund the loan after B accepts
+✅ B gets repayment options after funding
+Both flows now properly transition loans to 'ACTIVE' status after funding, which enables the repayment functionality with the 25%, 50%, 75%, 100% buttons!

@@ -1,0 +1,258 @@
+ LEND & BORROW - COMPLETE WEBSITE LOGIC & FUNCTIONALITY (CORRECTED)
+🎯 WEBSITE PURPOSE & CONCEPT
+This is a Peer-to-Peer (P2P) Lending Platform where users can:
+Lend money to friends/contacts with structured repayment terms
+Borrow money from friends/contacts with flexible repayment options
+Manage loans with built-in escrow, KYC verification, and payment tracking
+👥 USER SYSTEM & AUTHENTICATION
+User Types & Roles:
+Lenders: Users who give money to others
+Borrowers: Users who receive money from others
+Admin: Platform administrators with special access
+Note: Any user can be both a lender AND borrower
+Demo User Accounts (All with password: demo123):
+Priya Rajesh - priya@lendandborrow.com
+Arjun Kumar - arjun@lendandborrow.com
+Suresh Venkatesh - suresh@lendandborrow.com
+Meera Patel - meera@lendandborrow.com
+Rajesh Gupta - rajesh@lendandborrow.com
+Anita Sharma - anita@lendandborrow.com
+Vikram Singh - vikram@lendandborrow.com
+Deepika Reddy - deepika@lendandborrow.com
+Rohit Agarwal - rohit@lendandborrow.com
+Kavya Nair - kavya@lendandborrow.com
+Login Process:
+Click any demo user button → Auto-login → Redirect to Dashboard
+KYC is only required when user wants to participate in loan transactions
+🔐 KYC VERIFICATION PROCESS
+4-Step KYC Flow:
+Identity Verification: PAN & Aadhaar details
+Bank Details: Account number & IFSC code
+Selfie Verification: Photo upload
+Video KYC: 10-second video recording
+When KYC is Required:
+Direct Lending: Borrower must complete KYC before accepting loan offer
+Loan Requests: Borrower must complete KYC BEFORE filling loan request form
+Payments: Only KYC-verified users can receive funds
+KYC Status Changes:
+No status shown until KYC is needed
+PENDING → VERIFIED (after completing all 4 steps)
+Auto-redirects to appropriate flow after completion
+💰 LENDING PROCESSES
+1. DIRECT LENDING FLOW
+Step-by-Step Process:
+L goes to Lend Money page → Direct Lending tab
+L selects friend B from contacts
+L enters loan amount (₹100 - ₹50,000) & repayment date
+L clicks "Create Loan" → Confirmation modal appears
+L clicks "Create & Fund Loan" → Loan created with status PENDING_BORROWER_ACCEPT
+B sees offer in Borrow Money page → Loan Offers tab
+B clicks "Accept Loan" → Redirected to KYC (if not verified)
+B completes KYC → Auto-accepts loan → Status becomes PENDING_LENDER_FUNDING
+L gets notification → Goes to loan detail page → Clicks "Fund Loan"
+L completes Razorpay payment → Status becomes ACTIVE
+B can now make repayments using 25%, 50%, 75%, 100% buttons
+2. BORROWING/REQUEST FLOW (CORRECTED)
+Step-by-Step Process:
+B goes to Borrow Money page → Request Loan tab
+B first completes KYC verification (mandatory first step)
+B after KYC completion, fills loan request form (amount, purpose, repayment plan, lender selection)
+B clicks "Submit Request" → Request submitted with status LOAN_REQUEST
+L sees request in Lend Money page → Loan Requests tab
+L reviews request → Clicks "Accept Request" → Status becomes PENDING_PAYMENT
+L clicks "Fund Loan" → Razorpay payment → Status becomes ACTIVE
+B can now make repayments using 25%, 50%, 75%, 100% buttons
+💳 PAYMENT SYSTEM (CORRECTED)
+Payment Types:
+Loan Funding:
+Lender pays full principal amount via Razorpay
+1% platform fee is deducted from principal before sending to borrower
+Example: For ₹1000 loan → Lender pays ₹1000 → ₹10 platform fee deducted → ₹990 sent to borrower
+Loan Repayments:
+Borrower pays back the full principal amount (₹1000 in example above)
+All platform fees are already deducted during funding
+Repayments go directly to lender via Razorpay
+Repayment Options:
+25% Payment: Pay 25% of outstanding amount
+50% Payment: Pay 50% of outstanding amount
+75% Payment: Pay 75% of outstanding amount
+Full Payment: Pay 100% of outstanding amount
+Custom Amount: Enter any amount between minimum and maximum
+Payment Terms (CORRECTED - Using "Excuse" instead of "Block"):
+Due Date: 30 days from loan activation
+Grace Period: 10 days after due date (Day 40)
+Excuse Structure: 4 excuses of 10 days each after grace period
+Excuse Fees: 1% of outstanding amount per excuse if minimum payment not made
+Minimum Payment: 20% of outstanding amount per excuse
+📱 COMPLETE BUTTON INVENTORY
+🏠 LANDING PAGE (/)
+Header Section:
+"Sign In" - Navigate to login page
+"Get Started" - Navigate to register page
+"Learn More" - Scroll to features section
+Features Section:
+"Start Lending" - Navigate to register page
+"Request Loan" - Navigate to register page
+Footer Section:
+"About Us" - Navigate to team page
+"Contact" - Navigate to team page
+🔐 LOGIN PAGE (/login)
+Demo Account Buttons (10 total):
+"Priya Rajesh" - Auto-login with priya@lendandborrow.com
+"Arjun Kumar" - Auto-login with arjun@lendandborrow.com
+"Suresh Venkatesh" - Auto-login with suresh@lendandborrow.com
+"Meera Patel" - Auto-login with meera@lendandborrow.com
+"Rajesh Gupta" - Auto-login with rajesh@lendandborrow.com
+"Anita Sharma" - Auto-login with anita@lendandborrow.com
+"Vikram Singh" - Auto-login with vikram@lendandborrow.com
+"Deepika Reddy" - Auto-login with deepika@lendandborrow.com
+"Rohit Agarwal" - Auto-login with rohit@lendandborrow.com
+"Kavya Nair" - Auto-login with kavya@lendandborrow.com
+Navigation:
+"create a new account" - Navigate to register page
+🏠 DASHBOARD (/dashboard)
+Quick Actions Section:
+"Lend Money" - Navigate to /lend
+"Borrow Money" - Navigate to /borrow
+"CIBIL Reports" - Navigate to /cibil
+Recent Loans Table:
+"View" (per loan row) - Navigate to /loan/{loanId}
+Empty State (if no loans):
+"Lend Money" - Navigate to /lend
+"Borrow Money" - Navigate to /borrow
+Upcoming Checkpoints Section:
+Shows upcoming excuse deadlines and minimum payment amounts
+💰 LEND MONEY PAGE (/lend)
+Direct Lending Tab:
+Loan Creation Form:
+Contact Selector - Opens contact picker modal
+"Create Loan" - Submit loan creation form
+"Create & Fund Loan" (in confirmation modal) - Create and fund loan
+Contact Selector Modal:
+Contact buttons (dynamic) - Select contact for lending
+"Clear Selection" - Remove selected contact
+Loan Requests Tab:
+Request List:
+"Accept Request" (per request) - Accept borrower's loan request
+"Reject Request" (per request) - Reject borrower's loan request
+"View Details" (per request) - Navigate to loan detail page
+💸 BORROW MONEY PAGE (/borrow)
+Loan Offers Tab:
+Pending Offers:
+"Accept Loan" (per offer) - Open terms & conditions modal
+"Reject" (per offer) - Reject lender's loan offer
+"Accept & Receive Funds" (in T&C modal) - Accept loan terms
+Empty State:
+"Lend Money Instead" - Navigate to /lend
+"Refresh" - Refresh pending offers
+Request Loan Tab (CORRECTED FLOW):
+KYC First (if not completed):
+"Complete KYC" - Navigate to KYC page (mandatory first step)
+Loan Request Form (after KYC):
+Contact Selector - Opens contact picker for lender selection
+"Submit Loan Request" - Submit request after KYC completion
+"Continue to Loan Request" - Continue to form after KYC completion
+🔍 KYC PAGE (/kyc)
+Step Navigation:
+"Previous" - Go to previous KYC step
+"Next" - Go to next KYC step
+"Complete KYC" - Submit KYC verification
+Step 3 - Selfie Upload:
+"Choose File" - Open file picker for selfie upload
+Step 4 - Video KYC:
+"Start Recording" - Begin video KYC recording
+"Stop Recording" - End video recording
+"Retry" - Restart video recording
+📄 LOAN DETAIL PAGE (/loan/{loanId})
+Loan Actions (Status-dependent):
+For Status: PENDING_BORROWER_ACCEPT:
+"Accept Loan" (Borrower only) - Accept loan terms
+"Cancel Loan" (Lender only) - Cancel the loan offer
+For Status: PENDING_LENDER_FUNDING:
+"Fund Loan" (Lender only) - Fund the loan via Razorpay
+For Status: ACTIVE:
+"Make Payment" (Borrower only) - Navigate to repayment page
+"Download PDF" - Download loan agreement PDF
+Terms & Conditions Modal:
+"Cancel" - Close modal without accepting
+"Accept & Receive Funds" - Accept loan terms
+Tab Navigation:
+"Overview" - Show loan summary
+"Ledger" - Show transaction history
+"Excuses" - Show payment schedule/excuses (renamed from "Blocks")
+💳 REPAYMENT PAGE (/repay/{loanId})
+Navigation:
+"Back to Loan Details" - Return to loan detail page
+Quick Payment Buttons:
+"25% Payment" - Pay 25% of outstanding amount
+"50% Payment" - Pay 50% of outstanding amount
+"75% Payment" - Pay 75% of outstanding amount
+"Full Amount" - Pay 100% of outstanding amount
+Payment Form:
+"Make Payment" - Process payment via Razorpay
+Current Excuse Information Display:
+Shows current excuse number, end date, outstanding amount, excuse fee
+👤 PROFILE PAGE (/profile)
+Profile Management:
+"Update Profile" - Save profile changes
+"Change Password" - Update user password
+📊 CIBIL LOG PAGE (/cibil)
+Report Actions:
+"Generate Report" - Create new CIBIL report
+"View Report" (per report) - View detailed report
+"Download PDF" (per report) - Download report as PDF
+⚙️ ADMIN PANEL (/admin) - Admin Users Only
+User Management:
+"View Details" (per user) - View user information
+"Verify KYC" (per user) - Manually verify user KYC
+Loan Management:
+"View Loan" (per loan) - Navigate to loan details
+"Update Status" (per loan) - Change loan status
+System Controls:
+"Export Data" - Export platform data
+"Generate Reports" - Create admin reports
+🧭 NAVIGATION BAR (All Pages)
+Left Side:
+"Lend & Borrow" logo - Navigate to dashboard (if logged in) or landing (if not)
+Right Side (Logged In):
+"Dashboard" - Navigate to /dashboard
+"Lend" - Navigate to /lend
+"Borrow" - Navigate to /borrow
+"Profile" - Navigate to /profile
+"Admin" (Admin only) - Navigate to /admin
+"Logout" - Sign out and return to landing page
+Right Side (Not Logged In):
+"Sign In" - Navigate to /login
+"Sign Up" - Navigate to /register
+🔄 LOAN STATUS FLOW
+Direct Lending:
+PENDING_BORROWER_ACCEPT → B accepts → PENDING_LENDER_FUNDING → L funds → ACTIVE
+Loan Requests:
+LOAN_REQUEST → L accepts → PENDING_PAYMENT → L funds → ACTIVE
+Active Loans:
+ACTIVE → B makes full payment → COMPLETED
+ACTIVE → Overdue + no payment → DEFAULT_REPORTED
+💡 KEY FEATURES & LOGIC (CORRECTED)
+Escrow System:
+Lender funds full principal amount
+1% platform fee deducted from principal before sending to borrower
+Example: ₹1000 loan → ₹10 platform fee → ₹990 to borrower
+Borrower repays full ₹1000 to lender
+Excuse System (Renamed from Block System):
+30-day loan term + 10-day grace period
+4 excuses of 10 days each after grace period
+1% excuse fee charged if minimum payment not made
+20% minimum payment required per excuse
+KYC Integration:
+Only required when participating in loan transactions
+For loan requests: KYC must be completed BEFORE filling request form
+4-step verification process
+Auto-redirects and continues flow after completion
+Payment Integration:
+Razorpay for all real money transactions
+Mock payments in demo mode
+Flexible repayment amounts (25%, 50%, 75%, 100%)
+Contact System:
+Select friends from contacts for lending/borrowing
+Only registered users can participate in loans
+Search functionality for finding contacts

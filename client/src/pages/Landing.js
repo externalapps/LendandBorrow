@@ -93,6 +93,73 @@ const Landing = () => {
 
   return (
     <div className="min-h-screen bg-white" style={backgroundStyles.landing}>
+      <link href="https://fonts.googleapis.com/css2?family=Tomorrow:wght@400;600;700;800&display=swap" rel="stylesheet" />
+      <style>{`
+        @keyframes fadeInUp {
+          0% {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        @keyframes fadeInDown {
+          0% {
+            opacity: 0;
+            transform: translateY(-30px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        @keyframes glowPulse {
+          0%, 100% {
+            text-shadow: 0 0 20px rgba(0,0,0,0.8), 0 0 40px rgba(0,0,0,0.6), 0 0 60px rgba(0,0,0,0.4);
+          }
+          50% {
+            text-shadow: 0 0 30px rgba(0,0,0,1), 0 0 50px rgba(0,0,0,0.8), 0 0 70px rgba(0,0,0,0.6);
+          }
+        }
+        
+        @keyframes clarify {
+          0% {
+            opacity: 0.3;
+            filter: blur(10px);
+            transform: scale(0.8);
+          }
+          50% {
+            opacity: 0.7;
+            filter: blur(5px);
+            transform: scale(0.95);
+          }
+          100% {
+            opacity: 1;
+            filter: blur(0px);
+            transform: scale(1);
+          }
+        }
+        
+        .animate-fadeInUp {
+          animation: fadeInUp 1.5s ease-out forwards;
+        }
+        
+        .animate-fadeInDown {
+          animation: fadeInDown 1.5s ease-out forwards;
+        }
+        
+        .animate-glowPulse {
+          animation: glowPulse 3s ease-in-out infinite;
+        }
+        
+        .animate-clarify {
+          animation: clarify 2s ease-out forwards;
+        }
+      `}</style>
       {/* Modern Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -112,7 +179,7 @@ const Landing = () => {
                   <span className="text-white font-bold text-sm">LB</span>
                 </div>
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+              <span className="text-xl font-normal bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent" style={{fontFamily: 'Tomorrow, sans-serif'}}>
                 Lend & Borrow
               </span>
             </Link>
@@ -125,7 +192,7 @@ const Landing = () => {
               </Link>
               <Link 
                 to="/register" 
-                className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                className="bg-gradient-to-r from-[#00b66b] to-[#00a05e] text-white px-6 py-2 rounded-lg text-sm font-medium hover:from-[#00a05e] hover:to-[#009052] transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               >
                 Get Started
               </Link>
@@ -134,22 +201,54 @@ const Landing = () => {
         </div>
       </header>
 
-      {/* Simple Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center mt-16 bg-white/80 p-8 rounded-xl shadow-lg backdrop-blur-sm"> {/* Added mt-16 to move content down */}
+      {/* Hero Section with Blurred Background */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        {/* Clear Background */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-black/5"></div>
+        </div>
+        
+        {/* Content Overlay */}
+        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center mt-20">
           <div className={`transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             {/* Main Headline */}
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 text-gray-900">
-              Lend & Borrow
+            <h1 className="text-6xl md:text-8xl font-normal mb-6 text-white drop-shadow-2xl tracking-wider" style={{fontFamily: 'Tomorrow, sans-serif'}}>
+              {['L', 'e', 'n', 'd'].map((letter, index) => (
+                <span 
+                  key={index}
+                  className="inline-block animate-clarify"
+                  style={{
+                    textShadow: '0 0 20px rgba(0,0,0,0.8), 0 0 40px rgba(0,0,0,0.6), 0 0 60px rgba(0,0,0,0.4)',
+                    animationDelay: `${0.2 + (index * 0.1)}s`,
+                    animationDuration: '2s'
+                  }}
+                >
+                  {letter}
+                </span>
+              ))}
+              <span className="mx-4 text-white/60 text-6xl md:text-8xl" style={{fontFamily: 'Tomorrow, sans-serif'}}> & </span>
+              {['B', 'o', 'r', 'r', 'o', 'w'].map((letter, index) => (
+                <span 
+                  key={index}
+                  className="inline-block animate-clarify"
+                  style={{
+                    textShadow: '0 0 20px rgba(0,0,0,0.8), 0 0 40px rgba(0,0,0,0.6), 0 0 60px rgba(0,0,0,0.4)',
+                    animationDelay: `${0.8 + (index * 0.1)}s`,
+                    animationDuration: '2s'
+                  }}
+                >
+                  {letter}
+                </span>
+              ))}
             </h1>
             
             {/* Subtitle */}
-            <p className="text-xl md:text-2xl mb-8 text-gray-600 font-light max-w-3xl mx-auto leading-relaxed">
+            <p className="text-2xl md:text-3xl mb-8 text-white font-normal max-w-3xl mx-auto leading-relaxed drop-shadow-lg" style={{textShadow: '0 0 15px rgba(0,0,0,0.7), 0 0 30px rgba(0,0,0,0.5)', fontFamily: 'Tomorrow, sans-serif'}}>
               Simple, secure peer-to-peer lending between friends
             </p>
             
             {/* Description */}
-            <p className="text-lg mb-12 text-gray-500 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-xl mb-12 text-white font-normal max-w-2xl mx-auto leading-relaxed drop-shadow-md" style={{textShadow: '0 0 10px rgba(0,0,0,0.6), 0 0 20px rgba(0,0,0,0.4)', fontFamily: 'Tomorrow, sans-serif'}}>
               Connect with trusted friends for secure lending and borrowing. 
               Complete KYC verification, transparent fees, and easy repayment tracking.
             </p>
@@ -158,7 +257,7 @@ const Landing = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Link
                 to="/register"
-                className="inline-flex items-center px-8 py-4 bg-blue-600 text-white font-semibold text-lg rounded-xl shadow-lg hover:bg-blue-700 transition-all duration-200 hover:shadow-xl"
+                className="inline-flex items-center px-8 py-4 bg-[#00b66b] text-white font-semibold text-lg rounded-xl shadow-xl hover:bg-[#00a05e] transition-all duration-200 hover:shadow-2xl backdrop-blur-sm"
               >
                 Get Started
                 <ArrowRightIcon className="w-5 h-5 ml-2" />
@@ -166,7 +265,7 @@ const Landing = () => {
               
               <Link
                 to="/login"
-                className="inline-flex items-center px-8 py-4 border-2 border-gray-300 text-gray-700 font-semibold text-lg rounded-xl hover:border-gray-400 hover:bg-gray-50 transition-all duration-200"
+                className="inline-flex items-center px-8 py-4 border-2 border-white/50 text-white font-semibold text-lg rounded-xl hover:border-white hover:bg-white/10 transition-all duration-200 backdrop-blur-sm"
               >
                 Sign In
               </Link>
@@ -298,7 +397,7 @@ const Landing = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link
               to="/register"
-              className="inline-flex items-center px-8 py-4 bg-white text-blue-600 font-semibold text-lg rounded-xl shadow-lg hover:bg-gray-50 transition-all duration-200"
+              className="inline-flex items-center px-8 py-4 bg-[#00b66b] text-white font-semibold text-lg rounded-xl shadow-lg hover:bg-[#00a05e] transition-all duration-200"
             >
               Get Started
               <ArrowRightIcon className="w-5 h-5 ml-2" />
@@ -338,7 +437,7 @@ const Landing = () => {
             </p>
             <div className="flex justify-center space-x-6 mb-8">
               <Link to="/login" className="text-gray-400 hover:text-white transition-colors duration-200">Sign In</Link>
-              <Link to="/register" className="text-gray-400 hover:text-white transition-colors duration-200">Get Started</Link>
+              <Link to="/register" className="text-gray-400 hover:text-[#00b66b] transition-colors duration-200">Get Started</Link>
               <Link to="/team" className="text-gray-400 hover:text-white transition-colors duration-200">About Us</Link>
             </div>
             <p className="text-sm text-gray-500">

@@ -3,12 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useLoan } from '../contexts/LoanContext';
 import { useModal } from '../contexts/ModalContext';
 import { 
-  BanknotesIcon, 
   CalculatorIcon,
   ShieldCheckIcon,
   ArrowRightIcon,
-  PhoneIcon,
-  DocumentTextIcon
+  PhoneIcon
 } from '@heroicons/react/24/outline';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ContactSelector from '../components/ContactSelector';
@@ -27,7 +25,7 @@ const LendMoney = () => {
   const [loanRequests, setLoanRequests] = useState([]);
   const [loadingRequests, setLoadingRequests] = useState(false);
 
-  const { createLoan, fundEscrow, getLoanRequests } = useLoan();
+  const { createLoan, getLoanRequests } = useLoan();
   const { showSuccess } = useModal();
   const navigate = useNavigate();
   
@@ -51,7 +49,7 @@ const LendMoney = () => {
 
   const calculateFees = (principal) => {
     const platformFee = Math.round(principal * 0.01 * 100) / 100; // 1% platform fee
-    const totalAmount = principal + platformFee;
+    const totalAmount = principal; // Lender pays exactly the requested amount
     return { platformFee, totalAmount };
   };
 
@@ -115,6 +113,8 @@ const LendMoney = () => {
       // Create loan
       const loan = await createLoan(loanDetails.borrowerId, loanDetails.principal, loanDetails.repaymentDate);
       
+      console.log('Created loan:', loan);
+      
       // Close modal first
       setShowConfirmModal(false);
       
@@ -124,10 +124,14 @@ const LendMoney = () => {
         `Your loan offer of ₹${loanDetails.principal.toLocaleString()} has been sent to ${loanDetails.borrowerName}. You can fund the loan once they accept and complete KYC verification.`
       );
       
-      // Navigate to loan page after a short delay
-      setTimeout(() => {
-        navigate(`/loan/${loan.id}`);
-      }, 2000);
+      // Navigate to loan page immediately
+      const loanId = loan.id || loan._id;
+      if (loanId) {
+        navigate(`/loan/${loanId}`);
+      } else {
+        console.error('No loan ID found:', loan);
+        toast.error('Loan created but failed to navigate to loan details');
+      }
     } catch (error) {
       console.error('Error creating loan:', error);
       toast.error(error.response?.data?.error?.message || 'Failed to create loan');
@@ -275,12 +279,12 @@ const LendMoney = () => {
                         <span className="font-medium">10 days after repayment date</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Block Length:</span>
+                        <span>Excuse Length:</span>
                         <span className="font-medium">10 days</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Block Fee Rate:</span>
-                        <span className="font-medium">1% per block</span>
+                        <span>Excuse Fee Rate:</span>
+                        <span className="font-medium">1% per excuse</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Full Payment:</span>

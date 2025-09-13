@@ -1,12 +1,11 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const { auth } = require('../middleware/auth');
-const inMemoryAuth = require('../services/inMemoryAuth');
+const User = require('../models/User');
 
 const router = express.Router();
-
-// Initialize demo users
-inMemoryAuth.initializeDemoUsers();
 
 // Register
 router.post('/register', async (req, res) => {
@@ -22,30 +21,40 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: { message: 'Password must be at least 6 characters' } });
     }
 
-    // Check if user already exists
-    const existingUser = inMemoryAuth.findUserByEmail(email);
+    // Check if user already exists in MongoDB
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ error: { message: 'User already exists with this email' } });
     }
 
-    // Create user
-    const user = inMemoryAuth.createUser({
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create user in MongoDB
+    const user = new User({
+      id: uuidv4(),
       name,
       phone,
       email,
-      password
+      password: hashedPassword,
+      kycStatus: 'PENDING'
     });
 
-    // Generate token
-    const token = inMemoryAuth.generateToken(user.id);
+    await user.save();
 
-    // Log audit
-    inMemoryAuth.logAudit(user.id, 'USER_REGISTERED', { email, phone }, req);
+    // Generate token
+    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET || 'lendandborrow-jwt-secret-2024-very-secure-key', { expiresIn: '7d' });
 
     res.status(201).json({
       message: 'User registered successfully',
       token,
-      user: inMemoryAuth.getUserSafe(user)
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        kycStatus: user.kycStatus
+      }
     });
   } catch (error) {
     console.error('Registration error:', error);
@@ -66,32 +75,37 @@ router.post('/login', async (req, res) => {
     // For demo purposes, make password optional
     const demoPassword = 'demo123';
 
-    // Find user
-    const user = inMemoryAuth.findUserByEmail(email);
+    // Find user in MongoDB
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({ error: { message: 'Invalid credentials' } });
     }
 
     // Check password - for demo purposes, allow demo123 or empty password
     const actualPassword = password || demoPassword;
-    const isMatch = inMemoryAuth.comparePassword(actualPassword, user.password);
+    const isMatch = await bcrypt.compare(actualPassword, user.password);
+
     if (!isMatch) {
       return res.status(401).json({ error: { message: 'Invalid credentials' } });
     }
 
     // Update last login
-    inMemoryAuth.updateUser(user.id, { lastLoginAt: new Date() });
+    user.lastLoginAt = new Date();
+    await user.save();
 
     // Generate token
-    const token = inMemoryAuth.generateToken(user.id);
-
-    // Log audit
-    inMemoryAuth.logAudit(user.id, 'USER_LOGIN', { email }, req);
+    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET || 'lendandborrow-jwt-secret-2024-very-secure-key', { expiresIn: '7d' });
 
     res.json({
       message: 'Login successful',
       token,
-      user: inMemoryAuth.getUserSafe(user)
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        kycStatus: user.kycStatus
+      }
     });
   } catch (error) {
     console.error('Login error:', error);

@@ -25,7 +25,7 @@ const cibilReportSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
-  blockNumber: {
+  excuseNumber: {
     type: Number,
     required: true
   },

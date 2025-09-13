@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useLoan } from '../contexts/LoanContext';
-import { downloadLoanPDF } from '../utils/pdfExport';
 import toast from 'react-hot-toast';
 import { 
   BanknotesIcon, 
@@ -11,10 +10,10 @@ import {
   DocumentTextIcon,
   ArrowLeftIcon,
   ExclamationTriangleIcon,
-  CheckCircleIcon,
-  XMarkIcon
+  CheckCircleIcon
 } from '@heroicons/react/24/outline';
 import LoadingSpinner from '../components/LoadingSpinner';
+import CibilScoreDisplay from '../components/CibilScoreDisplay';
 // Toast notifications replaced with modals
 
 const LoanDetail = () => {
@@ -22,44 +21,70 @@ const LoanDetail = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const { fetchLoanById, getLoanLedger, getLoanBlocks, fundEscrow, acceptLoanTerms } = useLoan();
+  const { fetchLoanById, getLoanLedger, getLoanExcuses, fundEscrow, acceptLoanTerms } = useLoan();
   
   // Check if coming from KYC with T&C modal flag
   const [showTermsModal, setShowTermsModal] = useState(location.state?.showTermsModal || false);
   
   const [loan, setLoan] = useState(null);
   const [ledger, setLedger] = useState([]);
-  const [blocks, setBlocks] = useState([]);
+  const [excuses, setExcuses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [fundingLoan, setFundingLoan] = useState(false);
 
-  useEffect(() => {
-    fetchLoanData();
-  }, [loanId]);
+  // Define handleAcceptLoan with useCallback to avoid dependency issues
+  const handleAcceptLoan = useCallback(async () => {
+    // Only allow accepting if KYC is verified
+    if (user.kycStatus !== 'VERIFIED') {
+      navigate('/kyc', { state: { fromDirectLoan: loanId, flowType: 'direct' } });
+      return;
+    }
 
-  const fetchLoanData = async () => {
+    // Show T&C modal
+    setShowTermsModal(true);
+  }, [user.kycStatus, loanId, navigate]);
+
+  const fetchLoanData = useCallback(async () => {
     setLoading(true);
     try {
-      const [loanData, ledgerData, blocksData] = await Promise.all([
+      const [loanData, ledgerData, excusesData] = await Promise.all([
         fetchLoanById(loanId),
         getLoanLedger(loanId),
-        getLoanBlocks(loanId)
+        getLoanExcuses(loanId)
       ]);
       
       setLoan(loanData);
       setLedger(ledgerData);
-      setBlocks(blocksData);
+      setExcuses(excusesData?.blocks || excusesData?.excuses || []);
     } catch (error) {
       console.error('Error fetching loan data:', error);
       console.error('Failed to fetch loan details');
     } finally {
       setLoading(false);
     }
-  };
+  }, [loanId, fetchLoanById, getLoanLedger, getLoanExcuses]);
+
+  useEffect(() => {
+    fetchLoanData();
+  }, [fetchLoanData]);
+
+  // Auto-accept loan when coming from KYC completion
+  useEffect(() => {
+    const location = window.location;
+    const urlParams = new URLSearchParams(location.search);
+    const fromKYC = urlParams.get('fromKYC');
+    
+    if (fromKYC && loan && loan.status === 'PENDING_BORROWER_ACCEPT' && user?.kycStatus === 'VERIFIED') {
+      // Auto-accept the loan after KYC completion
+      handleAcceptLoan();
+    }
+  }, [loan, user, handleAcceptLoan]);
 
   const handleFundLoan = async () => {
     setFundingLoan(true);
+    let paymentSuccessful = false;
+    
     try {
       // Show mock Razorpay payment UI
       const options = {
@@ -69,19 +94,20 @@ const LoanDetail = () => {
         name: "Lend & Borrow",
         description: `Funding loan to ${loan.borrower?.name || 'borrower'}`,
         image: "/logo.png",
-        theme: {
-          color: "#0b1540"
-        },
         handler: async function (response) {
           try {
             // Process the payment response
             await fundEscrow(loanId);
             console.log('Loan funded successfully!');
+            paymentSuccessful = true;
+            toast.success('Payment successful! Loan funded successfully.');
             // Refresh loan data
             await fetchLoanData();
+            setFundingLoan(false);
           } catch (error) {
             console.error('Error processing payment:', error);
             toast('Payment failed to process', { icon: '❌' });
+            setFundingLoan(false);
           }
         },
         prefill: {
@@ -90,12 +116,15 @@ const LoanDetail = () => {
           contact: user?.phone || ""
         },
         theme: {
-          color: "#3399cc"
+          color: "#0b1540"
         },
         modal: {
           ondismiss: function() {
             setFundingLoan(false);
-            toast('Payment cancelled', { icon: '❌' });
+            // Only show cancellation message if payment wasn't successful
+            if (!paymentSuccessful) {
+              toast('Payment cancelled', { icon: '❌' });
+            }
           }
         }
       };
@@ -117,17 +146,6 @@ const LoanDetail = () => {
 
   const handleCompleteKYC = () => {
     navigate('/kyc', { state: { fromDirectLoan: loanId, flowType: 'direct' } });
-  };
-
-  const handleAcceptLoan = async () => {
-    // Only allow accepting if KYC is verified
-    if (user.kycStatus !== 'VERIFIED') {
-      handleCompleteKYC();
-      return;
-    }
-
-    // Show T&C modal
-    setShowTermsModal(true);
   };
   
   const handleConfirmAccept = async () => {
@@ -156,11 +174,36 @@ const LoanDetail = () => {
   };
 
   const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('en-IN', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+    if (!date) return 'Not set';
+    try {
+      const dateObj = new Date(date);
+      if (isNaN(dateObj.getTime())) return 'Invalid date';
+      return dateObj.toLocaleDateString('en-IN', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch (error) {
+      return 'Invalid date';
+    }
+  };
+
+  const getExcuseStatusColor = (excuse) => {
+    if (excuse.isMainGrace) return 'bg-blue-100 text-blue-800';
+    if (excuse.evaluated) {
+      if (excuse.paymentMade) return 'bg-green-100 text-green-800';
+      if (excuse.paymentMissed) return 'bg-red-100 text-red-800';
+    }
+    return 'bg-gray-100 text-gray-800';
+  };
+
+  const getExcuseStatus = (excuse) => {
+    if (excuse.isMainGrace) return 'Grace Period';
+    if (excuse.evaluated) {
+      if (excuse.paymentMade) return 'Paid';
+      if (excuse.paymentMissed) return 'Missed';
+    }
+    return 'Pending';
   };
 
   const getStatusColor = (status) => {
@@ -174,26 +217,7 @@ const LoanDetail = () => {
     }
   };
 
-  const getBlockStatus = (block) => {
-    if (block.evaluated) {
-      return block.satisfied ? 'Satisfied' : 'Defaulted';
-    }
-    const now = new Date();
-    if (now < block.startDate) return 'Upcoming';
-    if (now <= block.endDate) return 'Current';
-    return 'Overdue';
-  };
 
-  const getBlockStatusColor = (block) => {
-    const status = getBlockStatus(block);
-    switch (status) {
-      case 'Satisfied': return 'text-green-600 bg-green-100';
-      case 'Defaulted': return 'text-red-600 bg-red-100';
-      case 'Current': return 'text-blue-600 bg-blue-100';
-      case 'Overdue': return 'text-red-600 bg-red-100';
-      default: return 'text-gray-600 bg-gray-100';
-    }
-  };
 
   if (loading) {
     return (
@@ -263,10 +287,10 @@ const LoanDetail = () => {
                 <h2 className="text-xl font-semibold text-gray-900">Loan Summary</h2>
               </div>
               <div className="card-body">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div>
-                    <h3 className="font-medium text-gray-900 mb-3">Loan Information</h3>
-                    <div className="space-y-2 text-sm">
+                    <h3 className="font-medium text-gray-900 mb-4">Loan Information</h3>
+                    <div className="space-y-3 text-sm">
                       <div className="flex justify-between">
                         <span className="text-gray-600">Principal Amount:</span>
                         <span className="font-medium">{formatCurrency(loan.principal)}</span>
@@ -287,8 +311,8 @@ const LoanDetail = () => {
                   </div>
                   
                   <div>
-                    <h3 className="font-medium text-gray-900 mb-3">Participants</h3>
-                    <div className="space-y-2 text-sm">
+                    <h3 className="font-medium text-gray-900 mb-4">Participants</h3>
+                    <div className="space-y-3 text-sm">
                       <div>
                         <span className="text-gray-600">Lender:</span>
                         <span className="font-medium ml-2">{loan.lender?.name || loan.lenderId || '—'}</span>
@@ -385,6 +409,8 @@ const LoanDetail = () => {
                                   : 'The borrower has completed KYC verification but has not yet accepted your offer.'
                               }
                             </p>
+                            
+                            
                             <div className="mt-3">
                               {(loan.status === 'PENDING_LENDER_FUNDING' || loan.termsAcceptedAt) && (
                                 <button
@@ -465,15 +491,15 @@ const LoanDetail = () => {
                     {loan.status === 'ACTIVE' && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                          <h3 className="font-medium text-blue-900 mb-2">Current Block</h3>
-                          {loan.currentBlock ? (
+                          <h3 className="font-medium text-blue-900 mb-2">Current Excuse</h3>
+                          {loan.currentExcuse ? (
                             <div className="space-y-1 text-sm text-blue-700">
-                              <div>Block {loan.currentBlock.blockNumber}</div>
-                              <div>Ends: {formatDate(loan.currentBlock.endDate)}</div>
+                              <div>Excuse {loan.currentExcuse.excuseNumber}</div>
+                              <div>Ends: {formatDate(loan.currentExcuse.endDate)}</div>
                               <div>Min Payment: {formatCurrency(loan.outstanding * 0.20)}</div>
                             </div>
                           ) : (
-                            <div className="text-sm text-blue-700">No active block</div>
+                            <div className="text-sm text-blue-700">No active excuse</div>
                           )}
                         </div>
 
@@ -487,29 +513,10 @@ const LoanDetail = () => {
                               >
                                 Make Payment
                               </button>
-                              <button
-                                onClick={() => navigate(`/collection/${loan.id}`)}
-                                className="btn-outline w-full text-sm"
-                              >
-                                View Communications
-                              </button>
                             </div>
                           </div>
                         )}
                         
-                        {isLender && (
-                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                            <h3 className="font-medium text-blue-900 mb-2">Lender Actions</h3>
-                            <div className="space-y-2">
-                              <button
-                                onClick={() => navigate(`/collection/${loan.id}`)}
-                                className="btn-outline w-full text-sm"
-                              >
-                                View Communications
-                              </button>
-                            </div>
-                          </div>
-                        )}
                       </div>
                     )}
 
@@ -563,7 +570,7 @@ const LoanDetail = () => {
                           <span className="font-medium">10 days after repayment date</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-blue-700">Block Calculation:</span>
+                          <span className="text-blue-700">Excuse Calculation:</span>
                           <span className="font-medium">Starts after grace period</span>
                         </div>
                         <div className="flex justify-between">
@@ -572,30 +579,30 @@ const LoanDetail = () => {
                         </div>
                       </div>
                     </div>
-                    {blocks.map((block, index) => (
-                      <div key={block.blockNumber} className="flex items-start space-x-4">
+                    {excuses.map((excuse, index) => (
+                      <div key={excuse.blockNumber} className="flex items-start space-x-4">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                          getBlockStatusColor(block).replace('text-', 'text-').replace('bg-', 'bg-')
+                          getExcuseStatusColor(excuse).replace('text-', 'text-').replace('bg-', 'bg-')
                         }`}>
-                          {block.blockNumber}
+                          {excuse.blockNumber}
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center justify-between">
                             <h4 className="font-medium text-gray-900">
-                              Block {block.blockNumber}
-                              {block.isMainGrace && ' (Grace Period)'}
+                              Excuse {excuse.blockNumber}
+                              {excuse.isMainGrace && ' (Grace Period)'}
                             </h4>
-                            <span className={`status-badge ${getBlockStatusColor(block).replace('text-', 'text-').replace('bg-', 'bg-')}`}>
-                              {getBlockStatus(block)}
+                            <span className={`status-badge ${getExcuseStatusColor(excuse).replace('text-', 'text-').replace('bg-', 'bg-')}`}>
+                              {getExcuseStatus(excuse)}
                             </span>
                           </div>
                           <div className="text-sm text-gray-600 mt-1">
-                            <div>Period: {formatDate(block.startDate)} - {formatDate(block.endDate)}</div>
-                            {block.evaluated && (
+                            <div>Period: {formatDate(excuse.startDate)} - {formatDate(excuse.endDate)}</div>
+                            {excuse.evaluated && (
                               <div className="mt-2 space-y-1">
-                                <div>Outstanding at start: {formatCurrency(block.outstandingAtStart)}</div>
-                                <div>Fee applied: {formatCurrency(block.feeApplied)}</div>
-                                <div>Payment made: {formatCurrency(block.paidDuringBlock)}</div>
+                                <div>Outstanding at start: {formatCurrency(excuse.outstandingAtStart)}</div>
+                                <div>Fee applied: {formatCurrency(excuse.feeApplied)}</div>
+                                <div>Payment made: {formatCurrency(excuse.paidDuringBlock)}</div>
                               </div>
                             )}
                           </div>
@@ -668,65 +675,20 @@ const LoanDetail = () => {
 
           {/* Sidebar */}
           <div className="lg:col-span-1 space-y-6">
-            {/* Quick Actions */}
-            <div className="card">
-              <div className="card-header">
-                <h3 className="text-lg font-semibold text-gray-900">Quick Actions</h3>
-              </div>
-              <div className="card-body">
-                <div className="space-y-3">
-                  {loan.status === 'ACTIVE' && isBorrower && (
-                    <button
-                      onClick={() => navigate(`/repayment/${loan.id}`)}
-                      className="btn-primary w-full"
-                    >
-                      Make Payment
-                    </button>
-                  )}
-                  
-                  <button
-                    onClick={() => navigate(`/collection/${loan.id}`)}
-                    className="btn-outline w-full"
-                  >
-                    View Communications
-                  </button>
-                  
-                  <button
-                    onClick={() => downloadLoanPDF(loan)}
-                    className="btn-secondary w-full"
-                  >
-                    Export PDF
-                  </button>
+            {/* CIBIL Score Display for Lender */}
+            {(loan.status === 'PENDING_LENDER_FUNDING' || loan.termsAcceptedAt) && (
+              <div className="card">
+                <div className="card-header">
+                  <h3 className="text-lg font-semibold text-gray-900">Credit Assessment</h3>
+                </div>
+                <div className="card-body">
+                  <CibilScoreDisplay 
+                    borrowerId={loan.borrowerId} 
+                    borrowerName={loan.borrower?.name || 'Borrower'} 
+                  />
                 </div>
               </div>
-            </div>
-
-            {/* Loan Statistics */}
-            <div className="card">
-              <div className="card-header">
-                <h3 className="text-lg font-semibold text-gray-900">Statistics</h3>
-              </div>
-              <div className="card-body">
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Progress:</span>
-                    <span className="font-medium">
-                      {Math.round(((loan.principal - loan.outstanding) / loan.principal) * 100)}%
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Fees Paid:</span>
-                    <span className="font-medium">{formatCurrency(loan.totalFeesPaid)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Days Active:</span>
-                    <span className="font-medium">
-                      {loan.disbursedAt ? Math.floor((new Date() - new Date(loan.disbursedAt)) / (1000 * 60 * 60 * 24)) : 0}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
@@ -768,8 +730,8 @@ const LoanDetail = () => {
                     <div className="text-sm text-gray-600 space-y-2">
                       <p>1. <strong>Repayment Date:</strong> {loan.dueAt ? new Date(loan.dueAt).toLocaleDateString() : 'To be determined'}</p>
                       <p>2. <strong>Grace Period:</strong> 10 days after repayment date</p>
-                      <p>3. <strong>Block Structure:</strong> 4 blocks of 10 days each after grace period</p>
-                      <p>4. <strong>Block Fees:</strong> 1% of outstanding amount per block if minimum payment not made</p>
+                      <p>3. <strong>Excuse Structure:</strong> 4 excuses of 10 days each after grace period</p>
+                      <p>4. <strong>Excuse Fees:</strong> 1% of outstanding amount per excuse if minimum payment not made</p>
                       <p>5. <strong>Full Payment:</strong> You can pay the full amount at any time without penalty</p>
                       <p>6. <strong>CIBIL Reporting:</strong> Outstanding amounts may be reported to credit bureaus if payments are missed</p>
                       <p>7. <strong>Early Repayment:</strong> You can pay the full amount at any time without penalty</p>
@@ -784,7 +746,7 @@ const LoanDetail = () => {
                       <h4 className="text-sm font-medium text-red-800">Important Notice</h4>
                       <p className="text-sm text-red-700 mt-1">
                         By accepting this loan, you agree to the terms above. Failure to make minimum payments 
-                        by block end dates will result in additional fees and potential CIBIL reporting.
+                        by excuse end dates will result in additional fees and potential CIBIL reporting.
                       </p>
                     </div>
                   </div>

@@ -63,20 +63,17 @@ async function seedDatabase() {
     console.log(`⚙️ Settings: 1`);
     console.log(`📝 Audit Logs: 3`);
     
-    console.log('\n🔑 Demo Login Credentials:');
-    console.log('User A (Lender) - Priya Rajesh:');
-    console.log('  Email: user_a@paysafe.com');
-    console.log('  Password: demo123');
-    console.log('  Phone: +919000000001');
-    
-    console.log('\nUser B (Borrower) - Arjun Kumar:');
-    console.log('  Email: user_b@paysafe.com');
-    console.log('  Password: demo123');
-    console.log('  Phone: +919000000002');
-    
-    console.log('\nAdmin User - Suresh Venkatesh:');
-    console.log('  Email: admin@paysafe.com');
-    console.log('  Password: admin123');
+    console.log('\n🔑 Demo Login Credentials (All users have password: demo123):');
+    console.log('Priya Rajesh - priya@lendandborrow.com');
+    console.log('Arjun Kumar - arjun@lendandborrow.com');
+    console.log('Suresh Venkatesh - suresh@lendandborrow.com');
+    console.log('Meera Patel - meera@lendandborrow.com');
+    console.log('Rajesh Gupta - rajesh@lendandborrow.com');
+    console.log('Anita Sharma - anita@lendandborrow.com');
+    console.log('Vikram Singh - vikram@lendandborrow.com');
+    console.log('Deepika Reddy - deepika@lendandborrow.com');
+    console.log('Rohit Agarwal - rohit@lendandborrow.com');
+    console.log('Kavya Nair - kavya@lendandborrow.com');
 
     process.exit(0);
   } catch (error) {
@@ -87,86 +84,84 @@ async function seedDatabase() {
 
 async function createDemoUsers() {
   const users = [];
+  const hashedPassword = await bcrypt.hash('demo123', 10);
 
-  // User A (Lender)
-  const userA = new User({
-    id: 'user_a',
-    name: 'Priya Rajesh',
-    phone: '+919000000001',
-    email: 'user_a@paysafe.com',
-    password: 'demo123',
-    bankMask: 'DemoBank-1111',
-    kycStatus: 'VERIFIED',
-    kycData: {
-      pan: 'ABCDE1234F',
-      aadhaar: '123456789012',
-      bankAccount: '12345678901111',
-      ifsc: 'DEMO0001111',
-      selfieUrl: '/uploads/selfie_user_a.jpg',
-      verifiedAt: new Date()
+  // Demo users as per documentation
+  const demoUsers = [
+    {
+      id: 'priya_rajesh',
+      name: 'Priya Rajesh',
+      email: 'priya@lendandborrow.com',
+      phone: '+919000000001'
+    },
+    {
+      id: 'arjun_kumar',
+      name: 'Arjun Kumar',
+      email: 'arjun@lendandborrow.com',
+      phone: '+919000000002'
+    },
+    {
+      id: 'suresh_venkatesh',
+      name: 'Suresh Venkatesh',
+      email: 'suresh@lendandborrow.com',
+      phone: '+919000000003'
+    },
+    {
+      id: 'meera_patel',
+      name: 'Meera Patel',
+      email: 'meera@lendandborrow.com',
+      phone: '+919000000004'
+    },
+    {
+      id: 'rajesh_gupta',
+      name: 'Rajesh Gupta',
+      email: 'rajesh@lendandborrow.com',
+      phone: '+919000000005'
+    },
+    {
+      id: 'anita_sharma',
+      name: 'Anita Sharma',
+      email: 'anita@lendandborrow.com',
+      phone: '+919000000006'
+    },
+    {
+      id: 'vikram_singh',
+      name: 'Vikram Singh',
+      email: 'vikram@lendandborrow.com',
+      phone: '+919000000007'
+    },
+    {
+      id: 'deepika_reddy',
+      name: 'Deepika Reddy',
+      email: 'deepika@lendandborrow.com',
+      phone: '+919000000008'
+    },
+    {
+      id: 'rohit_agarwal',
+      name: 'Rohit Agarwal',
+      email: 'rohit@lendandborrow.com',
+      phone: '+919000000009'
+    },
+    {
+      id: 'kavya_nair',
+      name: 'Kavya Nair',
+      email: 'kavya@lendandborrow.com',
+      phone: '+919000000010'
     }
-  });
+  ];
 
-  // User B (Borrower)
-  const userB = new User({
-    id: 'user_b',
-    name: 'Arjun Kumar',
-    phone: '+919000000002',
-    email: 'user_b@paysafe.com',
-    password: 'demo123',
-    bankMask: 'DemoBank-2222',
-    kycStatus: 'VERIFIED',
-    kycData: {
-      pan: 'FGHIJ5678K',
-      aadhaar: '987654321098',
-      bankAccount: '98765432102222',
-      ifsc: 'DEMO0002222',
-      selfieUrl: '/uploads/selfie_user_b.jpg',
-      verifiedAt: new Date()
-    }
-  });
+  for (const userData of demoUsers) {
+    const user = new User({
+      id: userData.id,
+      name: userData.name,
+      email: userData.email,
+      phone: userData.phone,
+      password: hashedPassword,
+      kycStatus: 'PENDING',
+      kycData: null
+    });
 
-  // Admin User
-  const adminUser = new User({
-    id: 'admin',
-    name: 'Suresh Venkatesh',
-    phone: '+919000000000',
-    email: 'admin@paysafe.com',
-    password: 'admin123',
-    bankMask: 'DemoBank-0000',
-    kycStatus: 'VERIFIED',
-    kycData: {
-      pan: 'ADMIN1234A',
-      aadhaar: '000000000000',
-      bankAccount: '00000000000000',
-      ifsc: 'ADMIN0000000',
-      selfieUrl: '/uploads/selfie_admin.jpg',
-      verifiedAt: new Date()
-    }
-  });
-
-  // Demo User (for additional testing)
-  const demoUser = new User({
-    id: 'demo',
-    name: 'Lakshmi Devi',
-    phone: '+919000000003',
-    email: 'demo@paysafe.com',
-    password: 'demo123',
-    bankMask: 'DemoBank-3333',
-    kycStatus: 'VERIFIED',
-    kycData: {
-      pan: 'DEMO1234D',
-      aadhaar: '111111111111',
-      bankAccount: '11111111113333',
-      ifsc: 'DEMO0003333',
-      selfieUrl: '/uploads/selfie_demo.jpg',
-      verifiedAt: new Date()
-    }
-  });
-
-  users.push(userA, userB, adminUser, demoUser);
-  
-  for (const user of users) {
+    users.push(user);
     await user.save();
   }
 
@@ -174,8 +169,8 @@ async function createDemoUsers() {
 }
 
 async function createDemoLoan(users) {
-  const userA = users.find(u => u.id === 'user_a');
-  const userB = users.find(u => u.id === 'user_b');
+  const userA = users.find(u => u.id === 'priya_rajesh');
+  const userB = users.find(u => u.id === 'arjun_kumar');
 
   const loan = new Loan({
     id: 'loan_1',
@@ -204,8 +199,8 @@ async function createDemoLoan(users) {
 }
 
 async function createDemoLoanRequest(users) {
-  const userA = users.find(u => u.id === 'user_a'); // Priya Rajesh (lender)
-  const userB = users.find(u => u.id === 'user_b'); // Arjun Kumar (borrower)
+  const userA = users.find(u => u.id === 'priya_rajesh'); // Priya Rajesh (lender)
+  const userB = users.find(u => u.id === 'arjun_kumar'); // Arjun Kumar (borrower)
 
   const loanRequest = new Loan({
     id: 'loan_request_1',
@@ -230,12 +225,12 @@ async function createDefaultSettings() {
   const settings = new Settings({
     id: 'default',
     initialFeeRate: 0.01,
-    blockFeeRate: 0.01,
-    blockMinPercent: 0.20,
+    excuseFeeRate: 0.01,
+    excuseMinPercent: 0.20,
     termDays: 30,
     mainGraceDays: 10,
-    blockLengthDays: 10,
-    blockCount: 4,
+    excuseLengthDays: 10,
+    excuseCount: 4,
     cibilReportingEnabled: true,
     autoReportingEnabled: true
   });

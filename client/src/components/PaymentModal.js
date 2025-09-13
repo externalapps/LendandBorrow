@@ -60,10 +60,14 @@ const PaymentModal = ({ isOpen, onClose, amount, onConfirm, loading }) => {
                   <span className="text-gray-600">Platform Fee (1%):</span>
                   <span className="text-gray-900">₹{Math.round(parseFloat(amount || 0) * 0.01).toLocaleString()}</span>
                 </div>
+                <div className="flex justify-between items-center mt-2">
+                  <span className="text-gray-600">Amount to Borrower:</span>
+                  <span className="text-gray-900">₹{Math.round(parseFloat(amount || 0) * 0.99).toLocaleString()}</span>
+                </div>
                 <div className="border-t border-gray-200 mt-2 pt-2">
                   <div className="flex justify-between items-center">
-                    <span className="font-semibold text-gray-900">Total Amount:</span>
-                    <span className="text-xl font-bold text-green-600">₹{Math.round(parseFloat(amount || 0) * 1.01).toLocaleString()}</span>
+                    <span className="font-semibold text-gray-900">You Pay:</span>
+                    <span className="text-xl font-bold text-green-600">₹{parseFloat(amount).toLocaleString()}</span>
                   </div>
                 </div>
               </div>

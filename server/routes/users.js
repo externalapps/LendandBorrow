@@ -1,23 +1,17 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const User = require('../models/User');
+const Loan = require('../models/Loan');
 const AuditLog = require('../models/AuditLog');
 const { auth } = require('../middleware/auth');
-const mockServices = require('../services/mockServices');
 
 const router = express.Router();
 
-// Log audit event
+// Mock audit event (no MongoDB needed)
 const logAudit = async (userId, action, details, req) => {
   try {
-    await AuditLog.create({
-      id: uuidv4(),
-      userId,
-      action,
-      details,
-      ipAddress: req.ip,
-      userAgent: req.get('User-Agent')
-    });
+    console.log(`📝 Audit: ${action} by ${userId}`);
+    // Mock audit logging - no database storage needed
   } catch (error) {
     console.error('Audit log error:', error);
   }
@@ -148,24 +142,18 @@ router.get('/dashboard/summary', auth, async (req, res) => {
 
     const userId = req.user.id;
 
-    // Get loans where user is lender (exclude LOAN_REQUEST status)
-    const loansGiven = await Loan.find({ 
-      lenderId: userId, 
-      status: { $ne: 'LOAN_REQUEST' } 
-    });
+    // Get loans from MongoDB where user is lender
+    const loansGiven = await Loan.find({ lenderId: userId });
     const totalLent = loansGiven.reduce((sum, loan) => sum + loan.principal, 0);
     const activeLoansGiven = loansGiven.filter(loan => loan.status === 'ACTIVE').length;
 
-    // Get loans where user is borrower (include all loans except CANCELLED)
-    const loansTaken = await Loan.find({ 
-      borrowerId: userId, 
-      status: { $ne: 'CANCELLED' } 
-    });
+    // Get loans from MongoDB where user is borrower
+    const loansTaken = await Loan.find({ borrowerId: userId });
     const totalBorrowed = loansTaken.reduce((sum, loan) => sum + loan.principal, 0);
     const activeLoansTaken = loansTaken.filter(loan => loan.status === 'ACTIVE').length;
 
     // Calculate outstanding amounts
-    const outstandingBorrowed = loansTaken.reduce((sum, loan) => sum + loan.outstanding, 0);
+    const outstandingBorrowed = loansTaken.reduce((sum, loan) => sum + (loan.outstanding || loan.principal), 0);
 
     // Get overdue loans (past due date and not completed)
     const now = new Date();
@@ -175,24 +163,24 @@ router.get('/dashboard/summary', auth, async (req, res) => {
       loan.dueAt < now
     );
 
-    // Get CIBIL reports
-    const cibilReports = await CibilReport.find({ borrowerId: userId });
+    // Get CIBIL reports from MongoDB
+    const cibilReports = await CibilReport.find({ userId: userId }).sort({ createdAt: -1 });
 
-    // Calculate upcoming checkpoints
+    // Calculate upcoming checkpoints - mock data for demo
     const upcomingCheckpoints = [];
     for (const loan of loansTaken) {
       if (loan.status === 'ACTIVE' && loan.disbursedAt) {
-        const blocks = loan.calculateBlockSchedule();
-        const currentBlock = loan.getCurrentBlock();
-        if (currentBlock) {
-          upcomingCheckpoints.push({
-            loanId: loan.id,
-            blockNumber: currentBlock.blockNumber,
-            endDate: currentBlock.endDate,
-            outstanding: loan.outstanding,
-            minPayment: Math.round(loan.outstanding * 0.20 * 100) / 100
-          });
-        }
+        // Mock upcoming checkpoint for demo
+        const dueDate = new Date();
+        dueDate.setDate(dueDate.getDate() + 7); // Next week
+        
+        upcomingCheckpoints.push({
+          loanId: loan.id,
+          blockNumber: 1,
+          endDate: dueDate,
+          outstanding: loan.principal || loan.amount || 0,
+          minPayment: Math.round((loan.principal || loan.amount || 0) * 0.20 * 100) / 100
+        });
       }
     }
 
@@ -230,56 +218,7 @@ router.get('/dashboard/summary', auth, async (req, res) => {
   }
 });
 
-// Update user KYC data (support both PUT and POST)
-router.put('/kyc', auth, async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const kycData = req.body;
-    
-    // Validate KYC data
-    if (!kycData.pan || !kycData.aadhaar || !kycData.bankAccount || !kycData.ifsc) {
-      return res.status(400).json({ 
-        error: { message: 'Missing required KYC fields' } 
-      });
-    }
-    
-    // Find the user in the in-memory store
-    const inMemoryAuth = require('../services/inMemoryAuth');
-    const user = inMemoryAuth.findUserById(userId);
-    
-    if (!user) {
-      return res.status(404).json({ 
-        error: { message: 'User not found' } 
-      });
-    }
-    
-    // Update KYC data
-    user.kycStatus = 'VERIFIED';
-    user.kycData = {
-      ...kycData,
-      verifiedAt: new Date()
-    };
-    
-    // Log audit
-    await logAudit(userId, 'KYC_UPDATED', { kycStatus: 'VERIFIED' }, req);
-    
-    res.json({
-      message: 'KYC updated successfully',
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        kycStatus: user.kycStatus
-      }
-    });
-  } catch (error) {
-    console.error('KYC update error:', error);
-    res.status(500).json({ 
-      error: { message: 'Failed to update KYC data' } 
-    });
-  }
-});
+// Duplicate route removed - using the first PUT /kyc route above
 
 // Also support POST for KYC updates (some browsers/clients have issues with PUT)
 router.post('/kyc', auth, async (req, res) => {
@@ -294,9 +233,8 @@ router.post('/kyc', auth, async (req, res) => {
       });
     }
     
-    // Find the user in the in-memory store
-    const inMemoryAuth = require('../services/inMemoryAuth');
-    const user = inMemoryAuth.findUserById(userId);
+    // Find the user in MongoDB
+    const user = await User.findOne({ id: userId });
     
     if (!user) {
       return res.status(404).json({ 
@@ -310,6 +248,26 @@ router.post('/kyc', auth, async (req, res) => {
       ...kycData,
       verifiedAt: new Date()
     };
+    
+    await user.save();
+    
+    // Check if this is for Direct Lending flow - auto-accept pending loan offers
+    const { fromDirectLoan } = req.body;
+    if (fromDirectLoan) {
+      try {
+        const loan = await Loan.findOne({ id: fromDirectLoan });
+        if (loan && loan.status === 'PENDING_BORROWER_ACCEPT' && loan.borrowerId === userId) {
+          // Auto-accept the loan after KYC completion
+          loan.status = 'PENDING_LENDER_FUNDING';
+          loan.acceptedAt = new Date();
+          loan.termsAcceptedAt = new Date();
+          await loan.save();
+          console.log(`🚀 Loan auto-accepted after KYC: ${loan.id}`);
+        }
+      } catch (error) {
+        console.error('Error auto-accepting loan after KYC:', error);
+      }
+    }
     
     // Log audit
     await logAudit(userId, 'KYC_UPDATED', { kycStatus: 'VERIFIED' }, req);

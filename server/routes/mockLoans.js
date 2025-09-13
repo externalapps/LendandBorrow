@@ -44,7 +44,7 @@ router.post('/', auth, async (req, res) => {
         id: borrowerId,
         name: `Contact ${borrowerId}`, // Mock name
         phone: '+919000000000', // Mock phone
-        email: `contact${borrowerId}@paysafe.com`
+        email: `contact${borrowerId}@lendandborrow.com`
       }
     };
 

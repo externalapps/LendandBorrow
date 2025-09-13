@@ -6,32 +6,44 @@ import {
   CheckCircleIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
+import api from '../services/api';
 
 const ContactSelector = ({ onSelectContact, selectedContact, onClear }) => {
   const [contacts, setContacts] = useState([]);
   const [filteredContacts, setFilteredContacts] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showContacts, setShowContacts] = useState(false);
-  // const [loading, setLoading] = useState(false); // For future use
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // All 10 demo users available for lending/borrowing
-    const demoContacts = [
-      { id: 'user_001', name: 'Priya Rajesh', phone: '+919000000001', avatar: null, isRegistered: true },
-      { id: 'user_002', name: 'Arjun Kumar', phone: '+919000000002', avatar: null, isRegistered: true },
-      { id: 'user_003', name: 'Suresh Venkatesh', phone: '+919000000003', avatar: null, isRegistered: true },
-      { id: 'user_004', name: 'Meera Patel', phone: '+919000000004', avatar: null, isRegistered: true },
-      { id: 'user_005', name: 'Rajesh Gupta', phone: '+919000000005', avatar: null, isRegistered: true },
-      { id: 'user_006', name: 'Anita Sharma', phone: '+919000000006', avatar: null, isRegistered: true },
-      { id: 'user_007', name: 'Vikram Singh', phone: '+919000000007', avatar: null, isRegistered: true },
-      { id: 'user_008', name: 'Deepika Reddy', phone: '+919000000008', avatar: null, isRegistered: true },
-      { id: 'user_009', name: 'Rohit Agarwal', phone: '+919000000009', avatar: null, isRegistered: true },
-      { id: 'user_010', name: 'Kavya Nair', phone: '+919000000010', avatar: null, isRegistered: true },
-    ];
-    
-    setContacts(demoContacts);
-    setFilteredContacts(demoContacts);
+    fetchContacts();
   }, []);
+
+  const fetchContacts = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get('/users');
+      const users = response.data.users.map(user => ({
+        id: user.id,
+        name: user.name,
+        phone: user.phone,
+        email: user.email,
+        avatar: null,
+        isRegistered: true,
+        kycStatus: user.kycStatus
+      }));
+      
+      setContacts(users);
+      setFilteredContacts(users);
+    } catch (error) {
+      console.error('Error fetching contacts:', error);
+      // Fallback to empty array if API fails
+      setContacts([]);
+      setFilteredContacts([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (searchTerm) {
@@ -93,7 +105,12 @@ const ContactSelector = ({ onSelectContact, selectedContact, onClear }) => {
       {/* Contact Dropdown */}
       {showContacts && !selectedContact && (
         <div className="absolute z-50 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-80 overflow-y-auto">
-          {filteredContacts.length > 0 ? (
+          {loading ? (
+            <div className="px-4 py-8 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600 mx-auto mb-4"></div>
+              <p className="text-gray-500">Loading contacts...</p>
+            </div>
+          ) : filteredContacts.length > 0 ? (
             <div className="py-2">
               {filteredContacts.map((contact) => (
                 <div

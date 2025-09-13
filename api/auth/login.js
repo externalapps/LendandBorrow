@@ -27,16 +27,16 @@ module.exports = async (req, res) => {
 
     // Demo users - in production, these work without password for demo purposes
     const mockUsers = [
-      { id: 'user_001', email: 'priya@paysafe.com', name: 'Priya Sharma' },
-      { id: 'user_002', email: 'arjun@paysafe.com', name: 'Arjun Kumar' },
-      { id: 'user_003', email: 'suresh@paysafe.com', name: 'Suresh Patel' },
-      { id: 'user_004', email: 'meera@paysafe.com', name: 'Meera Patel' },
-      { id: 'user_005', email: 'rajesh@paysafe.com', name: 'Rajesh Singh' },
-      { id: 'user_006', email: 'anita@paysafe.com', name: 'Anita Reddy' },
-      { id: 'user_007', email: 'vikram@paysafe.com', name: 'Vikram Joshi' },
-      { id: 'user_008', email: 'deepika@paysafe.com', name: 'Deepika Agarwal' },
-      { id: 'user_009', email: 'rohit@paysafe.com', name: 'Rohit Verma' },
-      { id: 'user_010', email: 'kavya@paysafe.com', name: 'Kavya Nair' }
+      { id: 'user_001', email: 'priya@lendandborrow.com', name: 'Priya Sharma' },
+      { id: 'user_002', email: 'arjun@lendandborrow.com', name: 'Arjun Kumar' },
+      { id: 'user_003', email: 'suresh@lendandborrow.com', name: 'Suresh Patel' },
+      { id: 'user_004', email: 'meera@lendandborrow.com', name: 'Meera Patel' },
+      { id: 'user_005', email: 'rajesh@lendandborrow.com', name: 'Rajesh Singh' },
+      { id: 'user_006', email: 'anita@lendandborrow.com', name: 'Anita Reddy' },
+      { id: 'user_007', email: 'vikram@lendandborrow.com', name: 'Vikram Joshi' },
+      { id: 'user_008', email: 'deepika@lendandborrow.com', name: 'Deepika Agarwal' },
+      { id: 'user_009', email: 'rohit@lendandborrow.com', name: 'Rohit Verma' },
+      { id: 'user_010', email: 'kavya@lendandborrow.com', name: 'Kavya Nair' }
     ];
 
     const user = mockUsers.find(u => u.email === email);
