@@ -99,7 +99,9 @@ const BorrowMoney = () => {
   };
 
   const calculateTotalAmount = (principal, platformFee) => {
-    return principal + platformFee;
+    // CORRECT LOGIC: Borrower only repays the principal amount
+    // Platform fee is deducted from disbursement, not added to repayment
+    return principal;
   };
 
   if (loading && pendingOffers.length === 0) {
@@ -216,9 +218,9 @@ const BorrowMoney = () => {
                             </p>
                           </div>
                           <div className="text-center">
-                            <p className="text-sm text-gray-600 mb-2">Total Amount</p>
+                            <p className="text-sm text-gray-600 mb-2">Amount You'll Receive</p>
                             <p className="text-2xl font-bold text-teal-600">
-                              {formatCurrency(calculateTotalAmount(loan.principal, loan.initialPlatformFee))}
+                              {formatCurrency(loan.principal - loan.initialPlatformFee)}
                             </p>
                           </div>
                         </div>
@@ -357,12 +359,12 @@ const BorrowMoney = () => {
                         <span className="font-semibold text-gray-900">{formatCurrency(selectedLoan.initialPlatformFee)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Total Amount</span>
-                        <span className="font-bold text-teal-600">{formatCurrency(calculateTotalAmount(selectedLoan.principal, selectedLoan.initialPlatformFee))}</span>
+                        <span className="text-gray-600">Amount You'll Receive</span>
+                        <span className="font-bold text-teal-600">{formatCurrency(selectedLoan.principal - selectedLoan.initialPlatformFee)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Lender</span>
-                        <span className="font-semibold text-gray-900">{selectedLoan.lenderId?.name}</span>
+                        <span className="text-gray-600">Total Repayment</span>
+                        <span className="font-bold text-green-600">{formatCurrency(selectedLoan.principal)}</span>
                       </div>
                     </div>
                   </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { XMarkIcon, BanknotesIcon, CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, BanknotesIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 
 const PaymentModal = ({ isOpen, onClose, amount, onConfirm, loading }) => {
   const [step, setStep] = useState(1); // 1: Confirm, 2: Processing, 3: Success/Error
@@ -53,7 +53,7 @@ const PaymentModal = ({ isOpen, onClose, amount, onConfirm, loading }) => {
 
                 <div className="bg-gray-50 rounded-lg p-4 mb-6">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Loan Amount:</span>
+                  <span className="text-gray-600">Principal Amount:</span>
                   <span className="text-xl font-bold text-gray-900">₹{parseFloat(amount).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between items-center mt-2">

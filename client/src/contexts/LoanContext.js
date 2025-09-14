@@ -74,7 +74,7 @@ export const LoanProvider = ({ children }) => {
 
   const createLoan = async (borrowerId, principal, repaymentDate) => {
     try {
-      const response = await api.post('/loans', { borrowerId, principal, repaymentDate });
+      const response = await api.post('/loans', { borrowerId, principal, dueDate: repaymentDate });
       console.log('Loan created successfully!', response.data);
       
       // Ensure we have the loan object with ID

@@ -9,14 +9,14 @@ const router = express.Router();
 // Create a new loan
 router.post('/', auth, async (req, res) => {
   try {
-    const { borrowerId, principal } = req.body;
+    const { borrowerId, principal, dueDate } = req.body;
 
     if (!borrowerId || !principal || principal <= 0) {
       return res.status(400).json({ error: { message: 'Invalid loan parameters' } });
     }
 
     // Use MongoDB directly for production-ready implementation
-    const loan = await LoanService.createLoan(req.user.id, borrowerId, principal, req);
+    const loan = await LoanService.createLoan(req.user.id, borrowerId, principal, dueDate, req);
     
     res.status(201).json({
       message: 'Loan created successfully',

@@ -16,7 +16,7 @@ const EXCUSE_COUNT = 4;
 
 class LoanService {
   // Create a new loan
-  static async createLoan(lenderId, borrowerId, principal, req) {
+  static async createLoan(lenderId, borrowerId, principal, dueDate = null, req = null) {
     try {
       // Validate inputs
       if (!lenderId || !borrowerId || !principal || principal <= 0) {
@@ -40,18 +40,12 @@ class LoanService {
         principal,
         initialPlatformFee,
         status: 'PENDING_BORROWER_ACCEPT',
-        escrowStatus: 'PENDING'
+        escrowStatus: 'PENDING',
+        lenderChosenDueDate: dueDate // Store the date chosen by lender
       });
 
-      // Add initial platform fee to ledger
-      loan.ledger.push({
-        id: uuidv4(),
-        type: 'platform',
-        amount: initialPlatformFee,
-        date: new Date(),
-        description: 'Initial platform fee',
-        txRef: `PLATFORM_${loan.id}`
-      });
+      // NOTE: Platform fee is NOT added to ledger here
+      // It will be deducted during disbursement when escrow is funded
 
       await loan.save();
 
@@ -89,6 +83,40 @@ class LoanService {
         throw new Error('Cannot fund loan: Borrower has not completed KYC verification yet');
       }
 
+      // CORRECT LOGIC: Platform fee is deducted from principal before disbursement
+      const platformFee = loan.initialPlatformFee;
+      const amountToBorrower = loan.principal - platformFee;
+
+      // Add funding entry (lender pays full principal)
+      loan.ledger.push({
+        id: uuidv4(),
+        type: 'funding',
+        amount: loan.principal,
+        date: new Date(),
+        description: `Lender funding: ₹${loan.principal}`,
+        txRef: `FUNDING_${loan.id}`
+      });
+
+      // Add platform fee collection entry (platform keeps this from lender's payment)
+      loan.ledger.push({
+        id: uuidv4(),
+        type: 'platform',
+        amount: platformFee,
+        date: new Date(),
+        description: `Platform fee collected: ₹${platformFee} (1% of ₹${loan.principal})`,
+        txRef: `PLATFORM_COLLECT_${loan.id}`
+      });
+
+      // Add disbursement entry (borrower receives principal minus platform fee)
+      loan.ledger.push({
+        id: uuidv4(),
+        type: 'disbursement',
+        amount: amountToBorrower,
+        date: new Date(),
+        description: `Disbursed to borrower: ₹${loan.principal} - ₹${platformFee} platform fee = ₹${amountToBorrower}`,
+        txRef: `DISBURSE_${loan.id}`
+      });
+
       // Update escrow status and loan status
       loan.escrowStatus = 'FUNDED';
       
@@ -96,7 +124,8 @@ class LoanService {
       if (loan.status === 'PENDING_LENDER_FUNDING') {
         loan.status = 'ACTIVE';
         loan.disbursedAt = new Date();
-        loan.dueAt = new Date(loan.disbursedAt.getTime() + (TERM_DAYS * 24 * 60 * 60 * 1000));
+        // Use lender's chosen due date if available, otherwise calculate from disbursement
+        loan.dueAt = loan.lenderChosenDueDate || new Date(loan.disbursedAt.getTime() + (TERM_DAYS * 24 * 60 * 60 * 1000));
       }
       
       await loan.save();
@@ -104,7 +133,9 @@ class LoanService {
       // Log audit
       await this.logAudit(lenderId, 'ESCROW_FUNDED', { 
         loanId, 
-        amount: loan.principal + loan.initialPlatformFee 
+        lenderPaid: loan.principal,
+        platformFeeDeducted: platformFee,
+        borrowerReceived: amountToBorrower
       }, req);
 
       return loan;
@@ -238,15 +269,10 @@ class LoanService {
 
   // Calculate outstanding fees
   static calculateOutstandingFees(loan) {
-    const feePayments = loan.ledger
-      .filter(entry => entry.type === 'fee')
-      .reduce((sum, entry) => sum + entry.amount, 0);
-    
-    const totalFeesAccrued = loan.ledger
-      .filter(entry => entry.type === 'fee')
-      .reduce((sum, entry) => sum + entry.amount, 0);
-
-    return Math.max(0, totalFeesAccrued - feePayments);
+    // This method should calculate fees that have been accrued but not yet paid
+    // For now, return 0 since platform fees are collected upfront during disbursement
+    // Future excuse fees will be handled separately
+    return 0;
   }
 
   // Evaluate excuse and apply fees

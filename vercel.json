@@ -1,11 +1,29 @@
 {
+  "version": 2,
+  "builds": [
+    {
+      "src": "client/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "build"
+      }
+    },
+    {
+      "src": "server/index.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/server/index.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/client/build/$1"
+    }
+  ],
   "env": {
-    "MONGODB_URI": "mongodb+srv://okatirendu77_db_user:4x5h2WxsbKx7D09a@lendandborrow.krnzcb9.mongodb.net/?retryWrites=true&w=majority&appName=lendandborrow",
-    "JWT_SECRET": "lendandborrow-jwt-secret-2024-very-secure-key",
-    "NODE_ENV": "production",
-    "CLIENT_URL": "https://lendandborrow.vercel.app",
-    "REACT_APP_API_URL": "",
-    "RAZORPAY_KEY_ID": "rzp_test_RFvYmAyAAJfrEb",
-    "RAZORPAY_KEY_SECRET": "vV7171QeDtQmvRfVbBba7J2I"
+    "NODE_ENV": "production"
   }
 }

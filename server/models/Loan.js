@@ -4,7 +4,7 @@ const ledgerEntrySchema = new mongoose.Schema({
   id: String,
   type: {
     type: String,
-    enum: ['platform', 'fee', 'principal', 'funding'],
+    enum: ['platform', 'fee', 'principal', 'funding', 'disbursement'],
     required: true
   },
   amount: {
@@ -60,6 +60,7 @@ const loanSchema = new mongoose.Schema({
   },
   disbursedAt: Date,
   dueAt: Date,
+  lenderChosenDueDate: Date, // Date chosen by lender during direct lending
   status: {
     type: String,
     enum: [
@@ -120,18 +121,26 @@ loanSchema.virtual('totalFeesPaid').get(function() {
     .reduce((sum, entry) => sum + entry.amount, 0);
 });
 
-// Virtual for total payments made
+// Virtual for total payments made (only principal and fee payments by borrower)
 loanSchema.virtual('totalPaymentsMade').get(function() {
   return this.ledger
+    .filter(entry => ['principal', 'fee'].includes(entry.type))
+    .reduce((sum, entry) => sum + entry.amount, 0);
+});
+
+// Virtual for amount disbursed to borrower
+loanSchema.virtual('amountDisbursed').get(function() {
+  return this.ledger
+    .filter(entry => entry.type === 'disbursement')
     .reduce((sum, entry) => sum + entry.amount, 0);
 });
 
 // Method to calculate excuse schedule
 loanSchema.methods.calculateExcuseSchedule = function() {
-  if (!this.disbursedAt) return [];
+  if (!this.disbursedAt || !this.dueAt) return [];
   
   const excuses = [];
-  const dueDate = new Date(this.disbursedAt.getTime() + (30 * 24 * 60 * 60 * 1000)); // 30 days
+  const dueDate = this.dueAt; // Use the actual due date (lender's chosen date)
   const mainGraceEnd = new Date(dueDate.getTime() + (10 * 24 * 60 * 60 * 1000)); // +10 days
   
   // First checkpoint (main grace end)

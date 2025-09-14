@@ -3,12 +3,14 @@
   "version": "2.0.0",
   "description": "Lend & Borrow P2P Lending Platform - Full Stack",
   "scripts": {
-    "build": "cd client && npm run build",
+    "build": "cd client && npm install && npm run build",
+    "start": "cd server && npm install && npm start",
     "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
     "server:dev": "cd server && npm run dev",
     "client:dev": "cd client && npm run dev",
     "install:all": "npm install && cd client && npm install && cd ../server && npm install",
-    "seed": "cd server && npm run seed"
+    "seed": "cd server && npm run seed",
+    "vercel-build": "npm run build"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

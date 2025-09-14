@@ -134,4 +134,20 @@ Even if they fail once, CIBIL keeps updating every excuse window with worsening 
 
 Platform earns fees: 1% upfront + 1% each excuse window (if ≥ 20% paid).
 
-Lender always gets back exactly the principal they lent.
+Lender always gets back exactly the principal they lent.    NOTE : Quick Action Buttons (Repayment Options in UI)
+
+Borrower sees 4 quick repayment options:
+
+25% of outstanding
+
+50% of outstanding
+
+75% of outstanding
+
+100% of outstanding
+
+⚠️ These buttons are repayment convenience options only.
+
+They must not be confused with the system’s minimum payment rule (20%) for avoiding CIBIL.
+
+Example: Borrower can choose to repay 25% (which is higher than 20%), and that satisfies the minimum requirement.

@@ -89,7 +89,7 @@ const LoanDetail = () => {
       // Show mock Razorpay payment UI
       const options = {
         key: "rzp_test_1DP5mmOlF5G5ag", // Test key
-        amount: Math.round((loan.principal + loan.initialPlatformFee) * 100), // Amount in paise
+        amount: Math.round(loan.principal * 100), // Amount in paise - lender pays only principal
         currency: "INR",
         name: "Lend & Borrow",
         description: `Funding loan to ${loan.borrower?.name || 'borrower'}`,
@@ -423,7 +423,7 @@ const LoanDetail = () => {
                                   ) : (
                                     <>
                                       <BanknotesIcon className="w-4 h-4 mr-2" />
-                                      Fund Loan (₹{formatCurrency(loan.principal + loan.initialPlatformFee).replace('₹', '')})
+                                      Fund Loan (₹{formatCurrency(loan.principal).replace('₹', '')})
                                     </>
                                   )}
                                 </button>
@@ -715,12 +715,12 @@ const LoanDetail = () => {
                       <span className="font-semibold text-gray-900">{formatCurrency(loan.initialPlatformFee)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Total Amount</span>
-                      <span className="font-bold text-teal-600">{formatCurrency(loan.principal + loan.initialPlatformFee)}</span>
+                      <span className="text-gray-600">Amount to Borrower</span>
+                      <span className="font-bold text-teal-600">{formatCurrency(loan.principal - loan.initialPlatformFee)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Lender</span>
-                      <span className="font-semibold text-gray-900">{loan.lender?.name || 'Lender'}</span>
+                      <span className="text-gray-600">Total Repayment</span>
+                      <span className="font-bold text-green-600">{formatCurrency(loan.principal)}</span>
                     </div>
                   </div>
                 </div>

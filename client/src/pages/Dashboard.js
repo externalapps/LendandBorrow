@@ -222,7 +222,10 @@ const Dashboard = () => {
                           Excuse {checkpoint.excuseNumber || checkpoint.blockNumber}
                         </p>
                         <p className="text-sm text-gray-600">
-                          Due: {new Date(checkpoint.excuseEndDate || checkpoint.blockEndDate).toLocaleDateString()}
+                          Due: {checkpoint.excuseEndDate || checkpoint.blockEndDate ? 
+                            new Date(checkpoint.excuseEndDate || checkpoint.blockEndDate).toLocaleDateString() : 
+                            'Date not set'
+                          }
                         </p>
                       </div>
                       <div className="text-right">

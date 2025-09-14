@@ -1,0 +1,23 @@
+ CRITICAL ISSUES IDENTIFIED:
+Issue 1: Platform Fee Logic is WRONG
+Current Logic (INCORRECT):
+Platform fee is added to ledger as a separate charge
+Borrower receives full principal amount
+Total repayment = Principal + Platform Fee
+Correct Logic (from your specification):
+Platform fee is deducted from principal BEFORE giving to borrower
+Borrower receives: Principal - Platform Fee (e.g., ₹990 for ₹1000 loan)
+Total repayment = Principal only (e.g., ₹1000)
+Issue 2: Outstanding Calculation is WRONG
+Current: outstanding = principal - totalPaid
+Should be: outstanding = principal - principalPayments (exclude platform fees from outstanding)
+Issue 3: Date Display Issues
+Invalid dates showing in dashboard - likely due to missing or malformed date fields.
+🔧 SOLUTION PLAN:
+Should I fix these critical issues BEFORE we combine and redeploy? This will ensure:
+✅ Correct payment calculations
+✅ Proper platform fee handling
+✅ Fixed date displays
+✅ Consistent amount displays across all pages
+This is CRITICAL to fix now - otherwise the combined deployment will have the same issues!
+Shall I proceed with fixing these logic issues first? 🚀
