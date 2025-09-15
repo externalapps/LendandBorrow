@@ -310,10 +310,10 @@ const Landing = () => {
             </p>
             
             {/* CTA Buttons */}
-            <div className="flex flex-col gap-3 sm:gap-4 justify-center items-center px-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center px-4">
               <Link
                 to="/register"
-                className="w-full max-w-sm sm:max-w-none inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-[#00b66b] text-white font-semibold text-base sm:text-lg rounded-xl shadow-xl hover:bg-[#00a05e] transition-all duration-200 hover:shadow-2xl backdrop-blur-sm active:scale-95 mobile-button mobile-touch-target"
+                className="w-full sm:w-auto max-w-sm sm:max-w-xs inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-[#00b66b] text-white font-semibold text-base sm:text-lg rounded-xl shadow-xl hover:bg-[#00a05e] transition-all duration-200 hover:shadow-2xl backdrop-blur-sm active:scale-95 mobile-button mobile-touch-target"
               >
                 Get Started
                 <ArrowRightIcon className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
@@ -321,7 +321,7 @@ const Landing = () => {
               
               <Link
                 to="/login"
-                className="w-full max-w-sm sm:max-w-none inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 border-2 border-white/50 text-white font-semibold text-base sm:text-lg rounded-xl hover:border-white hover:bg-white/10 transition-all duration-200 backdrop-blur-sm active:scale-95 mobile-button mobile-touch-target"
+                className="w-full sm:w-auto max-w-sm sm:max-w-xs inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 border-2 border-white/50 text-white font-semibold text-base sm:text-lg rounded-xl hover:border-white hover:bg-white/10 transition-all duration-200 backdrop-blur-sm active:scale-95 mobile-button mobile-touch-target"
               >
                 Sign In
               </Link>
@@ -467,10 +467,10 @@ const Landing = () => {
             Join our platform and start lending or borrowing with friends in a secure, transparent way.
           </p>
           
-          <div className="flex flex-col gap-3 sm:gap-4 justify-center items-center px-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center px-4">
             <Link
               to="/register"
-              className="w-full max-w-sm sm:max-w-none inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-[#00b66b] text-white font-semibold text-base sm:text-lg rounded-xl shadow-lg hover:bg-[#00a05e] transition-all duration-200 active:scale-95 mobile-button mobile-touch-target"
+              className="w-full sm:w-auto max-w-sm sm:max-w-xs inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-[#00b66b] text-white font-semibold text-base sm:text-lg rounded-xl shadow-lg hover:bg-[#00a05e] transition-all duration-200 active:scale-95 mobile-button mobile-touch-target"
             >
               Get Started
               <ArrowRightIcon className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
@@ -478,7 +478,7 @@ const Landing = () => {
             
             <Link
               to="/login"
-              className="w-full max-w-sm sm:max-w-none inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 border-2 border-white text-white font-semibold text-base sm:text-lg rounded-xl hover:bg-white/10 transition-all duration-200 active:scale-95 mobile-button mobile-touch-target"
+              className="w-full sm:w-auto max-w-sm sm:max-w-xs inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 border-2 border-white text-white font-semibold text-base sm:text-lg rounded-xl hover:bg-white/10 transition-all duration-200 active:scale-95 mobile-button mobile-touch-target"
             >
               Sign In
             </Link>

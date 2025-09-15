@@ -103,12 +103,27 @@ app.use('/api/communications', require('./routes/communications'));
 app.use('/api/mock-cibil', require('./routes/mockCibil'));
 app.use('/api/settings', require('./routes/settings'));
 
+// Debug middleware to log all API requests
+app.use('/api', (req, res, next) => {
+  console.log(`🔍 API Request: ${req.method} ${req.path}`);
+  next();
+});
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// Test endpoint to verify API routing
+app.get('/api/test', (req, res) => {
+  res.json({ 
+    message: 'API is working!',
+    timestamp: new Date().toISOString(),
+    path: req.path
   });
 });
 
