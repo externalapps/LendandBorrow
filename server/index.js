@@ -64,29 +64,55 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Database connection
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/lendandborrow-demo';
 
-// Connect to MongoDB
-mongoose.connect(MONGODB_URI)
+// Connect to MongoDB with optimized settings for serverless
+mongoose.connect(MONGODB_URI, {
+  serverSelectionTimeoutMS: 5000, // 5 second timeout
+  socketTimeoutMS: 45000, // 45 second timeout
+  bufferCommands: false, // Disable mongoose buffering
+  bufferMaxEntries: 0 // Disable mongoose buffering
+})
 .then(() => {
   console.log('✅ Connected to MongoDB');
   global.mongoConnected = true;
 })
 .catch((error) => {
   console.error('❌ MongoDB connection error:', error.message);
-  console.error('❌ Please check your MongoDB connection and .env file');
   global.mongoConnected = false;
-  process.exit(1);
+  // Don't exit in serverless environment
+  if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+    process.exit(1);
+  }
 });
 
 // Middleware to ensure MongoDB connection for all routes
 app.use('/api', (req, res, next) => {
   if (!global.mongoConnected) {
-    return res.status(503).json({ 
-      error: { 
-        message: 'Database not available. Please check MongoDB connection.' 
-      } 
-    });
+    // In serverless, try to reconnect quickly
+    if (process.env.VERCEL) {
+      mongoose.connect(MONGODB_URI, {
+        serverSelectionTimeoutMS: 2000,
+        bufferCommands: false,
+        bufferMaxEntries: 0
+      }).then(() => {
+        global.mongoConnected = true;
+        next();
+      }).catch(() => {
+        return res.status(503).json({ 
+          error: { 
+            message: 'Database temporarily unavailable. Please try again.' 
+          } 
+        });
+      });
+    } else {
+      return res.status(503).json({ 
+        error: { 
+          message: 'Database not available. Please check MongoDB connection.' 
+        } 
+      });
+    }
+  } else {
+    next();
   }
-  next();
 });
 
 
@@ -109,12 +135,21 @@ app.use('/api', (req, res, next) => {
   next();
 });
 
-// Health check endpoint
+// Health check endpoint (no DB required)
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    mongoConnected: global.mongoConnected || false
+  });
+});
+
+// Simple ping endpoint for serverless
+app.get('/api/ping', (req, res) => {
+  res.json({ 
+    message: 'pong',
+    timestamp: new Date().toISOString()
   });
 });
 
