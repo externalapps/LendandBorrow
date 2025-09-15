@@ -138,9 +138,9 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({ error: { message: 'Route not found' } });
+// 404 handler for API routes only
+app.use('/api/*', (req, res) => {
+  res.status(404).json({ error: { message: 'API route not found' } });
 });
 
 // Start server (only in development)
