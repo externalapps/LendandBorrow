@@ -7,6 +7,7 @@ import {
   XMarkIcon
 } from '@heroicons/react/24/outline';
 import api from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 
 const ContactSelector = ({ onSelectContact, selectedContact, onClear }) => {
   const [contacts, setContacts] = useState([]);
@@ -15,9 +16,14 @@ const ContactSelector = ({ onSelectContact, selectedContact, onClear }) => {
   const [showContacts, setShowContacts] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const { user, loading: authLoading } = useAuth();
+
   useEffect(() => {
-    fetchContacts();
-  }, []);
+    // Wait for auth to complete and a user to be present (token set)
+    if (!authLoading && user) {
+      fetchContacts();
+    }
+  }, [authLoading, user]);
 
   const fetchContacts = async () => {
     try {
@@ -37,6 +43,9 @@ const ContactSelector = ({ onSelectContact, selectedContact, onClear }) => {
       setFilteredContacts(users);
     } catch (error) {
       console.error('Error fetching contacts:', error);
+      if (error?.response?.status === 401) {
+        console.warn('Unauthorized when fetching contacts. Please log in again on this domain.');
+      }
       // Fallback to empty array if API fails
       setContacts([]);
       setFilteredContacts([]);
