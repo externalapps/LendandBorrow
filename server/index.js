@@ -65,10 +65,10 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://okatirendu77_db_user:4x5h2WxsbKx7D09a@lendandborrow.krnzcb9.mongodb.net/?retryWrites=true&w=majority&appName=lendandborrow';
 
 // Connect to MongoDB with optimized settings for serverless
+// Allow command buffering so initial writes wait for connection
 mongoose.connect(MONGODB_URI, {
   serverSelectionTimeoutMS: 5000, // 5 second timeout
-  socketTimeoutMS: 45000, // 45 second timeout
-  bufferCommands: false // Disable mongoose buffering
+  socketTimeoutMS: 45000 // 45 second timeout
 })
 .then(() => {
   console.log('✅ Connected to MongoDB');
@@ -89,8 +89,7 @@ app.use('/api', (req, res, next) => {
     // In serverless, try to reconnect quickly
     if (process.env.VERCEL) {
       mongoose.connect(MONGODB_URI, {
-        serverSelectionTimeoutMS: 2000,
-        bufferCommands: false
+        serverSelectionTimeoutMS: 2000
       }).then(() => {
         global.mongoConnected = true;
         next();
