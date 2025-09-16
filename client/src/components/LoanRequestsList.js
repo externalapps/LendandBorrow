@@ -213,7 +213,7 @@ const LoanRequestsList = ({ loanRequests, onRequestAccepted, loading }) => {
       {loanRequests.map((request) => (
         <div key={request.id} className="card">
           <div className="card-body">
-            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between">
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
               <div className="flex-1">
                 <div className="flex items-center space-x-4 mb-4">
                   <div className="w-12 h-12 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
@@ -298,7 +298,7 @@ const LoanRequestsList = ({ loanRequests, onRequestAccepted, loading }) => {
                 </div>
               </div>
 
-              <div className="flex flex-col space-y-3 lg:ml-6 mt-6 lg:mt-0 w-full lg:w-64 flex-shrink-0">
+              <div className="flex flex-col space-y-3 lg:ml-6 mt-6 lg:mt-0 w-full lg:w-96 xl:w-[28rem] flex-shrink-0">
                 {/* CIBIL Score Display for Lender */}
                 {request.status === 'LOAN_REQUEST' && (
                   <div className="mb-4">

@@ -103,7 +103,7 @@ const CibilScoreDisplay = ({ borrowerId, borrowerName }) => {
   const { cibilScore, platformScore, combinedScore, cibilRisk, platformRisk, combinedRisk, platformHistory, scoreRecovery } = cibilData;
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4 overflow-hidden w-full max-w-full text-sm md:text-base">
+    <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4 overflow-hidden w-full max-w-full text-sm md:text-base shadow-sm">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-base md:text-lg font-semibold text-gray-900 flex items-center truncate">
           <ChartBarIcon className="w-5 h-5 mr-2 text-blue-600" />
