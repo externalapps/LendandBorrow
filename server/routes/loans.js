@@ -127,11 +127,45 @@ router.get('/requests', auth, async (req, res) => {
 });
 
 // Get loan by ID
+// IMPORTANT: Place specific routes BEFORE generic `/:loanId` to avoid route capture
+// e.g., `/pending/offers` would otherwise be captured as `loanId="pending"`
+
+// Get loan by ID
+router.get('/pending/offers', auth, async (req, res) => {
+  try {
+    const loans = await Loan.find({
+      borrowerId: req.user.id,
+      status: 'PENDING_BORROWER_ACCEPT' // Only show loans that haven't been accepted yet
+    }).sort({ createdAt: -1 });
+    const User = require('../models/User');
+    const lenderIds = [...new Set(loans.map(loan => loan.lenderId))];
+    const lenders = await User.find({ id: { $in: lenderIds } });
+    const lenderMap = {};
+    lenders.forEach(user => {
+      lenderMap[user.id] = {
+        id: user.id,
+        name: user.name,
+        phone: user.phone
+      };
+    });
+    const populatedLoans = loans.map(loan => {
+      const loanObj = loan.toObject();
+      loanObj.lender = lenderMap[loan.lenderId] || { id: loan.lenderId };
+      return loanObj;
+    });
+    res.json({ loans: populatedLoans });
+  } catch (error) {
+    console.error('Get pending offers error:', error);
+    res.status(500).json({ error: { message: 'Failed to fetch pending offers' } });
+  }
+});
+
 router.get('/:loanId', auth, async (req, res) => {
   try {
+    const loanId = String(req.params.loanId || '').trim();
     // Use MongoDB directly for production-ready implementation
     const loan = await Loan.findOne({ 
-      id: req.params.loanId,
+      id: loanId,
       $or: [{ lenderId: req.user.id }, { borrowerId: req.user.id }]
     });
 
@@ -247,40 +281,7 @@ router.post('/:loanId/cancel', auth, async (req, res) => {
 });
 
 // Get pending offers for borrower
-router.get('/pending/offers', auth, async (req, res) => {
-  try {
-    const loans = await Loan.find({
-      borrowerId: req.user.id,
-      status: 'PENDING_BORROWER_ACCEPT' // Only show loans that haven't been accepted yet
-    }).sort({ createdAt: -1 });
-    
-    // Manually populate user data
-    const User = require('../models/User');
-    const lenderIds = [...new Set(loans.map(loan => loan.lenderId))];
-    
-    const lenders = await User.find({ id: { $in: lenderIds } });
-    const lenderMap = {};
-    lenders.forEach(user => {
-      lenderMap[user.id] = {
-        id: user.id,
-        name: user.name,
-        phone: user.phone
-      };
-    });
-    
-    // Manually attach user data to loans
-    const populatedLoans = loans.map(loan => {
-      const loanObj = loan.toObject();
-      loanObj.lender = lenderMap[loan.lenderId] || { id: loan.lenderId };
-      return loanObj;
-    });
-
-    res.json({ loans: populatedLoans });
-  } catch (error) {
-    console.error('Get pending offers error:', error);
-    res.status(500).json({ error: { message: 'Failed to fetch pending offers' } });
-  }
-});
+// (moved above)
 
 // Get loan ledger
 router.get('/:loanId/ledger', auth, async (req, res) => {
