@@ -13,10 +13,15 @@
   ],
   "routes": [
     { "src": "/api/(.*)", "dest": "/server/index.js" },
-    { "src": "/favicon.ico", "dest": "/favicon.ico" },
-    { "src": "/static/(.*)", "dest": "/static/$1" },
-    { "src": "/assets/(.*)", "dest": "/assets/$1" },
-    { "src": "/(.*)", "dest": "/index.html" }
+    { "src": "/favicon.ico", "dest": "/client/favicon.ico" },
+    { "src": "/favicon.png", "dest": "/client/favicon.png" },
+    { "src": "/favicon.svg", "dest": "/client/favicon.svg" },
+    { "src": "/manifest.json", "dest": "/client/manifest.json" },
+    { "src": "/logo.png", "dest": "/client/logo.png" },
+    { "src": "/static/(.*)", "dest": "/client/static/$1" },
+    { "src": "/images/(.*)", "dest": "/client/images/$1" },
+    { "src": "/backgrounds/(.*)", "dest": "/client/backgrounds/$1" },
+    { "src": "/(.*)", "dest": "/client/index.html" }
   ],
   "env": {
     "NODE_ENV": "production",
