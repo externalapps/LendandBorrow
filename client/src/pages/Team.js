@@ -59,7 +59,7 @@ const Team = () => {
               <div className="flex items-center space-x-6">
                 <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-lg">
                   <img 
-                    src="/sandeep.png" 
+                    src={process.env.NODE_ENV === 'production' ? '/sandeep.png' : '/sandeep.png'} 
                     alt="Katta Sandeep Kumar"
                     className="w-20 h-20 rounded-full object-cover"
                     onError={(e) => {
@@ -143,7 +143,7 @@ const Team = () => {
               <div className="flex items-center space-x-6">
                 <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-lg">
                   <img 
-                    src="/aditya.png" 
+                    src={process.env.NODE_ENV === 'production' ? '/aditya.png' : '/aditya.png'} 
                     alt="Nandagiri Aditya"
                     className="w-20 h-20 rounded-full object-cover"
                     onError={(e) => {

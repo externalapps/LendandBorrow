@@ -18,6 +18,8 @@
     { "src": "/favicon.svg", "dest": "/client/favicon.svg" },
     { "src": "/manifest.json", "dest": "/client/manifest.json" },
     { "src": "/logo.png", "dest": "/client/logo.png" },
+    { "src": "/aditya.png", "dest": "/client/aditya.png" },
+    { "src": "/sandeep.png", "dest": "/client/sandeep.png" },
     { "src": "/static/(.*)", "dest": "/client/static/$1" },
     { "src": "/images/(.*)", "dest": "/client/images/$1" },
     { "src": "/backgrounds/(.*)", "dest": "/client/backgrounds/$1" },
