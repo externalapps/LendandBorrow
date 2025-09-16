@@ -14,5 +14,13 @@
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/server/index.js" },
     { "source": "/(.*)", "destination": "/index.html" }
-  ]
+  ],
+  "env": {
+    "NODE_ENV": "production",
+    "MONGODB_URI": "mongodb+srv://okatirendu77_db_user:4x5h2WxsbKx7D09a@lendandborrow.krnzcb9.mongodb.net/?retryWrites=true&w=majority&appName=lendandborrow",
+    "CLIENT_URL": "https://lendandborrow.vercel.app",
+    "JWT_SECRET": "f5babcb083fb4cb4bd123e639414a4e1",
+    "RAZORPAY_KEY_ID": "rzp_test_RFvYmAyAAJfrEb",
+    "RAZORPAY_KEY_SECRET": "vV7171QeDtQmvRfVbBba7J2I"
+  }
 }

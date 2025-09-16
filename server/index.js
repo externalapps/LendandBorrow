@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 5001;
 // Security middleware
 app.use(helmet());
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  origin: process.env.CLIENT_URL || 'https://lendandborrow.vercel.app',
   credentials: true
 }));
 
@@ -62,14 +62,13 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Database connection
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/lendandborrow-demo';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://okatirendu77_db_user:4x5h2WxsbKx7D09a@lendandborrow.krnzcb9.mongodb.net/?retryWrites=true&w=majority&appName=lendandborrow';
 
 // Connect to MongoDB with optimized settings for serverless
 mongoose.connect(MONGODB_URI, {
   serverSelectionTimeoutMS: 5000, // 5 second timeout
   socketTimeoutMS: 45000, // 45 second timeout
-  bufferCommands: false, // Disable mongoose buffering
-  bufferMaxEntries: 0 // Disable mongoose buffering
+  bufferCommands: false // Disable mongoose buffering
 })
 .then(() => {
   console.log('✅ Connected to MongoDB');
@@ -91,8 +90,7 @@ app.use('/api', (req, res, next) => {
     if (process.env.VERCEL) {
       mongoose.connect(MONGODB_URI, {
         serverSelectionTimeoutMS: 2000,
-        bufferCommands: false,
-        bufferMaxEntries: 0
+        bufferCommands: false
       }).then(() => {
         global.mongoConnected = true;
         next();

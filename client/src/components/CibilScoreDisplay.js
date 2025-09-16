@@ -113,16 +113,16 @@ const CibilScoreDisplay = ({ borrowerId, borrowerName }) => {
       </div>
 
       {/* Dual Scoring System */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
         {/* CIBIL Score */}
         <div className="bg-gray-50 rounded-lg p-3">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-600">CIBIL Score</span>
+            <span className="text-xs font-medium text-gray-600">CIBIL Score</span>
             <span className="text-xs text-gray-500">External</span>
           </div>
           <div className="flex items-center space-x-2">
-            <span className="text-2xl font-bold text-gray-900">{cibilScore}</span>
-            <span className="text-sm text-gray-500">/900</span>
+            <span className="text-xl font-bold text-gray-900">{cibilScore}</span>
+            <span className="text-xs text-gray-500">/900</span>
             <div className={`flex items-center px-2 py-1 rounded-full text-xs font-medium ${
               cibilRisk.color === 'green' ? 'bg-green-100 text-green-800' :
               cibilRisk.color === 'yellow' ? 'bg-yellow-100 text-yellow-800' :
@@ -137,12 +137,12 @@ const CibilScoreDisplay = ({ borrowerId, borrowerName }) => {
         {/* Platform Score */}
         <div className="bg-blue-50 rounded-lg p-3">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-600">Platform Score</span>
+            <span className="text-xs font-medium text-gray-600">Platform Score</span>
             <span className="text-xs text-gray-500">Internal</span>
           </div>
           <div className="flex items-center space-x-2">
-            <span className="text-2xl font-bold text-blue-900">{platformScore}</span>
-            <span className="text-sm text-gray-500">/900</span>
+            <span className="text-xl font-bold text-blue-900">{platformScore}</span>
+            <span className="text-xs text-gray-500">/900</span>
             <div className={`flex items-center px-2 py-1 rounded-full text-xs font-medium ${
               platformRisk.color === 'green' ? 'bg-green-100 text-green-800' :
               platformRisk.color === 'yellow' ? 'bg-yellow-100 text-yellow-800' :
@@ -158,11 +158,11 @@ const CibilScoreDisplay = ({ borrowerId, borrowerName }) => {
       {/* Combined Risk Assessment */}
       <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-lg p-3 mb-4">
         <div className="flex items-center justify-between">
-          <div>
-            <span className="text-sm font-medium text-gray-600">Combined Risk Assessment</span>
+          <div className="flex-1">
+            <span className="text-xs font-medium text-gray-600">Combined Risk Assessment</span>
             <div className="flex items-center space-x-2 mt-1">
-              <span className="text-xl font-bold text-gray-900">{combinedScore}</span>
-              <span className="text-sm text-gray-500">/900</span>
+              <span className="text-lg font-bold text-gray-900">{combinedScore}</span>
+              <span className="text-xs text-gray-500">/900</span>
               <div className={`flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                 combinedRisk.color === 'green' ? 'bg-green-100 text-green-800' :
                 combinedRisk.color === 'yellow' ? 'bg-yellow-100 text-yellow-800' :
@@ -173,41 +173,41 @@ const CibilScoreDisplay = ({ borrowerId, borrowerName }) => {
               </div>
             </div>
           </div>
-          <ArrowTrendingUpIcon className="w-6 h-6 text-green-600" />
+          <ArrowTrendingUpIcon className="w-5 h-5 text-green-600 flex-shrink-0" />
         </div>
       </div>
 
       {/* Platform History */}
       <div className="space-y-2 overflow-hidden">
-        <h4 className="text-sm font-medium text-gray-700 mb-2">Platform History</h4>
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          <div className="flex items-center">
-            <CheckCircleIcon className="w-4 h-4 text-green-600 mr-2" />
+        <h4 className="text-xs font-medium text-gray-700 mb-2">Platform History</h4>
+        <div className="grid grid-cols-2 gap-3 text-xs">
+          <div className="flex items-center space-x-2">
+            <CheckCircleIcon className="w-3 h-3 text-green-600 flex-shrink-0" />
             <span className="text-gray-600">Loans Completed:</span>
-            <span className="font-medium ml-1">{platformHistory.loanCount}</span>
+            <span className="font-medium">{platformHistory.loanCount}</span>
           </div>
-          <div className="flex items-center">
-            <CheckCircleIcon className="w-4 h-4 text-green-600 mr-2" />
+          <div className="flex items-center space-x-2">
+            <CheckCircleIcon className="w-3 h-3 text-green-600 flex-shrink-0" />
             <span className="text-gray-600">Success Rate:</span>
-            <span className="font-medium ml-1">{platformHistory.successRate}%</span>
+            <span className="font-medium">{platformHistory.successRate}%</span>
           </div>
-          <div className="flex items-center">
+          <div className="flex items-center space-x-2">
             {platformHistory.avgPaymentDays < 0 ? (
-              <ArrowTrendingUpIcon className="w-4 h-4 text-green-600 mr-2" />
+              <ArrowTrendingUpIcon className="w-3 h-3 text-green-600 flex-shrink-0" />
             ) : (
-              <ArrowTrendingDownIcon className="w-4 h-4 text-red-600 mr-2" />
+              <ArrowTrendingDownIcon className="w-3 h-3 text-red-600 flex-shrink-0" />
             )}
             <span className="text-gray-600">Avg Payment:</span>
-            <span className={`font-medium ml-1 text-xs ${
+            <span className={`font-medium text-xs ${
               platformHistory.avgPaymentDays < 0 ? 'text-green-600' : 'text-red-600'
             }`}>
               {Math.abs(platformHistory.avgPaymentDays)} days {platformHistory.avgPaymentDays < 0 ? 'early' : 'late'}
             </span>
           </div>
-          <div className="flex items-center">
-            <StarIcon className="w-4 h-4 text-yellow-500 mr-2" />
+          <div className="flex items-center space-x-2">
+            <StarIcon className="w-3 h-3 text-yellow-500 flex-shrink-0" />
             <span className="text-gray-600">Rating:</span>
-            <span className="font-medium ml-1">{platformHistory.borrowerRating}/5</span>
+            <span className="font-medium">{platformHistory.borrowerRating}/5</span>
           </div>
         </div>
         
