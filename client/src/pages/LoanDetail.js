@@ -14,6 +14,7 @@ import {
 } from '@heroicons/react/24/outline';
 import LoadingSpinner from '../components/LoadingSpinner';
 import CibilScoreDisplay from '../components/CibilScoreDisplay';
+import { downloadLoanNOCPDF } from '../utils/pdfExport';
 // Toast notifications replaced with modals
 
 const LoanDetail = () => {
@@ -531,6 +532,14 @@ const LoanDetail = () => {
                             <p className="text-sm text-green-700 mt-1">
                               This loan has been fully repaid. No further action required.
                             </p>
+                            <div className="mt-3">
+                              <button
+                                onClick={() => downloadLoanNOCPDF(loan)}
+                                className="btn-success text-sm"
+                              >
+                                Download No-Overdue Certificate (NOC)
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>

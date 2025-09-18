@@ -113,6 +113,75 @@ export const downloadLoanPDF = (loan) => {
   doc.save(`loan-${loan.id}-summary.pdf`);
 };
 
+// Generate No-Overdue Certificate (NOC)
+export const generateLoanNOCPDF = (loan) => {
+  const doc = new jsPDF();
+
+  // Header Branding
+  doc.setFontSize(18);
+  doc.setTextColor(11, 21, 64);
+  doc.text('Lend & Borrow', 20, 25);
+
+  doc.setFontSize(14);
+  doc.setTextColor(15, 181, 166);
+  doc.text('No-Overdue Certificate (NOC)', 20, 35);
+
+  // Body
+  doc.setFontSize(11);
+  doc.setTextColor(0, 0, 0);
+
+  const line = (y) => doc.line(20, y, 190, y);
+
+  let y = 48;
+  line(y);
+  y += 10;
+
+  const lenderName = loan?.lender?.name || loan?.lenderId || '—';
+  const borrowerName = loan?.borrower?.name || loan?.borrowerId || '—';
+  const created = loan?.createdAt ? new Date(loan.createdAt).toLocaleDateString() : '—';
+  const disbursed = loan?.disbursedAt ? new Date(loan.disbursedAt).toLocaleDateString() : '—';
+  const completed = loan?.completedAt ? new Date(loan.completedAt).toLocaleDateString() : new Date().toLocaleDateString();
+
+  const para = [
+    `This is to certify that Loan ID ${loan?.id || '—'} between Lender ${lenderName} and Borrower ${borrowerName} has been fully repaid.`,
+    `As of ${completed}, there are no outstanding dues, penalties, or overdues against this loan.`,
+    `This certificate is electronically generated and does not require a physical signature.`,
+  ];
+
+  para.forEach((p) => {
+    const split = doc.splitTextToSize(p, 170);
+    doc.text(split, 20, y);
+    y += split.length * 6 + 6;
+  });
+
+  y += 4;
+  doc.setFontSize(12);
+  doc.text('Loan Summary', 20, y);
+  y += 8;
+  doc.setFontSize(10);
+  doc.text(`Loan ID: ${loan?.id || '—'}`, 20, y); y += 6;
+  doc.text(`Status: ${loan?.status || '—'}`, 20, y); y += 6;
+  doc.text(`Created: ${created}`, 20, y); y += 6;
+  if (disbursed !== '—') { doc.text(`Disbursed: ${disbursed}`, 20, y); y += 6; }
+  doc.text(`Principal: ₹${(loan?.principal ?? 0).toLocaleString()}`, 20, y); y += 6;
+  doc.text(`Total Paid: ₹${(loan?.totalPaymentsMade ?? 0).toLocaleString()}`, 20, y); y += 6;
+  doc.text(`Outstanding: ₹${(loan?.outstanding ?? 0).toLocaleString()}`, 20, y); y += 10;
+
+  line(y);
+  y += 10;
+  doc.setFontSize(9);
+  doc.setTextColor(100, 100, 100);
+  doc.text(`Generated on ${new Date().toLocaleString()}`, 20, y);
+  doc.text('Electronic Certificate - No signature required', 20, y + 6);
+
+  return doc;
+};
+
+export const downloadLoanNOCPDF = (loan) => {
+  const doc = generateLoanNOCPDF(loan);
+  doc.save(`loan-${loan?.id || 'noc'}.noc.pdf`);
+};
+
 
 
 
